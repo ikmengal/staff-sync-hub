@@ -1,55 +1,49 @@
 @extends('admin.auth.layouts.app')
+@section('title', $title, ' - '. appName())
 @section('content')
-    <div class="w-lg-500px p-10">
-        <!--begin::Form-->
-        <form class="form w-100" novalidate="novalidate" method="POST" action="{{ route('password.store') }}">
-            @csrf
+    <h3 class="mb-1 fw-bold">Reset Password 🔒</h3>
+    <p class="mb-4">for <span class="fw-bold">{{ $request->email }}</span></p>
+    <form id="formAuthentication" class="mb-3" method="POST" action="{{ route('password.store') }}">
+        @csrf
 
-            <!-- Password Reset Token -->
-            <input type="hidden" name="token" value="{{ $request->route('token') }}">
-            <input type="hidden" name="email" value="{{ $request->email }}">
+        <!-- Password Reset Token -->
+        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+        <input type="hidden" name="email" value="{{ $request->email }}">
 
-            <!--begin::Heading-->
-            <div class="text-center mb-10">
-                <!--begin::Title-->
-                <h1 class="text-gray-900 fw-bolder mb-3">Setup New Password</h1>
-                <!--end::Title-->
-                <!--begin::Link-->
-                <div class="text-gray-500 fw-semibold fs-6">Have you already reset the password ?
-                    <a href="{{ route('admin.login') }}" class="link-primary fw-bold">Sign in</a></div>
-                <!--end::Link-->
+        <div class="mb-3 form-password-toggle">
+            <label class="form-label" for="password">New Password</label>
+            <div class="input-group input-group-merge">
+            <input
+                type="password"
+                id="password"
+                class="form-control"
+                name="password"
+                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                aria-describedby="password"
+            />
+            <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
             </div>
-            <!--begin::Heading-->
-            <!--begin::Input group-->
-            <div class="fv-row mb-8" data-kt-password-meter="true">
-                <!--begin::Wrapper-->
-                <div class="mb-1">
-                    <!--begin::Input wrapper-->
-                    <div class="position-relative mb-3">
-                        <input class="form-control bg-transparent" type="password" placeholder="Password" name="password" autocomplete="off" />
-                        <span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2" data-kt-password-meter-control="visibility">
-                            <i class="ki-outline ki-eye-slash fs-2"></i>
-                            <i class="ki-outline ki-eye fs-2 d-none"></i>
-                        </span>
-                    </div>
-                    <!--end::Input wrapper-->
-                </div>
-                <!--end::Wrapper-->
+        </div>
+        <div class="mb-3 form-password-toggle">
+            <label class="form-label" for="password_confirmation">Confirm Password</label>
+            <div class="input-group input-group-merge">
+            <input
+                type="password"
+                id="password_confirmation"
+                class="form-control"
+                name="password_confirmation"
+                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                aria-describedby="password"
+            />
+            <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
             </div>
-            <!--end::Input group=-->
-            <!--end::Input group=-->
-            <div class="fv-row mb-8">
-                <!--begin::Repeat Password-->
-                <input type="password" placeholder="Repeat Password" name="password_confirmation" autocomplete="off" class="form-control bg-transparent" />
-                <!--end::Repeat Password-->
-            </div>
-            <!--end::Input group=-->
-            <!--begin::Action-->
-            <div class="d-grid mb-10">
-                <button type="submit" class="btn btn-primary d-grid w-100 mb-3">Submit</button>
-            </div>
-            <!--end::Action-->
-        </form>
-        <!--end::Form-->
-    </div>
+        </div>
+        <button type="submit" class="btn btn-primary d-grid w-100 mb-3">Set new password</button>
+        <div class="text-center">
+            <a href="{{ route('admin.login') }}">
+            <i class="ti ti-chevron-left scaleX-n1-rtl"></i>
+            Back to login
+            </a>
+        </div>
+    </form>
 @endsection

@@ -1,73 +1,93 @@
 @extends('admin.auth.layouts.app')
-
+@section('title', $title. ' - '. appName())
 @section('content')
-    <div class="w-lg-500px p-10">
-        <!--begin::Form-->
-        <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" action="{{ route('admin.login') }}" data-kt-redirect-url="{{ route('dashboard') }}" method="POST">
-            @csrf
-            <!--begin::Heading-->
-            <div class="text-center mb-11">
-                <!--begin::Title-->
-                <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
-                <!--end::Title-->
-                <!--begin::Subtitle-->
-                <div class="text-gray-500 fw-semibold fs-6">
-                    <h3 class="mb-1 fw-bold">Welcome to @if(isset(settings()->name) && !empty(settings()->name)) {{ settings()->name }} @endif! 👋</h3>
-                    <p class="mb-4">Please sign-in to your account and start the adventure</p>
-                </div>
-                <!--end::Subtitle=-->
+    <h4 class="mb-1 pt-2">Welcome to @if(isset(settings()->name) && !empty(settings()->name)) {{ settings()->name }} @endif! 👋</h4>
+    <p class="mb-4">Please sign-in to your account and start the adventure</p>
+
+    <form id="loginForm" action="{{ route('admin.login') }}" method="POST">
+        @csrf
+        <input type="hidden" name="secretKey" id="secretKey">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="email" @if(isset($_COOKIE["email"])) value="{{ $_COOKIE["email"] }}" @endif name="email" placeholder="Enter your email" autofocus />
+            <span class="text-danger">{{ $errors->first('email') }}</span>
+        </div>
+        <div class="mb-3 form-password-toggle">
+            <div class="d-flex justify-content-between">
+                <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                <a href="{{ route('password.request') }}">
+                    <small>Forgot Password?</small>
+                </a>
             </div>
-            <!--begin::Heading-->
-            <!--begin::Input group=-->
-            <div class="fv-row mb-8">
-                <!--begin::Email-->
-                <input type="text" @if(isset($_COOKIE["email"])) value="{{ $_COOKIE["email"] }}" @endif name="email" placeholder="Enter your email" autofocus autocomplete="off" class="form-control bg-transparent" />
-                <span class="text-danger">{{ $errors->first('email') }}</span>
-                <!--end::Email-->
-            </div>
-            <!--end::Input group=-->
-            <div class="fv-row mb-3">
-                <!--begin::Password-->
-                <input type="password" @if(isset($_COOKIE["password"])) value="{{ $_COOKIE["password"] }}" @endif name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" autocomplete="off" class="form-control bg-transparent" />
-                <span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2" data-kt-password-meter-control="visibility">
-                    <i class="ki-outline ki-eye-slash fs-2"></i>
-                    <i class="ki-outline ki-eye fs-2 d-none"></i>
-                </span>
+            <div class="input-group input-group-merge">
+                <input type="password" id="password" class="form-control" @if(isset($_COOKIE["password"])) value="{{ $_COOKIE["password"] }}" @endif name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+                <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
                 <span class="text-danger">{{ $errors->first('password') }}</span>
-                <!--end::Password-->
             </div>
-            <div class="mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember" @if(isset($_COOKIE["email"])) checked @endif >
-                    <label class="form-check-label" for="remember"> Remember Me </label>
-                </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember" @if(isset($_COOKIE["email"])) checked @endif >
+                <label class="form-check-label" for="remember"> Remember Me </label>
             </div>
-            <!--end::Input group=-->
-            <!--begin::Wrapper-->
-            <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
-                <div></div>
-                <!--begin::Link-->
-                <a href="{{ route('password.request') }}" class="link-primary">Forgot Password ?</a>
-                <!--end::Link-->
+        </div>
+        <div class="col-12 mt-3">
+            <span id="login-btn">
+                <button type="submit" id="loginButton" class="btn btn-primary d-grid w-100">Sign in </button>
+            </span>
+
+            <div id="loader" style="display: none;">
+                <button type="button" class="btn btn-primary w-100" disabled><span class="spinner-border me-1" role="status" aria-hidden="true"></span>Loading...</button>
             </div>
-            <!--end::Wrapper-->
-            <!--begin::Submit button-->
-            <div class="d-grid mb-10">
-                <button type="submit" id="kt_sign_in_submit" class="btn btn-primary">
-                    <!--begin::Indicator label-->
-                    <span class="indicator-label">Sign In</span>
-                    <!--end::Indicator label-->
-                    <!--begin::Indicator progress-->
-                    <span class="indicator-progress">Please wait...
-                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                    <!--end::Indicator progress-->
-                </button>
-            </div>
-            <!--end::Submit button-->
-        </form>
-        <!--end::Form-->
-    </div>
+        </div>
+    </form>
 @endsection
 @push('js')
+<script>
+    $(document).ready(function() {
+        $("#loginButton").click(function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            var email = $("#email").val();
+            var pass = $("#password").val();
+            if (email && pass) {
+                // Show the loader
+                $('#login-btn').hide();
+                $("#loader").show();
+                // Hide the error message if it's currently displayed
+                $("#errorMessage").hide();
 
+                var url = $(this).attr('action');
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: $("#loginForm").serialize(), // Serialize form data
+                    success: function(response) {
+                        // Check the response for validation errors
+                        if (response.success == true) {
+                            // If login is successful, you can redirect or perform other actions
+                            window.location.href = response.route;
+                        } else {
+                            // If there are validation errors, hide the loader and display the error message
+                            $("#loader").hide();
+                            $('#login-btn').show();
+                            var html = '<div class="alert alert-danger">' + response.error + '</div>';
+                            $("#errorMessage").html(html).show();
+                        }
+                    },
+                    error: function() {
+                        // Handle AJAX errors here
+                        $("#loader").hide();
+                        $('#login-btn').show();
+                        var html = '<div class="alert alert-danger">Invalid login credentials</div>';
+                        $("#errorMessage").html(html).show();
+                    }
+                });
+            } else {
+                var html = '<div class="alert alert-danger">Please insert email and password</div>';
+                $("#errorMessage").html(html).show();
+            }
+        });
+    });
+</script>
 @endpush

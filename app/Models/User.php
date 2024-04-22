@@ -49,6 +49,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(DepartmentUser::class, 'user_id', 'id')->orderby('id', 'desc');
     }
+    public function userWorkingShift()
+    {
+        return $this->hasOne(WorkingShiftUser::class, 'user_id', 'id')->orderby('id', 'desc');
+    }
     public function departmentBridgeTerminate()
     {
         return $this->hasOne(DepartmentUser::class, 'user_id', 'id')->orderby('id', 'desc');
@@ -56,5 +60,17 @@ class User extends Authenticatable
     public function jobHistory()
     {
         return $this->hasOne(JobHistory::class, 'user_id', 'id')->orderby('id', 'desc');
+    }
+    public function salaryHistory()
+    {
+        return $this->hasOne(SalaryHistory::class, 'user_id')->orderby('id', 'desc');
+    }
+    public function employeeStatusEndDateNull()
+    {
+        return $this->hasOne(UserEmploymentStatus::class, 'user_id', 'id')->where('end_date', null)->orderby('id', 'desc');
+    }
+
+    public function hasResignation(){
+        return $this->hasOne(Resignation::class, 'employee_id', 'id')->orderby('id', 'desc');
     }
 }
