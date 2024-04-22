@@ -1,21 +1,30 @@
-<div id="kt_app_footer" class="app-footer align-items-center justify-content-center justify-content-md-between flex-column flex-md-row py-3 py-lg-6">
-    <!--begin::Copyright-->
-    <div class="text-gray-900 order-2 order-md-1">
-        <span class="text-muted fw-semibold me-1">{{ date('Y') }}&copy;</span>
-        <a href="https://keenthemes.com" target="_blank" class="text-gray-800 text-hover-primary">{{ appName() }}</a>
+<footer class="content-footer footer bg-footer-theme">
+    <div class="container-fluid">
+        <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
+            <div>
+                ©
+                <script>
+                    document.write(new Date().getFullYear());
+                </script>
+                , made by
+
+                <a href="@if(!empty(settings()->website_url)) {{ settings()->website_url }} @else {{ '#' }} @endif" target="_blank" class="fw-semibold">{{ appName() }}</a>
+            </div>
+            <div>
+                @if(settings()->facebook_link)
+                    <a href="{{ settings()->facebook_link }}" class="footer-link me-4" target="_blank">Facebook</a>
+                @endif
+                @if(settings()->instagram_link)
+                    <a href="{{ settings()->instagram_link }}" target="_blank" class="footer-link me-4">Instagram</a>
+                @endif
+
+                @if(settings()->twitter_link)
+                    <a href="{{ settings()->twitter_link }}" target="_blank" class="footer-link me-4" >Twitter</a>
+                @endif
+                @if(settings()->linked_in_link)
+                    <a href="{{ settings()->linked_in_link }}" target="_blank" class="footer-link d-none d-sm-inline-block">Linked In</a>
+                @endif
+            </div>
+        </div>
     </div>
-    <!--end::Copyright-->
-    <!--begin::Menu-->
-    <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-        <li class="menu-item">
-            <a href="https://keenthemes.com" target="_blank" class="menu-link px-2">About</a>
-        </li>
-        <li class="menu-item">
-            <a href="https://devs.keenthemes.com" target="_blank" class="menu-link px-2">Support</a>
-        </li>
-        <li class="menu-item">
-            <a href="https://1.envato.market/EA4JP" target="_blank" class="menu-link px-2">Purchase</a>
-        </li>
-    </ul>
-    <!--end::Menu-->
-</div>
+</footer>

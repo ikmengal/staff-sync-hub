@@ -1,75 +1,136 @@
-
 <!DOCTYPE html>
-<html lang="en">
-	<!--begin::Head-->
-	<head>
-		<title>Login | Super Admin</title>
-		<meta charset="utf-8" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta property="og:locale" content="en_US" />
-		<link rel="shortcut icon" href="{{ asset('public/admin') }}/assets/media/logos/favicon.ico" />
-		<!--begin::Fonts(mandatory for all pages)-->
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-		<!--end::Fonts-->
-		<!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
-		<link href="{{ asset('public/admin') }}/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
-		<link href="{{ asset('public/admin') }}/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-		<!--end::Global Stylesheets Bundle-->
-	</head>
-	<!--end::Head-->
-	<!--begin::Body-->
-	<body id="kt_body" class="app-blank">
-		<!--begin::Theme mode setup on page load-->
-		{{-- <script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script> --}}
 
-		<div class="d-flex flex-column flex-root" id="kt_app_root">
-            <!--begin::Authentication - Sign-in -->
-            <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-                <!--begin::Body-->
-                <div class="d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-1">
-                    <!--begin::Form-->
-                    <div class="d-flex flex-center flex-column flex-lg-row-fluid">
-                        <!--begin::Wrapper-->
+<html
+  lang="en"
+  class="light-style customizer-hide"
+  dir="ltr"
+  data-theme="theme-default"
+  data-template="vertical-menu-template-no-customizer"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+
+    <title>@yield('title')</title>
+
+    <meta name="description" content="" />
+
+    <!-- Favicon -->
+    @if(isset(settings()->favicon) && !empty(settings()->favicon))
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/{{ settings()->favicon }}" />
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/favicon.ico" />
+    @endif
+    <!-- Favicon -->
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/fonts/fontawesome.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/fonts/tabler-icons.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/fonts/flag-icons.css" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/css/rtl/core.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/css/rtl/theme-default.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/css/demo.css" />
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/node-waves/node-waves.css" />
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/typeahead-js/typeahead.css" />
+    <!-- Vendor -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/formvalidation/dist/css/formValidation.min.css" />
+
+    <!-- Page CSS -->
+    <!-- Page -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/css/pages/page-auth.css" />
+    <!-- Helpers -->
+
+    @stack('styles')
+
+    <script src="{{ asset('public/admin') }}/assets/vendor/js/helpers.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/js/config.js"></script>
+  </head>
+
+  <body>
+    <!-- Content -->
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner py-4">
+                <!-- Login -->
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Logo -->
+                        <div class="app-brand justify-content-center mb-4 mt-2">
+                            <a href="{{ route('admin.login') }}" class="app-brand-link gap-2">
+                                <div class="app-brand mb-4">
+                                    @if(isset(settings()->black_logo) && !empty(settings()->black_logo))
+                                        <img width="82" height="72" src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->black_logo }}" class="img-fluid light-logo" alt="Logo" />
+                                    @else
+                                        <img width="82" height="72" src="{{ asset('public/admin/assets/img/logo/default.png') }}" class="img-fluid light-logo" alt="Logo" />
+                                    @endif
+                                </div>
+                            </a>
+                        </div>
+                        <!-- /Logo -->
+                        <!-- Main Content -->
                         @yield('content')
-                        <!--end::Wrapper-->
+                        <!-- Main Content -->
                     </div>
-                    <!--end::Form-->
                 </div>
-                <!--end::Body-->
-                <!--begin::Aside-->
-                <div class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2" style="background-image: url({{ asset('public/admin') }}/assets/media/misc/auth-bg.png)">
-                    <!--begin::Content-->
-                    <div class="d-flex flex-column flex-center py-7 py-lg-15 px-5 px-md-15 w-100">
-                        <!--begin::Logo-->
-                        @if(isset(settings()->black_logo) && !empty(settings()->black_logo))
-                            <img alt="Logo" src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->black_logo }}" class="h-60px h-lg-75px" />
-                        @else
-                            <img alt="Logo" src="{{ asset('public/admin') }}/assets/media/logos/custom-1.png" class="h-60px h-lg-75px" />
-                        @endif
-                        <!--end::Logo-->
-                        <!--begin::Image-->
-                        <img class="d-none d-lg-block mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20" src="{{ asset('public/admin') }}/assets/media/misc/auth-screens.png" alt="" />
-                        <!--end::Image-->
-                    </div>
-                    <!--end::Content-->
-                </div>
-                <!--end::Aside-->
+                <!-- Login -->
             </div>
-            <!--end::Authentication - Sign-in-->
-        </div>
-		<!--end::Root-->
-		<!--begin::Javascript-->
-		<!--begin::Global Javascript Bundle(mandatory for all pages)-->
-		<script src="{{ asset('public/admin') }}/assets/plugins/global/plugins.bundle.js"></script>
-		<script src="{{ asset('public/admin') }}/assets/js/scripts.bundle.js"></script>
-		<!--end::Global Javascript Bundle-->
-		<!--begin::Custom Javascript(used for this page only)-->
-		<script src="{{ asset('public/admin') }}/assets/js/custom/authentication/sign-in/general.js"></script>
-		<!--end::Custom Javascript-->
-        @stack('js')
-		<!--end::Javascript-->
-	</body>
-	<!--end::Body-->
+      </div>
+    </div>
+    <!-- / Content -->
+
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/popper/popper.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/js/bootstrap.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/node-waves/node-waves.js"></script>
+
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/i18n/i18n.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/typeahead-js/typeahead.js"></script>
+
+    <script src="{{ asset('public/admin') }}/assets/vendor/js/menu.js"></script>
+    <!-- endbuild -->
+
+    <!-- Vendors JS -->
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js"></script>
+    <script src="{{ asset('public/admin') }}/assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js"></script>
+
+    <!-- Main JS -->
+    <script src="{{ asset('public/admin') }}/assets/js/main.js"></script>
+
+    <!-- Page JS -->
+    <script src="{{ asset('public/admin') }}/assets/js/pages-auth.js"></script>
+    <script type="text/javascript">
+        $(document).on('click','i[class^="ti ti-eye"]',function(){
+           var getType=$(this).parent().parent().find('input').attr('type');
+           if(getType=='text'){
+               $(this).attr('class','ti ti-eye-off');
+               $(this).parent().parent().find('input').attr('type','password');
+           }else{
+               $(this).attr('class','ti ti-eye');
+               $(this).parent().parent().find('input').attr('type','text');
+           }
+        });
+    </script>
+    @stack('js')
+  </body>
 </html>

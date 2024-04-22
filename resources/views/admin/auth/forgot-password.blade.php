@@ -1,32 +1,29 @@
 @extends('admin.auth.layouts.app')
-
+@section('title', $title, ' - '. appName())
 @section('content')
-    <div class="w-lg-500px p-10">
-        <!--begin::Form-->
-        <form class="form w-100" method="POST" action="{{ route('password.email') }}">
-            @csrf
-            <!--begin::Heading-->
-            <div class="text-center mb-10">
-                <!--begin::Title-->
-                <h1 class="text-gray-900 fw-bolder mb-3">Forgot Password ?</h1>
-                <!--end::Title-->
-                <!--begin::Link-->
-                <div class="text-gray-500 fw-semibold fs-6">Enter your email to reset your password.</div>
-                <!--end::Link-->
-            </div>
-            <!--begin::Heading-->
-            <!--begin::Input group=-->
-            <div class="fv-row mb-8">
-                <!--begin::Email-->
-                <input type="text" placeholder="Email" name="email" autocomplete="off" class="form-control bg-transparent" />
-                <!--end::Email-->
-            </div>
-            <!--begin::Actions-->
-            <div class="d-flex flex-wrap justify-content-center pb-lg-0">
-                <button type="submit" class="btn btn-primary me-4">Send Reset Link</button>
-            </div>
-            <!--end::Actions-->
-        </form>
-        <!--end::Form-->
+<h4 class="mb-1 pt-2">Forgot Password? 🔒</h4>
+    <p class="mb-4">Enter your email and we'll send you instructions to reset your password</p>
+    <form method="POST" action="{{ route('password.email') }}">
+        @csrf
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              autofocus
+            />
+            <span class="text-danger">{{ $errors->first('email') }}</span>
+        </div>
+        <button type="submit" class="btn btn-primary d-grid w-100">Send Reset Link</button>
+    </form>
+    <div class="text-center">
+        <a href="{{ URL::previous() }}" class="d-flex align-items-center justify-content-center">
+            <i class="ti ti-chevron-left scaleX-n1-rtl"></i>
+            Back to login
+        </a>
     </div>
 @endsection

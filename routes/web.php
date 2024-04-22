@@ -2,14 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
+use App\Http\Controllers\Admin\EmployeeRequisitionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +25,7 @@ use App\Http\Controllers\Admin\DesignationController;
 */
 
 //Resource Routes
+Route::resource('/requisitions', EmployeeRequisitionController::class);
 Route::resource('/settings', SettingController::class);
 Route::resource('/departments', DepartmentController::class);
 Route::resource('/roles', RoleController::class);
@@ -44,6 +47,8 @@ Route::get('/cache-clear', function () {
 //cache clear
 
 //Custom Routes
+Route::get('/developer/test', [DeveloperController::class, 'getCompanyEmployees'])->name('developer.test');
+
 Route::get('/', function () {
     return redirect()->route('admin.login');
 });
@@ -54,12 +59,28 @@ Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login
 //Authentication Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/admin/get-counter-data/{box}', [AdminController::class, 'getCounterData'])->name('admin.get-counter-data');
+    Route::get('/admin/get-attendance-counter-data/{counter_key}/{json_key}', [AdminController::class, 'getAttendanceCounterData'])->name('admin.get-attendance-counter-data');
+    Route::get('/admin/get-slider-data', [AdminController::class, 'getSliderData'])->name('admin.get-slider-data');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile/update/{id}', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/logout', [AdminController::class, 'logOut'])->name('user.logout');
+
+    //
+    Route::get('admin/companies', [AdminController::class, 'getCompanies'])->name('admin.companies');
+    Route::get('admin/companies/employees', [AdminController::class, 'getCompaniesEmployees'])->name('admin.companies.employees');
+    Route::get('admin/companies/employees/new_hiring', [AdminController::class, 'getCompaniesEmployeesNewHiring'])->name('admin.companies.employees.new_hiring');
+    Route::get('admin/companies/terminated_employees', [AdminController::class, 'getCompaniesTerminatedEmployees'])->name('admin.companies.terminated_employees');
+    Route::get('admin/companies/terminated_employees_of_current_month', [AdminController::class, 'getCompaniesTerminatedEmployeesOfCurrentMonth'])->name('admin.companies.terminated_employees_of_current_month');
+    Route::get('admin/company/employees/{company}', [AdminController::class, 'getCompanyEmployees'])->name('admin.company.employees');
+    Route::get('admin/companies/vehicles', [AdminController::class, 'getCompaniesVehicles'])->name('admin.companies.vehicles');
+    Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
+
+    //inject search urls data to json file
+    Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
 });
 //Authentication Routes
 
