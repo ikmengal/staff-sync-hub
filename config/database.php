@@ -64,7 +64,7 @@ return [
         ],
 
         /* HRM-Portals DB-Connection */
-        'cyberonix_portal' => [
+        env("CYBERONIX_DB_DATABASE", "cyberonix_portal") => [
             'driver' => 'mysql',
             'url' => env('CYBERONIX_DATABASE_URL'),
             'host' => env('CYBERONIX_DB_HOST', '127.0.0.1'),
@@ -83,7 +83,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'hrmsvertical_hr_portal' => [
+        env("VERTICAL_DB_DATABASE", "hrmsvertical_hr_portal") => [
             'driver' => 'mysql',
             'url' => env('VERTICAL_DATABASE_URL'),
             'host' => env('VERTICAL_DB_HOST', '127.0.0.1'),
@@ -102,7 +102,8 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'braincelltech_hr_portal' => [
+
+        env("BRAINCELL_DB_DATABASE", "braincelltech_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('BRAINCELL_DATABASE_URL'),
             'host' => env('BRAINCELL_DB_HOST', '127.0.0.1'),
@@ -121,7 +122,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'clevelhr_hr_portal' => [
+        env("CLEVEL_DB_DATABASE", "clevelhr_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('CLEVEL_DATABASE_URL'),
             'host' => env('CLEVEL_DB_HOST', '127.0.0.1'),
@@ -140,7 +141,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'delve12_hr_portal' => [
+        env("DELVE12_DB_DATABASE", "delve12_hr_portal")  =>  [
             'driver' => 'mysql',
             'url' => env('DELVE12_DATABASE_URL'),
             'host' => env('DELVE12_DB_HOST', '127.0.0.1'),
@@ -159,7 +160,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'techhorizontal_hr_portal' => [
+        env("HORIZONTAL_DB_DATABASE", "techhorizontal_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('HORIZONTAL_DATABASE_URL'),
             'host' => env('HORIZONTAL_DB_HOST', '127.0.0.1'),
@@ -178,7 +179,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'mercuryhrms_hr_portal' => [
+        env("MERCURY_DB_DATABASE", "mercuryhrms_hr_portal")   => [
             'driver' => 'mysql',
             'url' => env('MERCURY_DATABASE_URL'),
             'host' => env('MERCURY_DB_HOST', '127.0.0.1'),
@@ -197,7 +198,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'momyom_hrms' => [
+        env("MOMYOM_DB_DATABASE", "momyom_hrms")   => [
             'driver' => 'mysql',
             'url' => env('MOMYOM_DATABASE_URL'),
             'host' => env('MOMYOM_DB_HOST', '127.0.0.1'),
@@ -216,7 +217,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'softnova_hr_portal' => [
+        env("SOFTNOVA_DB_DATABASE", "softnova_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('SOFTNOVA_DATABASE_URL'),
             'host' => env('SOFTNOVA_DB_HOST', '127.0.0.1'),
@@ -235,7 +236,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'softfellow_hr_portal' => [
+        env("SOFTFELLOW_DB_DATABASE", "softfellow_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('SOFTFELLOW_DATABASE_URL'),
             'host' => env('SOFTFELLOW_DB_HOST', '127.0.0.1'),
@@ -254,7 +255,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'swyftcube_hr_portal' => [
+        env("SWYFTCUBE_DB_DATABASE", "swyftcube_hr_portal")  => [
             'driver' => 'mysql',
             'url' => env('SWYFTCUBE_DATABASE_URL'),
             'host' => env('SWYFTCUBE_DB_HOST', '127.0.0.1'),
@@ -273,7 +274,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'swyftzone_hr_portal' => [
+        env("SWYFTZONE_DB_DATABASE", "swyftzone_hr_portal") => [ // currently not in used
             'driver' => 'mysql',
             'url' => env('SWYFTZONE_DATABASE_URL'),
             'host' => env('SWYFTZONE_DB_HOST', '127.0.0.1'),
@@ -292,7 +293,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'techcomrade_hr_portal' => [
+        env("TECHCOMRADE_DB_DATABASE", "techcomrade_hr_portal")   => [
             'driver' => 'mysql',
             'url' => env('TECHCOMRADE_DATABASE_URL'),
             'host' => env('TECHCOMRADE_DB_HOST', '127.0.0.1'),
@@ -311,7 +312,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'rocketflarelabs_hr_portal' => [
+        env("ROCKETFLARELABS_DB_DATABASE", "rocketflarelabs_hr_portal")   => [
             'driver' => 'mysql',
             'url' => env('ROCKETFLARELABS_DATABASE_URL'),
             'host' => env('ROCKETFLARELABS_DB_HOST', '127.0.0.1'),
@@ -394,7 +395,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

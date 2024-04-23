@@ -80,19 +80,19 @@ function getUserData($user){
 function companies(){ 
     $companies = [
         'cyberonix' => env('CYBERONIX_DB_DATABASE'),
-        // 'vertical' => env('VERTICAL_DB_DATABASE'),
-        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
-        // 'clevel' => env('CLEVEL_DB_DATABASE'),
-        // 'delve' => env('DELVE12_DB_DATABASE'),
-        // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
-        // 'mercury' => env('MERCURY_DB_DATABASE'),
-        // 'momyom' => env('MOMYOM_DB_DATABASE'),
-        // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
-        // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
-        // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'),
-        // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
-        // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
+        'vertical' => env('VERTICAL_DB_DATABASE'),
+        'braincell' => env('BRAINCELL_DB_DATABASE'),
+        'clevel' => env('CLEVEL_DB_DATABASE'),
+        'delve' => env('DELVE12_DB_DATABASE'),
+        'horizontal' => env('HORIZONTAL_DB_DATABASE'),
+        'mercury' => env('MERCURY_DB_DATABASE'),
+        'momyom' => env('MOMYOM_DB_DATABASE'),
+        'softnova' => env('SOFTNOVA_DB_DATABASE'),
+        'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
+        'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
+        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
+        'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
+        'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
    
     return $companies;
