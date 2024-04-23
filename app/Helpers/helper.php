@@ -74,38 +74,37 @@ function getUserData($user){
         'role' => $user->getRoleNames()->first(),
         'designation' => $designation,
     ];
-
     return $user;
 }
 
-function companies(){
+function companies(){ 
     $companies = [
         'cyberonix' => env('CYBERONIX_DB_DATABASE'),
-        'vertical' => env('VERTICAL_DB_DATABASE'),
-        'braincell' => env('BRAINCELL_DB_DATABASE'),
-        'clevel' => env('CLEVEL_DB_DATABASE'),
-        'delve' => env('DELVE12_DB_DATABASE'),
-        'horizontal' => env('HORIZONTAL_DB_DATABASE'),
-        'mercury' => env('MERCURY_DB_DATABASE'),
-        'momyom' => env('MOMYOM_DB_DATABASE'),
-        'softnova' => env('SOFTNOVA_DB_DATABASE'),
-        'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
-        'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        'swyftzone' => env('SWYFTZONE_DB_DATABASE'),
-        'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
-        'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
+        // 'vertical' => env('VERTICAL_DB_DATABASE'),
+        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
+        // 'clevel' => env('CLEVEL_DB_DATABASE'),
+        // 'delve' => env('DELVE12_DB_DATABASE'),
+        // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
+        // 'mercury' => env('MERCURY_DB_DATABASE'),
+        // 'momyom' => env('MOMYOM_DB_DATABASE'),
+        // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
+        // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
+        // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
+        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'),
+        // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
+        // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
-
+   
     return $companies;
 }
 function getAllCompanies(){
     $companies = [];
+    
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
-    $currentYear = Carbon::now()->year;
-
-    foreach(companies() as $portalName=>$portalDb){
-        $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first();
+    $currentYear = Carbon::now()->year;  
+    foreach(companies() as $portalName=>$portalDb){  
+        $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first(); 
         if(!empty($settings)){
             $total_employees = User::on($portalDb)->where('is_employee', 1)->with('profile:user_id,profile,employment_id')->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
             $total_new_hiring =  User::on($portalDb)
@@ -161,6 +160,8 @@ function getAllCompanies(){
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
             $companies[$portalName] = $settings;
+        }else{
+            dd("Failed to Load Settings");
         }
     }
 

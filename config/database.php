@@ -64,7 +64,7 @@ return [
         ],
 
         /* HRM-Portals DB-Connection */
-        'cyberonix_hrms' => [
+        'cyberonix_portal' => [
             'driver' => 'mysql',
             'url' => env('CYBERONIX_DATABASE_URL'),
             'host' => env('CYBERONIX_DB_HOST', '127.0.0.1'),
@@ -83,7 +83,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'vertical_edge_hrm' => [
+        'hrmsvertical_hr_portal' => [
             'driver' => 'mysql',
             'url' => env('VERTICAL_DATABASE_URL'),
             'host' => env('VERTICAL_DB_HOST', '127.0.0.1'),
@@ -102,7 +102,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'braincelltech_hrm' => [
+        'braincelltech_hr_portal' => [
             'driver' => 'mysql',
             'url' => env('BRAINCELL_DATABASE_URL'),
             'host' => env('BRAINCELL_DB_HOST', '127.0.0.1'),
@@ -121,7 +121,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'clevel_hrms' => [
+        'clevelhr_hr_portal' => [
             'driver' => 'mysql',
             'url' => env('CLEVEL_DATABASE_URL'),
             'host' => env('CLEVEL_DB_HOST', '127.0.0.1'),
@@ -178,7 +178,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'mercury_hrms' => [
+        'mercuryhrms_hr_portal' => [
             'driver' => 'mysql',
             'url' => env('MERCURY_DATABASE_URL'),
             'host' => env('MERCURY_DB_HOST', '127.0.0.1'),
@@ -311,7 +311,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-        'rocketflarelabs_hrm' => [
+        'rocketflarelabs_hr_portal' => [
             'driver' => 'mysql',
             'url' => env('ROCKETFLARELABS_DATABASE_URL'),
             'host' => env('ROCKETFLARELABS_DB_HOST', '127.0.0.1'),
