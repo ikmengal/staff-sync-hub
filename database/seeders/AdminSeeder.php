@@ -25,6 +25,7 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
+        
         Setting::create([
             'name' => 'Demo',
             'banner' => '1684433621.png',
