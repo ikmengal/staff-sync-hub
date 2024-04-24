@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\SendOtpNotification;
 
 class AuthController extends Controller
 {
@@ -22,10 +23,15 @@ class AuthController extends Controller
             $user = Auth::user();
             $user->tokens()->update(['expires_at' => now()]);
             $token = $user->createToken('token')->plainTextToken;
-            return response()->json(['token' => $token, 'user' => new UserResource($user)], 200);
+            $record = [
+                'token'=>$token,
+                'user' => new UserResource($user)
+            ];
+           
+            return  apiResponse($success = true, $data =  $record  , $message = "User Login Successfuly", $code = 200);
         }
-
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return  apiResponse($success = false, $data =  null  , $message = "Unauthorized", $code = 401); 
+     
     }
 
     public function register(Request $request)
@@ -53,7 +59,8 @@ class AuthController extends Controller
         $data = [
             'token' => $token, 'user' => new UserResource($user)
         ];
-        return apiResponse(true,  $data , "Successfuly Registered", 200);
+        return  apiResponse(true, $data, "Successfuly Registered", $code = 200);
+    
     }
 
 
@@ -63,8 +70,8 @@ class AuthController extends Controller
 
         $request->user()->currentAccessToken()->delete();
         return apiResponse(true, null, "Logged out successfuly", 200);
-
-        return response()->json(['message' => 'Logged out successfully']);
+       
+    
     }
 
     public function sendResetLinkEmail(Request $request)
@@ -79,43 +86,62 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 400);
         }
 
-        $response = $this->broker()->sendResetLink(
-            $request->only('email')
-        );
-        return $response == Password::RESET_LINK_SENT
-            ? response()->json(['message' => 'Reset link sent to your email.'], 200)
-            : response()->json(['error' => 'Unable to send reset link.'], 400);
-    }
+        $user = User::where('email', $request->email)->first();
 
+        // Generate and store OTP
+        $otp = $this->generateOtp();
+        $user->update(['otp' => $otp, 'otp_expires' => now()->addMinutes(5)]);
+
+        // Send OTP via email
+        $user->notify(new SendOtpNotification($otp));
+       
+        return  apiResponse(true, null, "OTP sent to your email.", 200);
+    }
     protected function broker()
     {
-        return Password::broker();
+        return Password::broker('users');
     }
-
     public function resetPassword(Request $request)
     {
-
+        // Validate the request data
         $validator = Validator::make($request->all(), [
-
             'email' => 'required|email',
-            'token' => 'required|string',
+            'otp' => 'required|string',
             'password' => 'required|string|min:8|confirmed',
-
         ]);
 
+        // Return validation errors if the validation fails
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-        $response = $this->broker()->reset(
-            $request->only('email', 'token', 'password', 'password_confirmation'),
-            function ($user, $password) {
-                $user->password = bcrypt($password);
-                $user->save();
-            }
-        );
-        return $response == Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Password reset successfully.'], 200)
-            : response()->json(['error' => 'Unable to reset password.'], 400);
+        // Find the user by email
+        $user = User::where('email', $request->email)->first();
+
+        // Validate the OTP
+        if ($user->otp !== $request->otp) {
+            return response()->json(['error' => 'Invalid OTP.'], 400);
+        }
+
+        // Check if OTP is expired
+        if ($user->otp_expires < now()) {
+            return response()->json(['error' => 'OTP has expired.'], 400);
+        }
+
+          // Reset the password
+          $user->password = Hash::make($request->password);
+          $user->save();
+
+        // Check if the password was reset successfully
+        return Password::PASSWORD_RESET
+            ?  apiResponse(true, null, "Password reset successfully.", 200)
+            : apiResponse(false, null, "Unable to reset password.", 400);
+    }
+
+
+    protected function generateOtp()
+    {
+        // Generate random OTP (e.g., 6-digit number)
+        return str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
     }
 
     public function changePassword(Request $request)
@@ -136,12 +162,13 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['error' => 'Current password is incorrect.'], 400);
+            
+            return apiResponse(false, null, "Current password is incorrect.", 400);
         }
 
         $user->password = bcrypt($request->new_password);
         $user->save();
-
-        return response()->json(['message' => 'Password changed successfully.'], 200);
+       
+        return  apiResponse(true, null, "Password changed successfully.", 200);
     }
 }
