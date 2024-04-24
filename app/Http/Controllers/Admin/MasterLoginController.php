@@ -15,6 +15,8 @@ class MasterLoginController extends Controller
 
         try {
 
+
+            
             $company_id = base64_decode($company_id);
             $baseUrl = findBaseUrl($company_id);
             $client = new Client([
