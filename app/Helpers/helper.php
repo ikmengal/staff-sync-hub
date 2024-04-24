@@ -644,20 +644,32 @@ function apiResponse($success = null, $data = null, $message = null, $code = nul
 function companyData()
 {
     $array  = [
-        ['id' => 1, 'name' => 'Cyberonix Consulting Limited'],
-        ['id' => 2, 'name' => 'Vertical Edge'],
-        ['id' => 3, 'name' => 'Braincell  Technology'],
-        ['id' => 4, 'name' => 'C-Level'],
-        ['id' => 5, 'name' => 'DELVE12'],
-        ['id' => 6, 'name' => 'HORIZONTAL'],
-        ['id' => 7, 'name' => 'MERCURY'],
-        ['id' => 8, 'name' => 'MOMYOM'],
-        ['id' => 9, 'name' => 'SOFTNOVA'],
-        ['id' => 10, 'name' => 'SOFTFELLOW'],
-        ['id' => 11, 'name' => 'SWYFTCUBE'],
-        ['id' => 12, 'name' => 'SWYFTZONE'],
-        ['id' => 13, 'name' => 'TECHCOMRADE'],
-        ['id' => 14, 'name' => 'ROCKET-FLARE-LABS'],
+        ['id' => 1, 'name' => 'Cyberonix Consulting Limited', 'base_url' => config("project.cyberonix_base_url")],
+        ['id' => 2, 'name' => 'Vertical Edge', 'base_url' => config("project.vertical_base_url")],
+        ['id' => 3, 'name' => 'Braincell  Technology', 'base_url' => config("project.braincell_base_url")],
+        ['id' => 4, 'name' => 'C-Level', 'base_url' => config("project.clevel_base_url")],
+        ['id' => 5, 'name' => 'DELVE12', 'base_url' => config("project.delve12_base_url")],
+        ['id' => 6, 'name' => 'HORIZONTAL', 'base_url' => config("project.horizontal_base_url")],
+        ['id' => 7, 'name' => 'MERCURY', 'base_url' => config("project.mercury_base_url")],
+        ['id' => 8, 'name' => 'MOMYOM', 'base_url' => config("project.momyom_base_url")],
+        ['id' => 9, 'name' => 'SOFTNOVA', 'base_url' => config("project.softnova_base_url")],
+        ['id' => 10, 'name' => 'SOFTFELLOW', 'base_url' => config("project.softfellow_base_url")],
+        ['id' => 11, 'name' => 'SWYFTCUBE', 'base_url' => config("project.swyftcube_base_url")],
+        ['id' => 12, 'name' => 'SWYFTZONE', 'base_url' => config("project.swyftzone_base_url")],
+        ['id' => 13, 'name' => 'TECHCOMRADE', 'base_url' => config("project.techcombrade_base_url")],
+        ['id' => 14, 'name' => 'ROCKET-FLARE-LABS', 'base_url' => config("project.rocketflare_base_url")],
     ];
     return $array;
+}
+
+
+function findBaseUrl($company_id)
+{
+    $companies = companyData();
+
+    foreach ($companies as $company) {
+        if ($company['id'] == $company_id) {
+            return $company['base_url'];
+        }
+    }
 }
