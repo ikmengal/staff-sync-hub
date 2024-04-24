@@ -124,30 +124,35 @@ class AuthController extends Controller
         // Find the user by email
         $user = User::where('email', $request->email)->first();
         
-        $otp = Otp::where('user_id',$user->id)->first();
-        if(!empty($otp)){
-                    // Validate the OTP
-        if ($otp->otp !== $request->otp) {
-            return response()->json(['error' => 'Invalid OTP.'], 400);
-        }
-
-        // Check if OTP is expired
-        if ($otp->otp_expires < now()) {
-            return response()->json(['error' => 'OTP has expired.'], 400);
-        }
-
-          // Reset the password
-          $user->password = Hash::make($request->password);
-          $user->save();
-
-        // Check if the password was reset successfully
-        return Password::PASSWORD_RESET
-            ?  apiResponse(true, null, "Password reset successfully.", 200)
-            : apiResponse(false, null, "Unable to reset password.", 400);
-
+        if(!empty($user)){
+            $otp = Otp::where('user_id',$user->id)->first();
+            if(!empty($otp)){
+                        // Validate the OTP
+            if ($otp->otp !== $request->otp) {
+                return response()->json(['error' => 'Invalid OTP.'], 400);
+            }
+    
+            // Check if OTP is expired
+            if ($otp->otp_expires < now()) {
+                return response()->json(['error' => 'OTP has expired.'], 400);
+            }
+    
+              // Reset the password
+              $user->password = Hash::make($request->password);
+              $user->save();
+    
+            // Check if the password was reset successfully
+            return Password::PASSWORD_RESET
+                ?  apiResponse(true, null, "Password reset successfully.", 200)
+                : apiResponse(false, null, "Unable to reset password.", 400);
+    
+            }else{
+                return apiResponse(false, null, "Otp Not Found", 400);
+            }
         }else{
-            return apiResponse(false, null, "Otp Not Found", 400);
+            return apiResponse(false, null, "User Not Found", 400);
         }
+       
 
     }
 
@@ -203,7 +208,7 @@ class AuthController extends Controller
             return apiResponse(false, null, "Current password is incorrect.", 400);
         }
 
-        $user->password =Hash::make($request->new_password);
+        $user->password = Hash::make($request->new_password);
         $user->save();
        
         return  apiResponse(true, null, "Password changed successfully.", 200);
