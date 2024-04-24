@@ -35,40 +35,42 @@ function SubPermissions($label)
     return Permission::where('label', $label)->get();
 }
 
-function loginUser(){
-    if(Auth::check()){
+function loginUser()
+{
+    if (Auth::check()) {
         $profile = null;
-        if(isset(Auth::user()->profile) && !empty(Auth::user()->profile->profile)){
+        if (isset(Auth::user()->profile) && !empty(Auth::user()->profile->profile)) {
             $profile = Auth::user()->profile->profile;
         }
         $user = (object)[
             'id' => Auth::user()->id,
             'slug' => Auth::user()->slug,
-            'name' => Auth::user()->first_name.' '.Auth::user()->last_name,
+            'name' => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'email' => Auth::user()->email,
             'profile' => $profile,
             'role' => Auth::user()->getRoleNames()->first(),
         ];
 
         return $user;
-    }else{
+    } else {
         return null;
     }
 }
 
-function getUserData($user){
+function getUserData($user)
+{
     $profile = null;
-    if(isset($user->profile) && !empty($user->profile->profile)){
+    if (isset($user->profile) && !empty($user->profile->profile)) {
         $profile = $user->profile->profile;
     }
     $designation = '-';
-    if (isset($user->jobHistory->designation->title) && !empty($user->jobHistory->designation->title)){
+    if (isset($user->jobHistory->designation->title) && !empty($user->jobHistory->designation->title)) {
         $designation = $user->jobHistory->designation->title;
     }
     $user = (object)[
         'id' => $user->id,
         'slug' => $user->slug,
-        'name' => $user->first_name.' '.$user->last_name,
+        'name' => $user->first_name . ' ' . $user->last_name,
         'email' => $user->email,
         'profile' => $profile,
         'role' => $user->getRoleNames()->first(),
@@ -77,7 +79,8 @@ function getUserData($user){
     return $user;
 }
 
-function companies(){ 
+function companies()
+{
     $companies = [
         'cyberonix' => env('CYBERONIX_DB_DATABASE'),
         'vertical' => env('VERTICAL_DB_DATABASE'),
@@ -94,64 +97,65 @@ function companies(){
         'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
         'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
-   
+
     return $companies;
 }
-function getAllCompanies(){
+function getAllCompanies()
+{
     $companies = [];
-    
+
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
-    $currentYear = Carbon::now()->year;  
-    foreach(companies() as $portalName=>$portalDb){  
+    $currentYear = Carbon::now()->year;
+    foreach (companies() as $portalName => $portalDb) {
         $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first();
-       
-        if(!empty($settings)){
+
+        if (!empty($settings)) {
             $total_employees = User::on($portalDb)->where('is_employee', 1)->with('profile:user_id,profile,employment_id')->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
             $total_new_hiring =  User::on($portalDb)
                 ->where('is_employee', 1)
                 ->whereHas('profile', function ($query) use ($currentMonth, $currentYear) {
                     $query->whereMonth('joining_date', $currentMonth)
-                          ->whereYear('joining_date', $currentYear);
+                        ->whereYear('joining_date', $currentYear);
                 })
                 ->with('profile:user_id,profile,employment_id')
                 ->select(['id', 'slug', 'first_name', 'last_name', 'email'])
                 ->get();
 
             $total_terminated_employees = User::on($portalDb)->where('is_employee', 0)->get();
-            $terminatedUsersOfCurrentMonth = User::on($portalDb)->whereHas('hasResignation', function($query) use ($currentMonth, $currentYear) {
+            $terminatedUsersOfCurrentMonth = User::on($portalDb)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
                 $query->whereMonth('last_working_date', $currentMonth)
-                      ->whereYear('last_working_date', $currentYear);
+                    ->whereYear('last_working_date', $currentYear);
             })->get();
             $vehicleUsers =  VehicleUser::on($portalDb)
-            ->with([
-                'hasVehicle' => function ($query) {
-                    $query->select('id', 'owner_id', 'name', 'thumbnail', 'model_year', 'engine_capacity');
-                    $query->with('hasImage');
-                },
-                'hasUser' => function ($query) {
-                    $query->select('id', 'slug', 'status', 'first_name', 'last_name', 'email');
-                }
-            ])
-            ->where('end_date', null)
-            ->where('status', 1)
-            ->select(['vehicle_id', 'user_id', 'deliver_date'])
-            ->get();
+                ->with([
+                    'hasVehicle' => function ($query) {
+                        $query->select('id', 'owner_id', 'name', 'thumbnail', 'model_year', 'engine_capacity');
+                        $query->with('hasImage');
+                    },
+                    'hasUser' => function ($query) {
+                        $query->select('id', 'slug', 'status', 'first_name', 'last_name', 'email');
+                    }
+                ])
+                ->where('end_date', null)
+                ->where('status', 1)
+                ->select(['vehicle_id', 'user_id', 'deliver_date'])
+                ->get();
 
             $company_head = '';
             $head = User::on($portalDb)
-                    ->where('is_employee', 1)
-                    ->where('status', 1)
-                    ->whereHas('roles', function ($query) {
-                        $query->where('name', 'Admin');
-                    })
-                    ->first();
-            if(!empty($head)){
+                ->where('is_employee', 1)
+                ->where('status', 1)
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'Admin');
+                })
+                ->first();
+            if (!empty($head)) {
                 $company_head = getUserData($head);
             }
 
             $settings['vehicles'] = $vehicleUsers;
-            $settings['vehicle_percent'] = number_format(count($vehicleUsers)/count($total_employees)*100);
+            $settings['vehicle_percent'] = number_format(count($vehicleUsers) / count($total_employees) * 100);
             $settings['portalDb'] = $portalDb;
             $settings['total_employees'] = $total_employees;
             $settings['total_new_hiring'] = $total_new_hiring;
@@ -161,7 +165,7 @@ function getAllCompanies(){
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
             $companies[$portalName] = $settings;
-        }else{
+        } else {
             dd("Failed to Load Settings");
         }
     }
@@ -170,27 +174,30 @@ function getAllCompanies(){
 }
 
 //Get Companies & Employees
-function getAllCompaniesEmployees(){
+function getAllCompaniesEmployees()
+{
     return getEmployees();
 }
-function getCompanyEmployees($companyName = null){
+function getCompanyEmployees($companyName = null)
+{
     return getEmployees($companyName);
 }
 
-function getEmployees($companyName=null){
+function getEmployees($companyName = null)
+{
     $data = [];
     $allEmployees = [];
     $total_employees_count = 0;
-    foreach(getAllCompanies() as $company){
-        if($companyName != null && $companyName==$company->company_key){
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
             $total_employees_count += count($company->total_employees);
-            foreach($company->total_employees as $employee){
+            foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
             }
             break;
-        }elseif($companyName==NULL){
+        } elseif ($companyName == NULL) {
             $total_employees_count += count($company->total_employees);
-            foreach($company->total_employees as $employee){
+            foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
             }
         }
@@ -204,20 +211,23 @@ function getEmployees($companyName=null){
 //Get Companies & Employees
 
 //Get Vehicles & Employees
-function getAllCompaniesVehicles(){
+function getAllCompaniesVehicles()
+{
     return getVehicles();
 }
 
-function getCompanyVehicles($companyName = null){
+function getCompanyVehicles($companyName = null)
+{
     return getVehicles($companyName);
 }
 
-function getVehicles($companyName=null){
+function getVehicles($companyName = null)
+{
     $data = [];
     $allCompaniesVehicles = [];
 
-    foreach(getAllCompanies() as $portalName=>$portalDb){
-        if($companyName != null && $companyName==$portalDb->company_key){
+    foreach (getAllCompanies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalDb->company_key) {
             $vehicleUsers = VehicleUser::on($portalDb->portalDb)
                 ->with([
                     'hasVehicle' => function ($query) {
@@ -239,7 +249,7 @@ function getVehicles($companyName=null){
             $allCompaniesVehicles[$portalName] = $setting;
 
             break;
-        }elseif($companyName==null){
+        } elseif ($companyName == null) {
             $vehicleUsers = VehicleUser::on($portalDb->portalDb)
                 ->with([
                     'hasVehicle' => function ($query) {
@@ -263,24 +273,24 @@ function getVehicles($companyName=null){
     }
     $vehicles = [];
     $totalEmployees = 0;
-    foreach($allCompaniesVehicles as $companyVehicles){
+    foreach ($allCompaniesVehicles as $companyVehicles) {
         $totalEmployees += $companyVehicles['total_employees'];
-        foreach($companyVehicles['vehicles'] as $companyVehicle){
+        foreach ($companyVehicles['vehicles'] as $companyVehicle) {
             $profile = '';
             $employment_id = '-';
-            if(isset($companyVehicle->hasUser->profile) && !empty($companyVehicle->hasUser->profile->profile)){
+            if (isset($companyVehicle->hasUser->profile) && !empty($companyVehicle->hasUser->profile->profile)) {
                 $profile = $companyVehicle->hasUser->profile->profile;
                 $employment_id = $companyVehicle->hasUser->profile->employment_id;
             }
             $designation = '-';
-            if (isset($companyVehicle->hasUser->jobHistory->designation->title) && !empty($companyVehicle->hasUser->jobHistory->designation->title)){
+            if (isset($companyVehicle->hasUser->jobHistory->designation->title) && !empty($companyVehicle->hasUser->jobHistory->designation->title)) {
                 $designation = $companyVehicle->hasUser->jobHistory->designation->title;
             }
             $vehicleName = '';
             $vehicleThumbnail = '';
             $vehicleModelYear = '';
             $vehicleCc = '';
-            if(isset($companyVehicle->hasVehicle) && !empty($companyVehicle->hasVehicle->name)){
+            if (isset($companyVehicle->hasVehicle) && !empty($companyVehicle->hasVehicle->name)) {
                 $vehicleName = $companyVehicle->hasVehicle->name;
                 $vehicleThumbnail = $companyVehicle->hasVehicle->thumbnail;
                 $vehicleCc = $companyVehicle->hasVehicle->engine_capacity;
@@ -293,7 +303,7 @@ function getVehicles($companyName=null){
                 'avatar_path' => '/public/admin/assets/img/avatars/',
                 'profile' => $profile,
                 'employment_id' => $employment_id,
-                'name' => $companyVehicle->hasUser->first_name.' '.$companyVehicle->hasUser->last_name,
+                'name' => $companyVehicle->hasUser->first_name . ' ' . $companyVehicle->hasUser->last_name,
                 'designation' => $designation,
                 'vehicleName' => $vehicleName,
                 'vehicleThumbnail' => $vehicleThumbnail,
@@ -308,11 +318,12 @@ function getVehicles($companyName=null){
 }
 //Get Vehicles & Employees
 
-function getDailyAttendanceReport(){
-    if(date('d') > 25){
+function getDailyAttendanceReport()
+{
+    if (date('d') > 25) {
         $begin = new DateTime(date('Y') . "-" . ((int)date('m')) . "-26");
         $end = new DateTime(date('Y') . "-" . (int)date('m') . '-' . date('d'));
-    }else{
+    } else {
         $begin = new DateTime(date('Y') . "-" . ((int)date('m')) - 1 . "-26");
         $end = new DateTime(date('Y') . "-" . (int)date('m') . '-' . date('d'));
     }
@@ -323,25 +334,25 @@ function getDailyAttendanceReport(){
     $total_half_days_employees = [];
     $total_absent_employees = [];
 
-    for ($i = $begin; $i <= $end; $i->modify('+1 day')){
+    for ($i = $begin; $i <= $end; $i->modify('+1 day')) {
         $day = date("D", strtotime($i->format("Y-m-d")));
 
-        if ($day != 'Sat' && $day != 'Sun'){
+        if ($day != 'Sat' && $day != 'Sun') {
             $next = date("Y-m-d", strtotime('+1 day ' . $i->format("Y-m-d")));
             $totalRegulars = 0;
             $totalLateIns = 0;
             $totalHalfDays = 0;
             $totalAbsents = 0;
-            foreach(getAllCompanies() as $company){
+            foreach (getAllCompanies() as $company) {
                 $employee_ids = $company['total_employees']->pluck('id')->toArray();
-                foreach(getEmployeesAttendanceCount($company['portalDb'], $employee_ids, $i->format("Y-m-d"), $next) as $key=>$value){
-                    if($key=='total_regular'){
+                foreach (getEmployeesAttendanceCount($company['portalDb'], $employee_ids, $i->format("Y-m-d"), $next) as $key => $value) {
+                    if ($key == 'total_regular') {
                         $totalRegulars += $value;
-                    }elseif($key=='total_late_in'){
+                    } elseif ($key == 'total_late_in') {
                         $totalLateIns += $value;
-                    }elseif($key=='total_half_days'){
+                    } elseif ($key == 'total_half_days') {
                         $totalHalfDays += $value;
-                    }else{
+                    } else {
                         $totalAbsents += $value;
                     }
                 }
@@ -381,7 +392,7 @@ function getEmployeesAttendanceCount($portalDb, $employees, $current_date, $next
             $lateInCount++;
         } elseif ($attendanceSummary->attendance_type === 'firsthalf' || $attendanceSummary->attendance_type === 'lasthalf') {
             $halfDayCount++;
-        }elseif($attendanceSummary->attendance_type === 'regular'){
+        } elseif ($attendanceSummary->attendance_type === 'regular') {
             $regularCount++;
         }
     }
@@ -393,13 +404,14 @@ function getEmployeesAttendanceCount($portalDb, $employees, $current_date, $next
 
     return $data;
 }
-function getAllTerminatedEmployees(){
+function getAllTerminatedEmployees()
+{
     $data = [];
     $terminated_employees = 0;
     $all_terminated_employees = [];
-    foreach(getAllCompanies() as $company){
+    foreach (getAllCompanies() as $company) {
         $terminated_employees += count($company->total_terminated_employees);
-        foreach($company->total_terminated_employees as $employee){
+        foreach ($company->total_terminated_employees as $employee) {
             $all_terminated_employees[] = (object) employeeDetails($company, $employee);
         }
     }
@@ -410,13 +422,14 @@ function getAllTerminatedEmployees(){
     return $data;
 }
 
-function getAllTerminatedEmployeesOfCurrentMonth(){
+function getAllTerminatedEmployeesOfCurrentMonth()
+{
     $data = [];
     $terminated_employees = 0;
     $all_terminated_employees = [];
-    foreach(getAllCompanies() as $company){
+    foreach (getAllCompanies() as $company) {
         $terminated_employees += count($company->total_terminated_of_current_month);
-        foreach($company->total_terminated_of_current_month as $employee){
+        foreach ($company->total_terminated_of_current_month as $employee) {
             $all_terminated_employees[] = (object) employeeDetails($company, $employee);
         }
     }
@@ -426,13 +439,14 @@ function getAllTerminatedEmployeesOfCurrentMonth(){
     return $data;
 }
 
-function getAllCompaniesNewHiring(){
+function getAllCompaniesNewHiring()
+{
     $data = [];
     $new_hired_employees = 0;
     $all_new_hired_employees = [];
-    foreach(getAllCompanies() as $company){
+    foreach (getAllCompanies() as $company) {
         $new_hired_employees += count($company->total_new_hiring);
-        foreach($company->total_new_hiring as $employee){
+        foreach ($company->total_new_hiring as $employee) {
             $all_new_hired_employees[] = (object) employeeDetails($company, $employee);
         }
     }
@@ -442,15 +456,16 @@ function getAllCompaniesNewHiring(){
     return $data;
 }
 
-function employeeDetails($company, $employee){
+function employeeDetails($company, $employee)
+{
     $profile = '';
     $employment_id = '-';
-    if(!empty($employee->profile->profile)){
+    if (!empty($employee->profile->profile)) {
         $profile = $employee->profile->profile;
         $employment_id = $employee->profile->employment_id;
     }
     $designation = '-';
-    if (isset($employee->jobHistory->designation->title) && !empty($employee->jobHistory->designation->title)){
+    if (isset($employee->jobHistory->designation->title) && !empty($employee->jobHistory->designation->title)) {
         $designation = $employee->jobHistory->designation->title;
     }
     $department = '-';
@@ -481,7 +496,7 @@ function employeeDetails($company, $employee){
         'base_url' => $company->base_url,
         'avatar_path' => '/public/admin/assets/img/avatars/',
         'profile' => $profile,
-        'name' => $employee->first_name.' '.$employee->last_name,
+        'name' => $employee->first_name . ' ' . $employee->last_name,
         'email' => $employee->email,
         'role' => $employee->getRoleNames()->first(),
         'designation' => $designation,
@@ -493,32 +508,34 @@ function employeeDetails($company, $employee){
     return $data;
 }
 
-function todayPresentEmployees(){
+function todayPresentEmployees()
+{
     $today_regulars = getDailyAttendanceReport()['today_regulars'];
     $today_lateIns = getDailyAttendanceReport()['today_lateIns'];
-    return $today_regulars+$today_lateIns;
+    return $today_regulars + $today_lateIns;
 }
 
-function getCurrentWeekAttendance(){
+function getCurrentWeekAttendance()
+{
     $begin = new DateTime(date('Y') . "-" . ((int)date('m')) . "-05");
     $end = new DateTime(date('Y') . "-" . (int)date('m') . '-' . "09");
 
     $total_regular_employees = [];
     $total_late_in_employees = [];
 
-    for ($i = $begin; $i <= $end; $i->modify('+1 day')){
+    for ($i = $begin; $i <= $end; $i->modify('+1 day')) {
         $day = date("D", strtotime($i->format("Y-m-d")));
 
-        if ($day != 'Sat' && $day != 'Sun'){
+        if ($day != 'Sat' && $day != 'Sun') {
             $next = date("Y-m-d", strtotime('+1 day ' . $i->format("Y-m-d")));
             $totalRegulars = 0;
             $totalLateIns = 0;
-            foreach(getAllCompanies() as $company){
+            foreach (getAllCompanies() as $company) {
                 $employee_ids = $company['total_employees']->pluck('id')->toArray();
-                foreach(getEmployeesAttendanceCount($company['portalDb'], $employee_ids, $i->format("Y-m-d"), $next) as $key=>$value){
-                    if($key=='total_regular'){
+                foreach (getEmployeesAttendanceCount($company['portalDb'], $employee_ids, $i->format("Y-m-d"), $next) as $key => $value) {
+                    if ($key == 'total_regular') {
                         $totalRegulars += $value;
-                    }elseif($key=='total_late_in'){
+                    } elseif ($key == 'total_late_in') {
                         $totalLateIns += $value;
                     }
                 }
@@ -611,3 +628,14 @@ function getCurrentWeekAttendance(){
 // }
 
 
+
+
+function apiResponse($success = null, $data = null, $message = null, $code = null)
+{
+    return (object)[
+        "success" => $success,
+        "data" => $data,
+        "message" => $message,
+        "code" => $code,
+    ];
+}

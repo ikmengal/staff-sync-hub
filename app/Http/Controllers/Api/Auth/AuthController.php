@@ -58,8 +58,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         // Revoke the current user's token
-        $request->user()->currentAccessToken()->delete();
 
+        $request->user()->currentAccessToken()->delete();
+        return apiResponse(true, null, "Logged out successfuly", 200);
+         
         return response()->json(['message' => 'Logged out successfully']);
     }
 
@@ -112,5 +114,32 @@ class AuthController extends Controller
         return $response == Password::PASSWORD_RESET
             ? response()->json(['message' => 'Password reset successfully.'], 200)
             : response()->json(['error' => 'Unable to reset password.'], 400);
+    }
+
+    public function changePassword(Request $request)
+    {
+
+
+        $validator = Validator::make($request->all(), [
+
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['error' => 'Current password is incorrect.'], 400);
+        }
+
+        $user->password = bcrypt($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully.'], 200);
     }
 }
