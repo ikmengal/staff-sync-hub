@@ -50,8 +50,10 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('token')->plainTextToken;
-
-        return response()->json(['token' => $token, 'user' => new UserResource($user)], 201);
+        $data = [
+            'token' => $token, 'user' => new UserResource($user)
+        ];
+        return apiResponse(true,  $data , "Successfuly Registered", 200);
     }
 
 
@@ -61,7 +63,7 @@ class AuthController extends Controller
 
         $request->user()->currentAccessToken()->delete();
         return apiResponse(true, null, "Logged out successfuly", 200);
-         
+
         return response()->json(['message' => 'Logged out successfully']);
     }
 
