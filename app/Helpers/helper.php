@@ -153,7 +153,7 @@ function getAllCompanies()
             if (!empty($head)) {
                 $company_head = getUserData($head);
             }
-
+            $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
             $settings['vehicle_percent'] = number_format(count($vehicleUsers) / count($total_employees) * 100);
             $settings['portalDb'] = $portalDb;
@@ -638,4 +638,26 @@ function apiResponse($success = null, $data = null, $message = null, $code = nul
         "message" => $message,
         "code" => $code,
     ];
+}
+
+
+function companyData()
+{
+    $array  = [
+        ['id' => 1, 'name' => 'Cyberonix Consulting Limited'],
+        ['id' => 2, 'name' => 'Vertical Edge'],
+        ['id' => 3, 'name' => 'Braincell  Technology'],
+        ['id' => 4, 'name' => 'C-Level'],
+        ['id' => 5, 'name' => 'DELVE12'],
+        ['id' => 6, 'name' => 'HORIZONTAL'],
+        ['id' => 7, 'name' => 'MERCURY'],
+        ['id' => 8, 'name' => 'MOMYOM'],
+        ['id' => 9, 'name' => 'SOFTNOVA'],
+        ['id' => 10, 'name' => 'SOFTFELLOW'],
+        ['id' => 11, 'name' => 'SWYFTCUBE'],
+        ['id' => 12, 'name' => 'SWYFTZONE'],
+        ['id' => 13, 'name' => 'TECHCOMRADE'],
+        ['id' => 14, 'name' => 'ROCKET-FLARE-LABS'],
+    ];
+    return $array;
 }
