@@ -88,21 +88,26 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
+       if(!empty($user)){
+            // Generate and store OTP
+            $otp = $this->generateOtp(4,$user->id);
+            Otp::updateOrCreate(['user_id' => $user->id], [
+                'user_id'=>$user->id,
+                'otp'=>$otp,
+                'otp_expires'=>now()->addMinutes(5)
+                
+            ]);
+           
+    
+            // Send OTP via email
+            $user->notify(new SendOtpNotification($otp));
+           
+            return  apiResponse(true, null, "OTP sent to your email.", 200);
 
-        // Generate and store OTP
-        $otp = $this->generateOtp(4,$user->id);
-        Otp::updateOrCreate(['user_id' => $user->id], [
-            'user_id'=>$user->id,
-            'otp'=>$otp,
-            'otp_expires'=>now()->addMinutes(5)
-            
-        ]);
-       
-
-        // Send OTP via email
-        $user->notify(new SendOtpNotification($otp));
-       
-        return  apiResponse(true, null, "OTP sent to your email.", 200);
+       }else{
+        return  apiResponse(true, null, "User Not Found.", 400);
+       }
+    
     }
     protected function broker()
     {
