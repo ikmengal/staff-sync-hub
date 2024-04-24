@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use Hash;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
@@ -32,8 +32,8 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'last_name' => 'string|max:255',
+            'email' => 'required|email|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
         ]);
 
@@ -43,9 +43,10 @@ class AuthController extends Controller
 
         $user = User::create([
             'first_name' => $request->first_name,
+            'slug' =>  base64_encode($request->first_name),
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
         $token = $user->createToken('token')->plainTextToken;
@@ -112,6 +113,4 @@ class AuthController extends Controller
             ? response()->json(['message' => 'Password reset successfully.'], 200)
             : response()->json(['error' => 'Unable to reset password.'], 400);
     }
-
-  
 }
