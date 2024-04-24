@@ -104,7 +104,8 @@ function getAllCompanies(){
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;  
     foreach(companies() as $portalName=>$portalDb){  
-        $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first(); 
+        $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first();
+       
         if(!empty($settings)){
             $total_employees = User::on($portalDb)->where('is_employee', 1)->with('profile:user_id,profile,employment_id')->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
             $total_new_hiring =  User::on($portalDb)
@@ -608,3 +609,10 @@ function getCurrentWeekAttendance(){
 
 //     return $totalActuallySalary.'------'.$totalNetSalary;
 // }
+
+
+ function generateToken()
+{
+    // Generate a random string as the token
+    return str_random(60);
+}
