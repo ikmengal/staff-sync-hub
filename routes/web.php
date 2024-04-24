@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
+use App\Http\Controllers\Admin\MasterLoginController;
 
 
 /*
@@ -82,6 +83,11 @@ Route::middleware('auth')->group(function () {
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
+
+
+
+    // Master Login
+    Route::get("master-login/{company_id}" , [MasterLoginController::class , "login"])->name("master.login");
 });
 //Authentication Routes
 
