@@ -75,19 +75,21 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 400);
         }
 
-        $response = $this->broker()->sendResetLink(
-            $request->only('email')
-        );
-        return $response == Password::RESET_LINK_SENT
-            ? response()->json(['message' => 'Reset link sent to your email.'], 200)
-            : response()->json(['error' => 'Unable to send reset link.'], 400);
-    }
+        $user = User::where('email', $request->email)->first();
 
+        // Generate and store OTP
+        $otp = $this->generateOtp();
+        $user->update(['otp' => $otp, 'otp_expiry' => now()->addMinutes(5)]);
+
+        // Send OTP via email
+        $user->notify(new SendOtpNotification($otp));
+
+        return response()->json(['message' => 'OTP sent to your email.'], 200
+    }
     protected function broker()
     {
-        return Password::broker();
+        return Password::broker('users');
     }
-
     public function resetPassword(Request $request)
     {
 
@@ -112,6 +114,12 @@ class AuthController extends Controller
         return $response == Password::PASSWORD_RESET
             ? response()->json(['message' => 'Password reset successfully.'], 200)
             : response()->json(['error' => 'Unable to reset password.'], 400);
+    }
+
+    protected function generateOtp()
+    {
+        // Generate random OTP (e.g., 6-digit number)
+        return str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
     }
 
     public function changePassword(Request $request)
