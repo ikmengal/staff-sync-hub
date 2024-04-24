@@ -611,8 +611,3 @@ function getCurrentWeekAttendance(){
 // }
 
 
- function generateToken()
-{
-    // Generate a random string as the token
-    return str_random(60);
-}
