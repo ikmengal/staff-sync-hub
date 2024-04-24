@@ -8,10 +8,9 @@
                         <h3 style="text-align: center; height:200px">loading...</h3>
                     </div>
                 </div>
-                @dd(companyData())
                 @foreach (getAllCompanies() as $company)
                 <div class="swiper-slide">
-                <a href="{{route('master.login' , $company->id)}}" target="_blank">
+                <a href="{{route('master.login' , base64_encode($company->id) )}}" target="_blank">
                         <div class="row">
                             <div class="col-12">
                                 <h5 class="text-white mb-0 mt-2">{{ $company->name }}</h5>
