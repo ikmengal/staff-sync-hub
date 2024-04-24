@@ -203,7 +203,7 @@ class AuthController extends Controller
             return apiResponse(false, null, "Current password is incorrect.", 400);
         }
 
-        $user->password = bcrypt($request->new_password);
+        $user->password =Hash::make($request->new_password);
         $user->save();
        
         return  apiResponse(true, null, "Password changed successfully.", 200);
