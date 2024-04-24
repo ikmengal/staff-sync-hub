@@ -113,5 +113,30 @@ class AuthController extends Controller
             : response()->json(['error' => 'Unable to reset password.'], 400);
     }
 
-  
+    public function changePassword(Request $request)
+    {
+
+
+        $validator = Validator::make($request->all(), [
+
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['error' => 'Current password is incorrect.'], 400);
+        }
+
+        $user->password = bcrypt($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully.'], 200);
+    }
 }
