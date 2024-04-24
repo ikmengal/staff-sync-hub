@@ -34,5 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('password/change', [AuthController::class, 'changePassword']);
 });
 
+// Companies Route
+Route::get('get-company', [StockController::class, 'companyIndex']);
+
 // Stock Routes
-Route::post('store-stock', [StockController::class, 'store']);
+Route::get('get-stock', [StockController::class, 'index']);
+Route::post('stock-store', [StockController::class, 'store']);
+Route::post('stock-show', [StockController::class, 'show']);
