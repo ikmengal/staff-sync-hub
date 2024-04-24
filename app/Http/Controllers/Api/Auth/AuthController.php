@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Models\Otp;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -89,8 +90,14 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // Generate and store OTP
-        $otp = $this->generateOtp();
-        $user->update(['otp' => $otp, 'otp_expires' => now()->addMinutes(5)]);
+        $otp = $this->generateOtp(4,$user->id);
+        Otp::updateOrCreate(['user_id' => $user->id], [
+            'user_id'=>$user->id,
+            'otp'=>$otp,
+            'otp_expires'=>now()->addMinutes(5)
+            
+        ]);
+       
 
         // Send OTP via email
         $user->notify(new SendOtpNotification($otp));
@@ -116,14 +123,16 @@ class AuthController extends Controller
         }
         // Find the user by email
         $user = User::where('email', $request->email)->first();
-
-        // Validate the OTP
-        if ($user->otp !== $request->otp) {
+        
+        $otp = Otp::where('user_id',$user->id)->first();
+        if(!empty($otp)){
+                    // Validate the OTP
+        if ($otp->otp !== $request->otp) {
             return response()->json(['error' => 'Invalid OTP.'], 400);
         }
 
         // Check if OTP is expired
-        if ($user->otp_expires < now()) {
+        if ($otp->otp_expires < now()) {
             return response()->json(['error' => 'OTP has expired.'], 400);
         }
 
@@ -135,14 +144,42 @@ class AuthController extends Controller
         return Password::PASSWORD_RESET
             ?  apiResponse(true, null, "Password reset successfully.", 200)
             : apiResponse(false, null, "Unable to reset password.", 400);
+
+        }else{
+            return apiResponse(false, null, "Otp Not Found", 400);
+        }
+
     }
 
 
-    protected function generateOtp()
+    // protected function generateOtp()
+    // {
+    //     // Generate random OTP (e.g., 6-digit number)
+    //     return str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+    // }
+    function generateOtp($length = 6,$id)
     {
-        // Generate random OTP (e.g., 6-digit number)
-        return str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Define the characters that can be used in the OTP
+        $characters = '0123456789';
+    
+        // Get the total number of characters
+        $characterCount = strlen($characters);
+    
+        // Initialize the OTP string
+        $otp = '';
+    
+        // Generate a random string
+        $randomString = substr(str_shuffle($characters), 0, $length);
+    
+        // Append additional unique information (e.g., user ID, timestamp)
+      
+        $uniqueOtp = $randomString . $id;
+    
+        // Return the unique OTP
+        return $uniqueOtp;
     }
+    
+
 
     public function changePassword(Request $request)
     {
