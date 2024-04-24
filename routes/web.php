@@ -26,6 +26,11 @@ use App\Http\Controllers\Admin\MasterLoginController;
 */
 
 //Resource Routes
+Route::get("check-config", function () {
+    $config =  config("project.companies");
+    
+    return  $config;
+});
 Route::resource('/requisitions', EmployeeRequisitionController::class);
 Route::resource('/settings', SettingController::class);
 Route::resource('/departments', DepartmentController::class);
@@ -86,8 +91,8 @@ Route::middleware('auth')->group(function () {
 
 
     // Master Login
-    Route::get("master-login/{company_id}" , [MasterLoginController::class , "login"])->name("master.login");
+    Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
 });
 //Authentication Routes
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
