@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use Hash;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -16,7 +18,7 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-          
+
             $user = Auth::user();
             $user->tokens()->update(['expires_at' => now()]);
             $token = $user->createToken('token')->plainTextToken;
@@ -59,4 +61,57 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out successfully']);
     }
+
+    public function sendResetLinkEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+
+            'email' => 'required|string|email',
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $response = $this->broker()->sendResetLink(
+            $request->only('email')
+        );
+        return $response == Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Reset link sent to your email.'], 200)
+            : response()->json(['error' => 'Unable to send reset link.'], 400);
+    }
+
+    protected function broker()
+    {
+        return Password::broker();
+    }
+
+    public function resetPassword(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+        $response = $this->broker()->reset(
+            $request->only('email', 'token', 'password', 'password_confirmation'),
+            function ($user, $password) {
+                $user->password = bcrypt($password);
+                $user->save();
+            }
+        );
+        return $response == Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Password reset successfully.'], 200)
+            : response()->json(['error' => 'Unable to reset password.'], 400);
+    }
+
+  
 }
