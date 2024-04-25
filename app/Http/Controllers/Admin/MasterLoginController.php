@@ -27,7 +27,13 @@ class MasterLoginController extends Controller
             ]);
             $body = $response->getBody()->getContents();
             $responseData = json_decode($body, true);
-            dd($responseData);
+            if (isset($responseData['success']) && !empty($responseData['success'])) {
+                if (isset($responseData['data']['url']) && !empty($responseData['data']['url'])) {
+                    return redirect()->to($responseData['data']['url']);
+                }
+            } else {
+                return redirect()->route("dashboard")->with("error", "Failed to login");
+            }
         } catch (RequestException $e) {
 
             if ($e->hasResponse()) {
