@@ -104,6 +104,7 @@ function getAllCompanies()
 {
     $companies = [];
 
+    
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;
