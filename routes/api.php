@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\StockController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,3 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('password/change', [AuthController::class, 'changePassword']);
 });
+
+// Companies Route
+Route::get('get-company', [StockController::class, 'companyIndex']);
+
+// Stock Routes
+Route::get('get-stock', [StockController::class, 'index']);
+Route::post('stock-store', [StockController::class, 'store']);
+Route::post('stock-show', [StockController::class, 'show']);

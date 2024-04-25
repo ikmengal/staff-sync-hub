@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\MasterLoginController;
+use App\Http\Controllers\Admin\StockController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +40,7 @@ Route::resource('/roles', RoleController::class);
 Route::resource('/permissions', PermissionController::class);
 Route::resource('/designations', DesignationController::class);
 Route::resource('/work_shifts', WorkShiftController::class);
+Route::resource('/stocks', StockController::class);
 //Resource Routes
 
 //cache clear
