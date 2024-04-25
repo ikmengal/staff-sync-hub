@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\StockController;
+use App\Http\Controllers\Api\UserPlayerIdController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,3 +42,7 @@ Route::get('get-company', [StockController::class, 'companyIndex']);
 Route::get('get-stock', [StockController::class, 'index']);
 Route::post('stock-store', [StockController::class, 'store']);
 Route::post('stock-show', [StockController::class, 'show']);
+
+// User Player-Id Route
+Route::get('get-player-id', [UserPlayerIdController::class, 'index']);
+Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
