@@ -182,13 +182,15 @@
                     if(response.success == true){
                         toastr.success(response.message);
                         $('#create-form-modal').modal('hide');
-                        dataTable.ajax.reload('.data_table');
+                        loadPageData();
                     }else{
                         toastr.error(response.message);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
+                    var response = JSON.parse(xhr.responseText);
+                    $('#remark_error').text(response.remark[0]);
                 }
             });
         });

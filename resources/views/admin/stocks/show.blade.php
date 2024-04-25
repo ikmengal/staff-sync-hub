@@ -19,7 +19,7 @@
             <div class="card h-100">
               <div class="card-body">
                 <div class="row gy-3">
-                  <div class="col-md-3 col-6">
+                  <div class="col-md-6 col-6">
                     <div class="d-flex align-items-center">
                       <div class="card-info">
                         <h6 class="mb-2">Stock Title</h6>
@@ -27,7 +27,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-3 col-6">
+                  <div class="col-md-6 col-6">
                     <div class="d-flex align-items-center">
                       <div class="card-info">
                         <h6 class="mb-2">Stock Creator</h6>
@@ -35,7 +35,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-3 col-6">
+                  <div class="col-md-6 col-6">
                     <div class="d-flex align-items-center">
                       <div class="card-info">
                         <h6 class="mb-2">Company Name</h6>
@@ -43,7 +43,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-3 col-6">
+                  <div class="col-md-6 col-6">
                     <div class="d-flex align-items-center">
                       <div class="card-info">
                         <h6 class="mb-2">Stock Quantity</h6>
@@ -54,13 +54,13 @@
                 </div>
               </div>
               <div class="d-flex align-items-end row">
-                <div class="col-6">
+                <div class="col-md-6">
                   <div class="card-body text-nowrap">
                     <h5 class="card-title mb-2">Description</h5>
                     <p class="mb-2">{{ $stock->description ?? '' }}</p>
                   </div>
                 </div>
-                <div class="col-6">
+                <div class="col-md-6">
                     <div class="card-body text-nowrap">
                       <h5 class="card-title mb-2">Status 
                         @if (isset($stock->status) && $stock->status == 1)
@@ -85,8 +85,8 @@
                     @if(isset($stock->hasImages) && !blank($stock->hasImages))
                     <div class="row gap-4 gap-sm-0">
                             @foreach ($stock->hasImages as $image)
-                                <div class="col-12 col-sm-2">
-                                    <img class="card-img" src="{{asset('public/admin/assets/img/stock')}}/{{$image->image??'' }}" id="image" alt="No Image" height="200px" />
+                                <div class="col-12 col-md-2 col-sm-2">
+                                    <img class="card-img image-fluid" src="{{asset('public/admin/assets/img/stock')}}/{{$image->image??'' }}" id="image" alt="No Image" height="100px" width="10px" />
                                 </div>
                             @endforeach
                         @else

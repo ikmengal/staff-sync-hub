@@ -107,7 +107,14 @@ class StockController extends Controller
 
     public function status(Request $request)
     {
-        $data = [];
+        $validator = Validator::make($request->all(), [
+            'remark' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+        
         $stock = Stock::find($request->stock_status_id);
         if($stock){
             $updated = $stock->update([
@@ -116,12 +123,12 @@ class StockController extends Controller
             ]);
 
             if($updated){
-                return response()->json(['success' => true, "message" => 'Stock status Updated successfully' ?? null], 200);
+                return response()->json(['success' => true, "message" => 'Stock status Updated successfully'], 200);
             }else{
-                return response()->json(['success' => true, "message" => 'Stock status not updated successfully' ?? null], 401);
+                return response()->json(['success' => true, "message" => 'Stock status not updated successfully'], 401);
             }
         }else{
-            return response()->json(['success' => true, "message" => 'No record found' ?? null], 401);
+            return response()->json(['success' => false, "message" => 'No record found'], 401);
         }
     }
 }
