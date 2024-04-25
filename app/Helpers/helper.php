@@ -104,6 +104,7 @@ function getAllCompanies()
 {
     $companies = [];
 
+    
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;
@@ -666,7 +667,6 @@ function companyData()
 function findBaseUrl($company_id)
 {
     $companies = companyData();
-
     foreach ($companies as $company) {
         if ($company['id'] == $company_id) {
             return $company['base_url'];
