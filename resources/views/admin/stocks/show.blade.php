@@ -62,8 +62,16 @@
                 </div>
                 <div class="col-6">
                     <div class="card-body text-nowrap">
-                      <h5 class="card-title mb-2">Status , {{$stock->status ?? ''}} </h5>
-                      <p class="mb-2">{{ $stock->remarks ?? '' }}</p>
+                      <h5 class="card-title mb-2">Status 
+                        @if (isset($stock->status) && $stock->status == 1)
+                          <span class="badge bg-label-warning" text-capitalized="">Pending</span>
+                        @elseif($stock->status == 2)
+                          <span class="badge bg-label-success" text-capitalized="">Approve</span>
+                        @else
+                          <span class="badge bg-label-danger" text-capitalized="">Rejected</span>
+                        @endif
+                      </h5>
+                      <p class="mb-2">Remark: <br /> {{ $stock->remarks ?? '' }}</p>
                     </div>
                   </div>
               </div>

@@ -42,21 +42,7 @@ class StockController extends Controller
                     return $model->quantity;
                 })
                 ->editColumn('status', function ($model) {
-                    $label = '';
-
-                    switch ($model->status) {
-                        case 1:
-                            $label = '<span class="badge bg-label-warning" text-capitalized="">Pending</span>';
-                            break;
-                        case 2:
-                            $label = '<span class="badge bg-label-success" text-capitalized="">Approved</span>';
-                            break;
-                        case 3:
-                            $label = '<span class="badge bg-label-danger" text-capitalized="">Rejected</span>';
-                            break;
-                    }
-
-                    return $label;
+                    return view('admin.stocks.status', ['model' => $model])->render();
                 })
                 ->addColumn('action', function($model){
                     return view('admin.stocks.action', ['model' => $model])->render();
