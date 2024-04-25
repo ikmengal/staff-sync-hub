@@ -96,12 +96,10 @@ class StockController extends Controller
                     $files = $request->file('images');
                     foreach ($files as $file) {
                         // dd($file);
-                        $originalName = $file->getClientOriginalName();
+                        $originalName = $file->getClientOriginalExtension();
                         $mimeType = $file->getClientMimeType();
-                        $fileName = rand() . '_' . $originalName;
-                            $path = 'stock';
-                        $fileNameWithPath = 'public/admin/assets/img/'.$path.'/'.$fileName;
-                        $file->move(public_path('admin/assets/img/'.$path), $fileName);
+                        $fileName = "STOCK-IMAGE-" . time() .'.'. $file->getClientOriginalExtension();
+                        $file->move(public_path('admin/assets/img/stock/'), $fileName);
     
                         StockImage::create([
                             'stock_id' => $stock->id,
@@ -109,16 +107,18 @@ class StockController extends Controller
                         ]);
                     }
                 }
-                return  apiResponse($success = false, $data =  null  , $message = "Stock added successfully.", $code = 200); 
+                $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
+                $data = new StockResource($data);
+                return  apiResponse(true ,  $data , "Stock added successfully.",   200); 
             }else{
-                return  apiResponse($success = false, $data =  null  , $message = "Stock not added...!", $code = 401); 
+                return  apiResponse(false,  null  , "Stock not added...!",  401); 
             }
         }
     }
 
     public function show(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 401); 
+            return  apiResponse(false, $message = "Enter token", $code = 401); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();

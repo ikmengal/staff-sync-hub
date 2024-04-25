@@ -12,8 +12,10 @@ class MasterLoginController extends Controller
     public function login(Request $request, $company_id)
     {
         try {
+          
             $company_id = base64_decode($company_id);
             $baseUrl = findBaseUrl($company_id);
+            
             $client = new Client([
                 'base_uri' => $baseUrl,
                 'timeout'  => 10,
