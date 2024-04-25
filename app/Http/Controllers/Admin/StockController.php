@@ -11,6 +11,7 @@ use App\Models\StockImage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class StockController extends Controller
 {
@@ -102,5 +103,25 @@ class StockController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function status(Request $request)
+    {
+        $data = [];
+        $stock = Stock::find($request->stock_status_id);
+        if($stock){
+            $updated = $stock->update([
+                'remarks' => $request->remark, 
+                'status' => $request->status_data,
+            ]);
+
+            if($updated){
+                return response()->json(['success' => true, "message" => 'Stock status Updated successfully' ?? null], 200);
+            }else{
+                return response()->json(['success' => true, "message" => 'Stock status not updated successfully' ?? null], 401);
+            }
+        }else{
+            return response()->json(['success' => true, "message" => 'No record found' ?? null], 401);
+        }
     }
 }

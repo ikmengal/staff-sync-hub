@@ -64,6 +64,7 @@ Route::get('/', function () {
 Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
+Route::post('stock-status', [StockController::class, 'status'])->name('stock.status');
 
 //Authentication Routes
 Route::middleware('auth')->group(function () {
