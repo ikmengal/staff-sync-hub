@@ -335,15 +335,14 @@
                     type: 'GET',
                     url: route,
                     success: function(res) {
-
                         $('.modal_body_content').empty();
                         $('.modal_body_content').html(res.view);
                         $('#editRoleModal').modal('show');
-
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        console.error(xhr.responseText);
+                        var response = xhr.responseJSON;
+                        alert(response.message);
                     }
                 });
 
@@ -395,7 +394,8 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        console.error(xhr.responseText);
+                        var response  = xhr.responseJSON);
+                        alert(response.message);
                     }
                 });
 
@@ -454,7 +454,8 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        console.error(xhr.responseText);
+                        var response = xhr.responseJSON;
+                        alert(response.message)
                     }
                 });
 

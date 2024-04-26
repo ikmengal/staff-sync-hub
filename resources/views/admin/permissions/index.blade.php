@@ -224,7 +224,7 @@
 
 
                     } else {
-                        alert('dfg')
+
                         if (response.validation === false) {
                             $(".error").html("")
                             // Loop through each error message
@@ -357,6 +357,8 @@
                     $('.modal_body_content').html(res.view);
                     $('#editPermissionModal').modal('show');
 
+
+
                 },
                 error: function(xhr, status, error) {
                     // Handle errors
@@ -388,6 +390,11 @@
                         table.ajax.reload(null, false)
                         $('#editPermissionForm')[0].reset();
                         $('#editPermissionModal').modal('hide');
+                        Swal.fire({
+                            text: "Permission Created Successfully",
+                            icon: "success"
+                        });
+
                     } else {
                         if (res.validation === false) {
                             $(".error").html("")
@@ -396,6 +403,7 @@
                                 // Display error below respective input field
                                 const fieldName = index;
                                 const errorElement = $(`#${fieldName}_error`);
+
                                 errorElement.html(value[0]);
                             });
                         }
@@ -404,7 +412,10 @@
                 },
                 error: function(xhr, status, error) {
                     // Handle errors
-                    console.error(xhr.responseText);
+                    var response = xhr.responseJSON; // Parse JSON response
+                    alert(response.message)
+                 
+
                 }
             });
 

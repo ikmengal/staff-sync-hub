@@ -162,7 +162,8 @@
                 },
                 error: function(xhr, status, error) {
                     // Handle errors
-                    console.error(xhr.responseText);
+                    var response = xhr.responseJSON;
+                    alert(response.message);
                 }
             });
 
@@ -234,7 +235,8 @@
                 },
                 error: function(xhr, status, error) {
                     // Handle errors
-                    console.error(xhr.responseText);
+                    var response = xhr.responseJSON;
+                    alert(response.message);
                 }
             });
 
@@ -273,10 +275,10 @@
                             // Optionally, you can reload the page or remove the deleted item from the UI
                         },
                         error: function(xhr, status, error) {
-                            console.error(xhr.responseText);
+                            var response = xhr.responseJSON;
                             Swal.fire({
                                 title: "Error!",
-                                text: "Failed to delete the resource.",
+                                text: response.message,
                                 icon: "error"
                             });
                         }

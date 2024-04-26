@@ -749,3 +749,13 @@ function findBaseUrl($company_id)
         }
     }
 }
+
+function getUserName($id){
+
+    $user = User::where('id',$id)->first();
+    if(!empty($user)){
+        $user_name = $user->first_name." ".$user->last_name;
+        return $user_name;
+    }
+
+}
