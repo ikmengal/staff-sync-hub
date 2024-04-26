@@ -394,7 +394,8 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        console.error(xhr.responseText);
+                        var response =xhr.responseJSON;
+                        alert(response.message)
                     }
                 });
 
@@ -453,7 +454,8 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        console.error(xhr.responseText);
+                        var response = xhr.responseJSON;
+                        console.log(response.message)
                     }
                 });
 
