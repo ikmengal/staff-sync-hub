@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Setting;
 use App\Models\WorkShift;
 use App\Models\VehicleUser;
+use Illuminate\Support\Str;
 use App\Models\AttendanceSummary;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
@@ -638,4 +639,81 @@ function apiResponse($success = null, $data = null, $message = null, $code = nul
         "message" => $message,
         "code" => $code,
     ];
+}
+
+
+function setPermissionName($name = null, $permission = null)
+{
+
+    $name = str_replace(' ', '-', Str::lower($name));
+    $permission = str_replace(' ', '-', Str::lower($permission));
+    $permission_name = $name . "-" . $permission;
+    $permission_names = explode('-', $permission_name);
+    $first[] = Str::plural($permission_names[0]);
+    unset($permission_names[0]);
+    $n = array_merge($first, $permission_names);
+    $p_name = implode('-', $n);
+    return $p_name;
+}
+function getWordInitial($word, $size = null, $font_size = null, $border_radius = null)
+{
+    if (!isset($size) || empty($size)) {
+        $size = '50px';
+    }
+    if (!isset($font_size) || empty($font_size)) {
+        $font_size = '16px';
+    }
+    if (!isset($border_radius) || empty($border_radius)) {
+        $border_radius = '100%';
+    }
+    $wordStr = !empty($word) ? substr($word, 0, 1)  : "-";
+    $initial = '<p style="width: ' . $size . ';height: ' . $size . ';border-radius:' . $border_radius . ' ;background:#' . random_color() . ';display: flex;align-items: center;justify-content: center;color:white;text-transform: uppercase;font-size: ' . $font_size . '; font-weight:600; margin:0;">' . $wordStr . '</p>';
+    $html = "";
+    $html .= '<div class="d-flex justify-content-start align-items-center user-name">';
+    $html .=     '<div class="avatar-wrapper">';
+    $html .=     ' <div class="avatar avatar-sm">';
+    $html .=             $initial;
+    $html .=     '  </div>';
+    // $html .=         '</div><div class="d-flex flex-column">';
+    // $html .=              '<span class="fw-semibold">  ' . $word . '</span>';
+
+    $html .=     '</div>';
+    $html .= '</div>';
+    return $html;
+}
+
+function random_color()
+{
+    return random_color_part() . random_color_part() . random_color_part();
+}
+function random_color_part()
+{
+    return str_pad(dechex(mt_rand(0, 255)), 2, '0', STR_PAD_LEFT);
+}
+
+function getSlug()
+{
+    return Str::random(30) . "-" . time() . "-" . Str::random(30);
+}
+
+function uploadSingleFile($file = null, $folder_name = null, $prefix = null, $old_image = null)
+{
+    $folder = public_path($folder_name);
+    if (isset($old_image) && !empty($old_image) && file_exists($folder . "/" . $old_image)) {
+        unlink($folder . "/" . $old_image);
+    }
+
+    if (!is_dir($folder)) {
+        mkdir($folder, 0755, true);
+    }
+    $name = $prefix . "-" .  Str::random(6) . time() . "." . $file->getClientOriginalExtension();
+    $file->move($folder, $name);
+    return $name;
+}
+
+function formatDate($date)
+{
+    $format = Carbon::parse($date);
+    $format = $format->format('M d,Y');
+    return $format;
 }

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
@@ -32,6 +33,8 @@ Route::resource('/roles', RoleController::class);
 Route::resource('/permissions', PermissionController::class);
 Route::resource('/designations', DesignationController::class);
 Route::resource('/work_shifts', WorkShiftController::class);
+Route::resource('users', UserController::class);
+Route::get('show-all-roles',[RoleController::class,'showAllUsers'])->name('roles.showAllUsers');
 //Resource Routes
 
 //cache clear
