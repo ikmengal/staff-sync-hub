@@ -123,17 +123,15 @@ class StockController extends Controller
                 'status' => $request->status_data,
             ]);
 
-            $playerId = '2be1914f-35bd-425c-b7f8-50d68815ab61';
-
-            $fields = [
-                'include_player_ids' => [$playerId],
-            ];
-
-            $message = "Onsignal Message Testing";
-            
-            OneSignal::sendPush($fields, $message);
-
             if($updated){
+                
+                $playerId = '2be1914f-35bd-425c-b7f8-50d68815ab61';
+                $fields = [
+                    'include_player_ids' => [$playerId],
+                ];
+                $message = "Onsignal Message Testing";
+                \OneSignal::sendPush($fields, $message);
+
                 return response()->json(['success' => true, "message" => 'Stock status Updated successfully'], 200);
             }else{
                 return response()->json(['success' => true, "message" => 'Stock status not updated successfully'], 401);
