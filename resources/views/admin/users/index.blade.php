@@ -139,6 +139,10 @@
                         table.ajax.reload(null, false)
                         $('#createUserForm')[0].reset();
                         $('#createUserModal').modal('hide');
+                        Swal.fire({
+                            text: "User Created Successfully",
+                            icon: "success"
+                        });
                     } else {
                         if (res.validation === false) {
                             $(".error").html("")
@@ -210,6 +214,10 @@
                         table.ajax.reload(null, false)
                         $('#editUserForm')[0].reset();
                         $('#editUserModal').modal('hide');
+                        Swal.fire({
+                            text: "User Updated Successfully",
+                            icon: "success"
+                        });
                     } else {
                         if (res.validation === false) {
                             $(".error").html("")

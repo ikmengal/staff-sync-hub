@@ -6,7 +6,7 @@
         <div class="col-12 mb-4">
             <label class="form-label" for="name">Role Name <span class="text-danger">*</span></label>
             <input type="text" id="name" name="name" class="form-control" placeholder="Enter a role name"
-                tabindex="-1" value="{{ $role->name }}" />
+                tabindex="-1" value="{{ $role->name }}" readonly />
             <span id="name_error" class="text-danger"></span>
         </div>
         <div class="col-12">

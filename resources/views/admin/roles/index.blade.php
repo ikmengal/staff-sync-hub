@@ -52,15 +52,20 @@
                             <div class="d-flex justify-content-between align-items-end mt-1">
                                 <div class="role-heading">
                                     <h4 class="mb-1">{{ $role->name }}</h4>
-                                    <button type="button" class="btn btn-sm btn-primary my-1"
-                                        data-modal-id="kt_modal_view_users" onclick="showAllUsersModal($(this))"
-                                        data-id="{{ $role->id ?? null }}"
-                                        data-route="{{ route('roles.showAllUsers') }}">View Users</button>
-                                    <a href="javascript:;" title="Edit Record"
-                                        data-edit-url="{{ route('roles.edit', $role->id) }}" data-id="{{ $role->id }}"
-                                        class=" edit-btn" type="button">
-                                        <span><i class="fa fa-edit"></i> Edit Role</span>
-                                    </a>
+                                    @can('roles-all-user')
+                                        <button type="button" class="btn btn-sm btn-primary my-1"
+                                            data-modal-id="kt_modal_view_users" onclick="showAllUsersModal($(this))"
+                                            data-id="{{ $role->id ?? null }}"
+                                            data-route="{{ route('roles.showAllUsers') }}">View Users</button>
+                                    @endcan
+                                    @can('roles-delete')
+                                        <a href="javascript:;" title="Edit Record"
+                                            data-edit-url="{{ route('roles.edit', $role->id) }}" data-id="{{ $role->id }}"
+                                            class=" edit-btn" type="button">
+                                            <span><i class="fa fa-edit"></i> Edit Role</span>
+                                        </a>
+                                    @endcan
+
                                     {{-- <br />
                                 <a href="{{ route('roles.edit_role', $role->id) }}" data-toggle="tooltip" data-placement="top" title="Edit Record" class="role-edit-modal">
                                     <span><i class="fa fa-edit"></i> Edit Role & Permissions</span>
@@ -363,10 +368,14 @@
                         // Handle the successful response from the server
                         if (res.success) {
                             setTimeout(() => {
-                            location.reload(true);
-                        }, 1000)
+                                location.reload(true);
+                            }, 1000)
                             $('#addRoleForm')[0].reset();
                             $('#addRoleModal').modal('hide');
+                            Swal.fire({
+                                text: "Role Created Successfully",
+                                icon: "success"
+                            });
                         } else {
                             if (res.validation === false) {
                                 $(".error").html("")
@@ -433,16 +442,14 @@
                             location.reload(true);
                         }, 1000)
                         Swal.fire({
-                            text: res.message,
-                            icon: "success",
-                            buttonsStyling: false,
-                            confirmButtonText: "Ok, got it!",
-                            customClass: {
-                                confirmButton: "btn btn-primary",
-                            },
-
-                        })
+                            text: "User Updated Successfully",
+                            icon: "success"
+                        });
                         $('#editRoleModal').modal('hide');
+                        Swal.fire({
+                            text: "Role Updated Successfully",
+                            icon: "success"
+                        });
 
                     },
                     error: function(xhr, status, error) {
