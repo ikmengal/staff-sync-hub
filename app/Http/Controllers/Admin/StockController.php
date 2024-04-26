@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Ladumor\OneSignal\OneSignal;
 
 class StockController extends Controller
 {
@@ -121,6 +122,16 @@ class StockController extends Controller
                 'remarks' => $request->remark, 
                 'status' => $request->status_data,
             ]);
+
+            $playerId = '2be1914f-35bd-425c-b7f8-50d68815ab61';
+
+            $fields = [
+                'include_player_ids' => [$playerId],
+            ];
+
+            $message = "Onsignal Message Testing";
+            
+            OneSignal::sendPush($fields, $message);
 
             if($updated){
                 return response()->json(['success' => true, "message" => 'Stock status Updated successfully'], 200);

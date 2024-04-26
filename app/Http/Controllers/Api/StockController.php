@@ -48,7 +48,34 @@ class StockController extends Controller
             return  apiResponse($success = false , $message = "Unauthorized", $code = 401);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
-            $stock = Stock::orderBy('id','DESC')->where('user_id', $user->id)->get();
+            $stock = Stock::where('user_id', $user->id);
+
+            //date range
+            //status
+            // company id
+            if(isset($request->company_id) && !empty($request->company_id) ) {
+                $stock =  $stock->where("company_id" , $request->company_id);
+            }
+            if(isset($request->status) && !empty($request->status) ) {
+                $stock =  $stock->where("status" , $request->status);
+            }
+           
+            if(isset($request->date) && !empty($request->date) ) {
+                $stock =  $stock->whereDate("created_at" , $request->date);
+            }
+
+            // date range
+
+            if(isset($request->sorting) && !empty($request->sorting) ) {
+                if($request->sorting == 1) {
+                    $sorting = 'asc';
+                }elseif($request->sorting == 2) {
+                    $sorting = 'desc';
+                }
+            }else{
+                $sorting = 'desc';
+            }
+            $stock = $stock->orderBy("id" , $sorting)->get();
             if(isset($stock) && !blank($stock)){
                 $data = StockResource::collection($stock);
                 return apiResponse($success = true, $data = $data  , $message = "All stock", $code = 200);
