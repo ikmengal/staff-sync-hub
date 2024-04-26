@@ -9,6 +9,7 @@ use App\Models\Stock;
 use App\Models\Company;
 use App\Models\StockImage;
 use Illuminate\Http\Request;
+use App\Models\UserPlayerId;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -31,9 +32,20 @@ class StockController extends Controller
                 ->editColumn('title', function ($model) {
                     return $model->title;
                 })
+                // ->editColumn('description', function ($model) {
+                //     return $model->description;
+                // })
                 ->editColumn('description', function ($model) {
-                    return $model->description;
-                })
+                    $description = $model->description;
+                    $words = str_word_count($description);
+                    $limit = 5;
+                    if ($words > $limit) {
+                        $wordsArray = explode(' ', $description, $limit+1);
+                        $description = implode(' ', array_slice($wordsArray, 0, $limit)) . '...';
+                        $description .= '<a href="'.route("stocks.show",$model->id).'">Read more</a>';
+                    }
+                    return $description;
+                })                
                 ->editColumn('creator', function ($model) {
                     return $model->hasUser->first_name.' '.$model->hasUser->last_name;
                 })
@@ -117,21 +129,29 @@ class StockController extends Controller
         }
         
         $stock = Stock::find($request->stock_status_id);
+        $userPlayerId = UserPlayerId::where('user_id', $stock->user_id)->orderBy('id', 'DESC')->first();
         if($stock){
+
+            if(isset($request->status_data) && $request->status_data == 2) {
+                $stockStatus = 'Approved';
+            }elseif(isset($request->status_data) && $request->status_data == 3) {
+                $stockStatus = 'Rejected';
+            }
+
             $updated = $stock->update([
                 'remarks' => $request->remark, 
                 'status' => $request->status_data,
             ]);
 
             if($updated){
-                
-                $playerId = '2be1914f-35bd-425c-b7f8-50d68815ab61';
-                $fields = [
-                    'include_player_ids' => [$playerId],
-                ];
-                $message = "Onsignal Message Testing";
-                \OneSignal::sendPush($fields, $message);
-
+                if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
+                    $fields['include_player_ids'] = [$userPlayerId->player_id];
+                    // $fields['include_player_ids'] = ['6b834e10-5ef2-475f-a059-3f94b6d2e040'];
+                    $title = $stock->title;
+                    $message = "Your stock ".$stock->title." has ".$stockStatus;
+                    $fields['headings'] = ['en' => $title];
+                    $oneSignal = \OneSignal::sendPush($fields, $message);
+                }
                 return response()->json(['success' => true, "message" => 'Stock status Updated successfully'], 200);
             }else{
                 return response()->json(['success' => true, "message" => 'Stock status not updated successfully'], 401);

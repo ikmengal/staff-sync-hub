@@ -49,7 +49,7 @@ class StockController extends Controller
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id);
-
+            $pageSize = 10;
             //date range
             //status
             // company id
@@ -75,7 +75,7 @@ class StockController extends Controller
             }else{
                 $sorting = 'desc';
             }
-            $stock = $stock->orderBy("id" , $sorting)->get();
+            $stock = $stock->orderBy("id" , $sorting)->paginate($pageSize);
             if(isset($stock) && !blank($stock)){
                 $data = StockResource::collection($stock);
                 return apiResponse($success = true, $data = $data  , $message = "All stock", $code = 200);

@@ -169,7 +169,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
-        Berkayk\OneSignal\OneSignalServiceProvider::class,
         Ladumor\OneSignal\OneSignalServiceProvider::class,
     ])->toArray(),
 
@@ -186,7 +185,6 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-        'OneSignal' => \Berkayk\OneSignal\OneSignalFacade::class,
         'OneSignal' => \Ladumor\OneSignal\OneSignal::class
     ])->toArray(),
 
