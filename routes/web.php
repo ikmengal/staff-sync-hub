@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
+use App\Http\Controllers\Admin\MasterLoginController;
+use App\Http\Controllers\Admin\StockController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +29,11 @@ use App\Http\Controllers\Admin\EmployeeRequisitionController;
 */
 
 //Resource Routes
+Route::get("check-config", function () {
+    $config =  config("project.companies");
+    
+    return  $config;
+});
 Route::resource('/requisitions', EmployeeRequisitionController::class);
 Route::resource('/settings', SettingController::class);
 Route::resource('/departments', DepartmentController::class);
@@ -35,6 +43,7 @@ Route::resource('/designations', DesignationController::class);
 Route::resource('/work_shifts', WorkShiftController::class);
 Route::resource('users', UserController::class);
 Route::get('show-all-roles',[RoleController::class,'showAllUsers'])->name('roles.showAllUsers');
+Route::resource('/stocks', StockController::class);
 //Resource Routes
 
 //cache clear
@@ -84,7 +93,12 @@ Route::middleware('auth')->group(function () {
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
+
+
+
+    // Master Login
+    Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
 });
 //Authentication Routes
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

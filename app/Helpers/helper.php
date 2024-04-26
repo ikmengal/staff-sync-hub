@@ -84,19 +84,19 @@ function companies()
 {
     $companies = [
         'cyberonix' => env('CYBERONIX_DB_DATABASE'),
-        'vertical' => env('VERTICAL_DB_DATABASE'),
-        'braincell' => env('BRAINCELL_DB_DATABASE'),
-        'clevel' => env('CLEVEL_DB_DATABASE'),
-        'delve' => env('DELVE12_DB_DATABASE'),
-        'horizontal' => env('HORIZONTAL_DB_DATABASE'),
-        'mercury' => env('MERCURY_DB_DATABASE'),
-        'momyom' => env('MOMYOM_DB_DATABASE'),
-        'softnova' => env('SOFTNOVA_DB_DATABASE'),
-        'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
-        'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
-        'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
-        'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
+        // 'vertical' => env('VERTICAL_DB_DATABASE'),
+        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
+        // 'clevel' => env('CLEVEL_DB_DATABASE'),
+        // 'delve' => env('DELVE12_DB_DATABASE'),
+        // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
+        // 'mercury' => env('MERCURY_DB_DATABASE'),
+        // 'momyom' => env('MOMYOM_DB_DATABASE'),
+        // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
+        // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
+        // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
+        // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
+        // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
+        // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
 
     return $companies;
@@ -105,6 +105,7 @@ function getAllCompanies()
 {
     $companies = [];
 
+    
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;
@@ -154,7 +155,7 @@ function getAllCompanies()
             if (!empty($head)) {
                 $company_head = getUserData($head);
             }
-
+            $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
             $settings['vehicle_percent'] = number_format(count($vehicleUsers) / count($total_employees) * 100);
             $settings['portalDb'] = $portalDb;
@@ -716,4 +717,35 @@ function formatDate($date)
     $format = Carbon::parse($date);
     $format = $format->format('M d,Y');
     return $format;
+}
+function companyData()
+{
+    $array  = [
+        ['id' => 1, 'name' => 'Cyberonix Consulting Limited', 'base_url' => config("project.cyberonix_base_url")],
+        ['id' => 2, 'name' => 'Vertical Edge', 'base_url' => config("project.vertical_base_url")],
+        ['id' => 3, 'name' => 'Braincell  Technology', 'base_url' => config("project.braincell_base_url")],
+        ['id' => 4, 'name' => 'C-Level', 'base_url' => config("project.clevel_base_url")],
+        ['id' => 5, 'name' => 'DELVE12', 'base_url' => config("project.delve12_base_url")],
+        ['id' => 6, 'name' => 'HORIZONTAL', 'base_url' => config("project.horizontal_base_url")],
+        ['id' => 7, 'name' => 'MERCURY', 'base_url' => config("project.mercury_base_url")],
+        ['id' => 8, 'name' => 'MOMYOM', 'base_url' => config("project.momyom_base_url")],
+        ['id' => 9, 'name' => 'SOFTNOVA', 'base_url' => config("project.softnova_base_url")],
+        ['id' => 10, 'name' => 'SOFTFELLOW', 'base_url' => config("project.softfellow_base_url")],
+        ['id' => 11, 'name' => 'SWYFTCUBE', 'base_url' => config("project.swyftcube_base_url")],
+        ['id' => 12, 'name' => 'SWYFTZONE', 'base_url' => config("project.swyftzone_base_url")],
+        ['id' => 13, 'name' => 'TECHCOMRADE', 'base_url' => config("project.techcombrade_base_url")],
+        ['id' => 14, 'name' => 'ROCKET-FLARE-LABS', 'base_url' => config("project.rocketflare_base_url")],
+    ];
+    return $array;
+}
+
+
+function findBaseUrl($company_id)
+{
+    $companies = companyData();
+    foreach ($companies as $company) {
+        if ($company['id'] == $company_id) {
+            return $company['base_url'];
+        }
+    }
 }
