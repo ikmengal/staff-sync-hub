@@ -40,7 +40,7 @@ class StockController extends Controller
                 if ($words > $limit) {
                     $wordsArray = explode(' ', $description, $limit+1);
                     $description = implode(' ', array_slice($wordsArray, 0, $limit)) . '...';
-                    $description .= '<a href="'.route("stocks.show",$model->id).'">Read more</a>';
+                    $description .= '<a href="'.route("stocks.show",$model->id).'"> Read more</a>';
                 }
                 return $description;
             })                
