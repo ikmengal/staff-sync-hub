@@ -2,6 +2,7 @@
 @section('title', $title.' | '.appName())
 @section('content')
 <input type="hidden" id="page_url" value="{{ route('stocks.index') }}">
+<input type="hidden" id="search_route" value="{{ route('stocks.getSearchDataOnLoad') }}">
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card">
@@ -18,6 +19,35 @@
 
         <!-- Users List Table -->
         <div class="card mt-4">
+            <div class="row p-3">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="creator">Creator</label>
+                    <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
+                        <option value="">Select Creator</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="form-label" for="company">Company</label>
+                    <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
+                        <option value="">Select Company</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="form-label" for="filter_status">Status</label>
+                    <select name="filter_status" id="filter_status" class="select2 form-select filter_status unselectValue">
+                        <option value="">Select Status</option>
+                        <option value="1">Pending</option>
+                        <option value="2">Approved</option>
+                        <option value="3">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mt-3 py-1">
+                    <button type="button" class="btn btn-primary searchBtn me-2"><i
+                        class="fa-solid fa-filter"></i></button>
+                    <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i
+                        class="fa-solid fa-filter"></i></button>
+                </div>
+            </div>
             <div class="card-datatable table-responsive">
                 <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                     <div class="container">
@@ -27,7 +57,7 @@
                                     <th>#</th>
                                     <th>Title</th>
                                     <th>Description</th>
-                                    <th>Craetor</th>
+                                    <th>Creator</th>
                                     <th>Company</th>
                                     <th>Quantity</th>
                                     <th>Status</th>
@@ -92,7 +122,43 @@
     <script>
         $(document).ready(function() {
             loadPageData()
+
+            $("#creator");
+            $("#company");
+            setTimeout(() => {
+                getFilterDate()
+            }, 1000); 
         });
+
+        function getFilterDate() {
+            var route = $("#search_route").val();
+            $.ajax({
+                type: "get",
+                url: route,
+                success: function (res) {
+                    var company = $("#company");
+                    var creator = $("#creator");
+                    company.empty();
+                    creator.empty();
+                    if (res.success) {
+                        if (res.data.companies.length !== 0) {
+                            company.append('<option value="">Select Company</option>');
+                            $.each(res.data.companies, function (ind, val) {
+                                company.append('<option value="' + val.id + '">' + val.name + '</option>');
+                            });
+                        }
+
+                        if (res.data.users.length !== 0) {
+                            creator.append('<option value="">Select Creator</option>');
+                            $.each(res.data.users, function (ind, val) {
+                                creator.append('<option value="' + val.id + '">' + val.first_name+' '+val.last_name + '</option>');
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
         //datatable
         function loadPageData() {
             var table = $('.data_table').DataTable();
@@ -104,14 +170,24 @@
             var table = $('.data_table').DataTable({
                 processing: true,
                 serverSide: true,
+                searching: true,
+                searchPanes: {
+                    filterChanged: function (count) {
+                        $('.SPDetails').text(this.i18n('searchPanes.collapse', {
+                            0: 'AdvancedFilter',
+                            _: 'Advancedfilter (%d)'
+                        }, count));
+                    }
+                },
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",
-                    error: function(xhr, error, code) {
-                        console.log(xhr);
-                        console.log(error);
-                        console.log(code);
-                    }
+                    data: function (d) {
+                        d.search = $('input[type="search"]').val()
+                        d.company = $('#company').val()
+                        d.craetor = $('#craetor').val()
+                        d.filter_status = $('#filter_status').val()
+                    },
                 },
                 columns: [
                 {
@@ -152,6 +228,25 @@
             });
         }
         //datatable
+
+        $('input[type="search"]').on('keyup', function () {
+            var table = $('.data_table').DataTable();
+            table.search($(this).val()).draw();
+        });
+
+        $(".searchBtn").click(function () {
+            var table = $('.data_table').DataTable();
+            table.ajax.reload(null, false)
+        });
+
+        $(".refreshBtn").click(function (e) {
+            e.preventDefault();
+            $(".unselectValue").val(null).trigger('change');
+            $(".emptyValue").val('');
+            $('input[type="search"]').val('').trigger('keyup');
+            var table = $('.data_table').DataTable();
+            table.ajax.reload(null, false)
+        });
 
         $(document).on('change', '#status', function() {
             var statusValue = $(this).val();

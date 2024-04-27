@@ -25,46 +25,66 @@ class StockController extends Controller
         // $this->authorize('stock-list');
         $title = 'All Stocks';
 
-        $model = Stock::orderby('id', 'desc')->get();
+        // $model = Stock::orderby('id', 'desc')->get();
+        $model = Stock::query()->orderBy('id', 'desc');
         if($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($model)
-                ->addIndexColumn()
-                ->editColumn('title', function ($model) {
-                    return $model->title;
-                })
-                // ->editColumn('description', function ($model) {
-                //     return $model->description;
-                // })
-                ->editColumn('description', function ($model) {
-                    $description = $model->description;
-                    $words = str_word_count($description);
-                    $limit = 5;
-                    if ($words > $limit) {
-                        $wordsArray = explode(' ', $description, $limit+1);
-                        $description = implode(' ', array_slice($wordsArray, 0, $limit)) . '...';
-                        $description .= '<a href="'.route("stocks.show",$model->id).'">Read more</a>';
-                    }
-                    return $description;
-                })                
-                ->editColumn('creator', function ($model) {
-                    return $model->hasUser->first_name.' '.$model->hasUser->last_name;
-                })
-                ->editColumn('company', function ($model) {
-                    return $model->hasCompany->name;
-                })
-                ->editColumn('quantity', function ($model) {
-                    return $model->quantity;
-                })
-                ->editColumn('status', function ($model) {
-                    return view('admin.stocks.status', ['model' => $model])->render();
-                })
-                ->addColumn('action', function($model){
-                    return view('admin.stocks.action', ['model' => $model])->render();
-                })
-                ->rawColumns(['title', 'description', 'creator', 'company', 'quantity', 'status', 'action'])
-                ->make(true);
-        }
+            ->addIndexColumn()
+            ->editColumn('title', function ($model) {
+                return $model->title;
+            })
+            ->editColumn('description', function ($model) {
+                $description = $model->description;
+                $words = str_word_count($description);
+                $limit = 5;
+                if ($words > $limit) {
+                    $wordsArray = explode(' ', $description, $limit+1);
+                    $description = implode(' ', array_slice($wordsArray, 0, $limit)) . '...';
+                    $description .= '<a href="'.route("stocks.show",$model->id).'">Read more</a>';
+                }
+                return $description;
+            })                
+            ->editColumn('creator', function ($model) {
+                return $model->hasUser->first_name.' '.$model->hasUser->last_name;
+            })
+            ->editColumn('company', function ($model) {
+                return $model->hasCompany->name;
+            })
+            ->editColumn('quantity', function ($model) {
+                return $model->quantity;
+            })
+            ->editColumn('status', function ($model) {
+                return view('admin.stocks.status', ['model' => $model])->render();
+            })
+            ->addColumn('action', function($model){
+                return view('admin.stocks.action', ['model' => $model])->render();
+            })
+            ->filter(function ($query) use ($request) {
+                if (!empty($request['search'])) {
+                    $search = $request['search'];
+                    $query->where('title', "LIKE", "%$search%");
+                    $query->orWhere('description', "LIKE", "%$search%");
+                    $query->orWhere('quantity', "LIKE", "%$search%");
+                }
+                
+                if (!empty($request['company'])) {
+                    $search = $request['company'];
+                    $query->where('company_id', $search);
+                }
 
+                if (!empty($request['creator'])) {
+                    $search = $request['creator'];
+                    $query->where('creator_id', $search);
+                }
+
+                if (!empty($request['filter_status'])) {
+                    $search = $request['filter_status'];
+                    $query->where('status', $search);
+                }
+            })
+            ->rawColumns(['title', 'description', 'creator', 'company', 'quantity', 'status', 'action'])
+            ->make(true);
+        }
         return view('admin.stocks.index', compact('title'));
     }
 
@@ -159,5 +179,11 @@ class StockController extends Controller
         }else{
             return response()->json(['success' => false, "message" => 'No record found'], 401);
         }
+    }
+
+    public function getSearchDataOnLoad(Request $request){
+        $data['companies'] = Company::get();
+        $data['users'] = User::get();
+        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }
 }

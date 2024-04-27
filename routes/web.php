@@ -65,6 +65,7 @@ Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.lo
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
 Route::post('stock-status', [StockController::class, 'status'])->name('stock.status');
+Route::get('stocks-filter', [StockController::class, 'getSearchDataOnLoad'])->name('stocks.getSearchDataOnLoad');
 
 //Authentication Routes
 Route::middleware('auth')->group(function () {
@@ -88,6 +89,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/company/employees/{company}', [AdminController::class, 'getCompanyEmployees'])->name('admin.company.employees');
     Route::get('admin/companies/vehicles', [AdminController::class, 'getCompaniesVehicles'])->name('admin.companies.vehicles');
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
+    Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
