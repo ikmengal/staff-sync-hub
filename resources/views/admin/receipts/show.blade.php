@@ -22,7 +22,7 @@
                 <div class="col-md-6 col-6">
                   <div class="d-flex align-items-center">
                     <div class="card-info">
-                      <h6 class="mb-2">Stock Title</h6>
+                      <h6 class="mb-2">Receipt Title</h6>
                       <small>{{ $stock->title ?? '' }}</small>
                     </div>
                   </div>
@@ -30,7 +30,7 @@
                 <div class="col-md-6 col-6">
                   <div class="d-flex align-items-center">
                     <div class="card-info">
-                      <h6 class="mb-2">Stock Creator</h6>
+                      <h6 class="mb-2">Receipt Creator</h6>
                       <small>{{ $stock->hasUSer->first_name ?? '' }} {{ $stock->hasUSer->last_name ?? '' }}</small>
                     </div>
                   </div>
@@ -46,7 +46,7 @@
                 <div class="col-md-6 col-6">
                   <div class="d-flex align-items-center">
                     <div class="card-info">
-                      <h6 class="mb-2">Stock Quantity</h6>
+                      <h6 class="mb-2">Receipt Quantity</h6>
                       <small>{{ $stock->quantity ?? '' }}</small>
                     </div>
                   </div>
@@ -71,13 +71,13 @@
                         <span class="badge bg-label-danger" text-capitalized="">Rejected</span>
                       @endif
                     </h5>
-                    <p class="mb-2">Remark: <br /> {{ $stock->remarks ?? '' }}</p>
+                    <p class="mb-2">Remarks: <br /> {{ $stock->remarks ?? '' }}</p>
                   </div>
               </div>
             </div>
             <div class="card-header pb-0 d-flex justify-content-between mb-lg-n4">
               <div class="card-title mb-0">
-                <h5 class="mb-0">Stock Images</h5>
+                <h5 class="mb-0">Receipt Images</h5>
               </div>
             </div>
             <div class="card-body">

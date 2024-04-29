@@ -23,19 +23,19 @@
                     <div class="col-md-3 mb-3">
                         <label class="form-label" for="creator">Creator</label>
                         <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
-                            <option value="">Select Creator</option>
+                            <option value="">All</option>
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="form-label" for="company">Company</label>
                         <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
-                            <option value="">Select Company</option>
+                            <option value="">All</option>
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="form-label" for="filter_status">Status</label>
                         <select name="filter_status" id="filter_status" class="select2 form-select filter_status unselectValue">
-                            <option value="">Select Status</option>
+                            <option value="">All</option>
                             <option value="1">Pending</option>
                             <option value="2">Approved</option>
                             <option value="3">Rejected</option>
