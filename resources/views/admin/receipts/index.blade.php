@@ -123,8 +123,7 @@
 @push('js')
     <script>
         $(document).ready(function() {
-            loadPageData()
-
+            loadPageData() 
             $("#creator");
             $("#company");
             setTimeout(() => {
@@ -187,7 +186,7 @@
                     data: function (d) {
                         d.search = $('input[type="search"]').val()
                         d.company = $('#company').val()
-                        d.craetor = $('#craetor').val()
+                        d.creator = $('#creator').val()
                         d.filter_status = $('#filter_status').val()
                     },
                 },
