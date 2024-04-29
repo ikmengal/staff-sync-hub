@@ -14,7 +14,7 @@ use App\Models\StockImage;
 use App\Http\Resources\StockResource;
 use App\Http\Resources\CompanyResource;
 
-class StockController extends Controller
+class ReceiptController extends Controller
 {
 
     public function companyIndex(Request $request){
@@ -48,12 +48,39 @@ class StockController extends Controller
             return  apiResponse($success = false , $message = "Unauthorized", $code = 401);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
-            $stock = Stock::orderBy('id','DESC')->where('user_id', $user->id)->get();
+            $stock = Stock::where('user_id', $user->id);
+            $pageSize = 10;
+            //date range
+            //status
+            // company id
+            if(isset($request->company_id) && !empty($request->company_id) ) {
+                $stock =  $stock->where("company_id" , $request->company_id);
+            }
+            if(isset($request->status) && !empty($request->status) ) {
+                $stock =  $stock->where("status" , $request->status);
+            }
+           
+            if(isset($request->date) && !empty($request->date) ) {
+                $stock =  $stock->whereDate("created_at" , $request->date);
+            }
+
+            // date range
+
+            if(isset($request->sorting) && !empty($request->sorting) ) {
+                if($request->sorting == 1) {
+                    $sorting = 'asc';
+                }elseif($request->sorting == 2) {
+                    $sorting = 'desc';
+                }
+            }else{
+                $sorting = 'desc';
+            }
+            $stock = $stock->orderBy("id" , $sorting)->paginate($pageSize);
             if(isset($stock) && !blank($stock)){
                 $data = StockResource::collection($stock);
-                return apiResponse($success = true, $data = $data  , $message = "All stock", $code = 200);
+                return apiResponse($success = true, $data = $data  , $message = "All Receipts", $code = 200);
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No stock record found...!", $code = 401);
+                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 401);
             }
         }
     }
@@ -95,7 +122,6 @@ class StockController extends Controller
                 if($request->hasFile('images')){
                     $files = $request->file('images');
                     foreach ($files as $file) {
-                        // dd($file);
                         $originalName = $file->getClientOriginalExtension();
                         $mimeType = $file->getClientMimeType();
                         $fileName = "STOCK-IMAGE-" . time() .'.'. $file->getClientOriginalExtension();

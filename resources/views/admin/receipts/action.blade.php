@@ -1,5 +1,5 @@
 <div class="d-flex align-items-center">
-    <a href="{{ route('stocks.show', $model->id) }}"
+    <a href="{{ route('receipts.show', $model->id) }}"
         class="btn btn-icon btn-label-info waves-effect"
         data-toggle="tooltip"
         data-placement="top"

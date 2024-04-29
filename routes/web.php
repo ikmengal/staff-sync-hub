@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\MasterLoginController;
-use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\ReceiptController;
 
 
 /*
@@ -31,7 +31,7 @@ use App\Http\Controllers\Admin\StockController;
 //Resource Routes
 Route::get("check-config", function () {
     $config =  config("project.companies");
-    
+
     return  $config;
 });
 Route::resource('/requisitions', EmployeeRequisitionController::class);
@@ -44,6 +44,7 @@ Route::resource('/work_shifts', WorkShiftController::class);
 Route::resource('users', UserController::class);
 Route::get('show-all-roles',[RoleController::class,'showAllUsers'])->name('roles.showAllUsers');
 Route::resource('/stocks', StockController::class);
+
 //Resource Routes
 
 //cache clear
@@ -68,6 +69,7 @@ Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.lo
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
 
+
 //Authentication Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -90,11 +92,25 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/company/employees/{company}', [AdminController::class, 'getCompanyEmployees'])->name('admin.company.employees');
     Route::get('admin/companies/vehicles', [AdminController::class, 'getCompaniesVehicles'])->name('admin.companies.vehicles');
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
+    Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
 
+    Route::post('receipt-status', [ReceiptController::class, 'status'])->name('receipts.status');
+    Route::get('receipt-filter', [ReceiptController::class, 'getSearchDataOnLoad'])->name('receipts.getSearchDataOnLoad');
 
+
+
+
+    Route::resource('/requisitions', EmployeeRequisitionController::class);
+    Route::resource('/settings', SettingController::class);
+    Route::resource('/departments', DepartmentController::class);
+    Route::resource('/roles', RoleController::class);
+    Route::resource('/permissions', PermissionController::class);
+    Route::resource('/designations', DesignationController::class);
+    Route::resource('/work_shifts', WorkShiftController::class);
+    Route::resource('/receipts', ReceiptController::class);
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Auth;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -165,6 +166,14 @@ class AdminController extends Controller
                 })
                 ->editColumn('name', function ($model) {
                     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
+                })
+                ->filter(function ($instance) use ($request) {
+                    if(!empty($request['company'])) {
+                        $instance = $instance->where(function ($w) use ($request) {
+                            $search = $request['company'] ?? null;
+                            $w->where('Department', $search);
+                        });
+                    }
                 })
                 ->rawColumns(['emp_status', 'name', 'role', 'Department', 'action'])
                 ->make(true);
@@ -336,5 +345,10 @@ class AdminController extends Controller
                 ->make(true);
         }
         return view('admin.companies.employees.index', compact('data'));
+    }
+
+    public function getSearchDataOnLoad(Request $request){
+        $data['companies'] = Company::get();
+        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }
 }

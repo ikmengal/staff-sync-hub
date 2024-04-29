@@ -17,21 +17,45 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-
-            $user = Auth::user();
-            $user->tokens()->update(['expires_at' => now()]);
-            $token = $user->createToken('token')->plainTextToken;
-            $record = [
-                'token'=>$token,
-                'user' => new UserResource($user)
-            ];
-           
-            return  apiResponse($success = true, $data =  $record  , $message = "User Login Successfuly", $code = 200);
+        $user = User::where('email', $request->email)->first();
+        if(empty($request->email)){
+            return apiResponse(false, null, 'Please Enter Email', 401);
         }
-        return  apiResponse($success = false, $data =  null  , $message = "Unauthorized", $code = 401); 
+
+        if($request->password == ""){
+            return apiResponse(false, null, 'Please Enter Password', 401);
+        }
+
+        if (!$user) {
+            return apiResponse(false, null, 'Invalid Email', 401);
+        }
+        
+        // if($user) {
+        //     if(isset($request->password) && !empty($request->password)){
+        //         if(Hash::check($user->password, $request->password)){
+        //             return apiResponse(false, null, 'Invalid Password', 401);
+        //         }
+        //     }
+        // }
+        
+        $credentials = $request->only('email', 'password');
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
+            // if (Auth::attempt($credentials)) {
+
+                $user = Auth::user();
+                $user->tokens()->update(['expires_at' => now()]);
+                $token = $user->createToken('token')->plainTextToken;
+                $record = [
+                    'token'=>$token,
+                    'user' => new UserResource($user)
+                ];
+            
+                return  apiResponse($success = true, $data =  $record  , $message = "User Login Successfuly", $code = 200);
+            // }
+            // return  apiResponse($success = false, $data =  null  , $message = "Unauthorized", $code = 401); 
+        }else{
+            return apiResponse(false, null, 'Incorrect Password', 401);
+        }
      
     }
 
