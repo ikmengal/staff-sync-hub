@@ -14,7 +14,7 @@ use App\Models\StockImage;
 use App\Http\Resources\StockResource;
 use App\Http\Resources\CompanyResource;
 
-class StockController extends Controller
+class ReceiptController extends Controller
 {
 
     public function companyIndex(Request $request){
@@ -78,9 +78,9 @@ class StockController extends Controller
             $stock = $stock->orderBy("id" , $sorting)->paginate($pageSize);
             if(isset($stock) && !blank($stock)){
                 $data = StockResource::collection($stock);
-                return apiResponse($success = true, $data = $data  , $message = "All stock", $code = 200);
+                return apiResponse($success = true, $data = $data  , $message = "All Receipts", $code = 200);
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No stock record found...!", $code = 401);
+                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 401);
             }
         }
     }
@@ -122,7 +122,6 @@ class StockController extends Controller
                 if($request->hasFile('images')){
                     $files = $request->file('images');
                     foreach ($files as $file) {
-                        // dd($file);
                         $originalName = $file->getClientOriginalExtension();
                         $mimeType = $file->getClientMimeType();
                         $fileName = "STOCK-IMAGE-" . time() .'.'. $file->getClientOriginalExtension();

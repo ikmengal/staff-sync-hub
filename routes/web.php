@@ -13,7 +13,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\MasterLoginController;
-use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\ReceiptController;
 
 
 /*
@@ -30,17 +30,10 @@ use App\Http\Controllers\Admin\StockController;
 //Resource Routes
 Route::get("check-config", function () {
     $config =  config("project.companies");
-    
+
     return  $config;
 });
-Route::resource('/requisitions', EmployeeRequisitionController::class);
-Route::resource('/settings', SettingController::class);
-Route::resource('/departments', DepartmentController::class);
-Route::resource('/roles', RoleController::class);
-Route::resource('/permissions', PermissionController::class);
-Route::resource('/designations', DesignationController::class);
-Route::resource('/work_shifts', WorkShiftController::class);
-Route::resource('/stocks', StockController::class);
+
 //Resource Routes
 
 //cache clear
@@ -64,8 +57,7 @@ Route::get('/', function () {
 Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
-Route::post('stock-status', [StockController::class, 'status'])->name('stock.status');
-Route::get('stocks-filter', [StockController::class, 'getSearchDataOnLoad'])->name('stocks.getSearchDataOnLoad');
+
 
 //Authentication Routes
 Route::middleware('auth')->group(function () {
@@ -94,7 +86,20 @@ Route::middleware('auth')->group(function () {
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
 
+    Route::post('receipt-status', [ReceiptController::class, 'status'])->name('receipts.status');
+    Route::get('receipt-filter', [ReceiptController::class, 'getSearchDataOnLoad'])->name('receipts.getSearchDataOnLoad');
 
+
+
+
+    Route::resource('/requisitions', EmployeeRequisitionController::class);
+    Route::resource('/settings', SettingController::class);
+    Route::resource('/departments', DepartmentController::class);
+    Route::resource('/roles', RoleController::class);
+    Route::resource('/permissions', PermissionController::class);
+    Route::resource('/designations', DesignationController::class);
+    Route::resource('/work_shifts', WorkShiftController::class);
+    Route::resource('/receipts', ReceiptController::class);
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");

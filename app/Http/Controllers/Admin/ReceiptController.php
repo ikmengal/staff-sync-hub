@@ -15,7 +15,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Ladumor\OneSignal\OneSignal;
 
-class StockController extends Controller
+class ReceiptController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,7 +23,7 @@ class StockController extends Controller
     public function index(Request $request)
     {
         // $this->authorize('stock-list');
-        $title = 'All Stocks';
+        $title = 'All Receipts';
 
         // $model = Stock::orderby('id', 'desc')->get();
         $model = Stock::query()->orderBy('id', 'desc');
@@ -40,7 +40,7 @@ class StockController extends Controller
                 if ($words > $limit) {
                     $wordsArray = explode(' ', $description, $limit+1);
                     $description = implode(' ', array_slice($wordsArray, 0, $limit)) . '...';
-                    $description .= '<a href="'.route("stocks.show",$model->id).'"> Read more</a>';
+                    $description .= '<a href="'.route("receipts.show",$model->id).'"> Read more</a>';
                 }
                 return $description;
             })                
@@ -54,10 +54,10 @@ class StockController extends Controller
                 return $model->quantity;
             })
             ->editColumn('status', function ($model) {
-                return view('admin.stocks.status', ['model' => $model])->render();
+                return view('admin.receipts.status', ['model' => $model])->render();
             })
             ->addColumn('action', function($model){
-                return view('admin.stocks.action', ['model' => $model])->render();
+                return view('admin.receipts.action', ['model' => $model])->render();
             })
             ->filter(function ($query) use ($request) {
                 if (!empty($request['search'])) {
@@ -85,7 +85,7 @@ class StockController extends Controller
             ->rawColumns(['title', 'description', 'creator', 'company', 'quantity', 'status', 'action'])
             ->make(true);
         }
-        return view('admin.stocks.index', compact('title'));
+        return view('admin.receipts.index', compact('title'));
     }
 
     /**
@@ -109,9 +109,9 @@ class StockController extends Controller
      */
     public function show(string $id)
     {
-        $title = 'Stock Detail';
+        $title = 'Receipt Detail';
         $stock = Stock::where('id', $id)->first();
-        return view('admin.stocks.show', compact('title', 'stock'));
+        return view('admin.receipts.show', compact('title', 'stock'));
     }
 
     /**
@@ -168,13 +168,13 @@ class StockController extends Controller
                     $fields['include_player_ids'] = [$userPlayerId->player_id];
                     // $fields['include_player_ids'] = ['6b834e10-5ef2-475f-a059-3f94b6d2e040'];
                     $title = $stock->title;
-                    $message = "Your stock ".$stock->title." has ".$stockStatus;
+                    $message = "Your receipt ".$stock->title." has ".$stockStatus;
                     $fields['headings'] = ['en' => $title];
                     $oneSignal = \OneSignal::sendPush($fields, $message);
                 }
-                return response()->json(['success' => true, "message" => 'Stock status Updated successfully'], 200);
+                return response()->json(['success' => true, "message" => 'Receipt status Updated successfully'], 200);
             }else{
-                return response()->json(['success' => true, "message" => 'Stock status not updated successfully'], 401);
+                return response()->json(['success' => true, "message" => 'Receipt status not updated successfully'], 401);
             }
         }else{
             return response()->json(['success' => false, "message" => 'No record found'], 401);

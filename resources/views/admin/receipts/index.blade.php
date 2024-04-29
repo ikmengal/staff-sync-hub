@@ -1,8 +1,8 @@
 @extends('admin.layouts.app')
 @section('title', $title.' | '.appName())
 @section('content')
-<input type="hidden" id="page_url" value="{{ route('stocks.index') }}">
-<input type="hidden" id="search_route" value="{{ route('stocks.getSearchDataOnLoad') }}">
+<input type="hidden" id="page_url" value="{{ route('receipts.index') }}">
+<input type="hidden" id="search_route" value="{{ route('receipts.getSearchDataOnLoad') }}">
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card">
@@ -91,7 +91,7 @@
                                         <span id="remark_error" class="text-danger error"></span>
                                     </div>
                                 </div>
-                                <input type="hidden" name="route" id="route" value="{{route('stock.status')}}">
+                                <input type="hidden" name="route" id="route" value="{{route('receipts.status')}}">
                                 <input type="hidden" name="status_data" id="status_data" value="1">
                                 <input type="hidden" name="stock_status_id" id="stock_status_id" value="">
                                 <div class="col-12 action-btn">

@@ -82,9 +82,9 @@
             </a>
         </li>
         <li class="menu-item {{ request()->is('admin/stocks/index')?'active':'' }}">
-            <a href="{{ route('stocks.index') }}" class="menu-link">
+            <a href="{{ route('receipts.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-file-dollar"></i>
-                <div>All Stocks</div>
+                <div>Receipts</div>
             </a>
         </li>
     </ul>
