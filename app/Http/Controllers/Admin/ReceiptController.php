@@ -74,7 +74,7 @@ class ReceiptController extends Controller
 
                 if (!empty($request['creator'])) {
                     $search = $request['creator'];
-                    $query->where('creator_id', $search);
+                    $query->where('user_id', $search);
                 }
 
                 if (!empty($request['filter_status'])) {
