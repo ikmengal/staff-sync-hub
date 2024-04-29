@@ -42,7 +42,10 @@ Route::get('get-company', [ReceiptController::class, 'companyIndex']);
 Route::get('get-receipt', [ReceiptController::class, 'index']);
 Route::post('receipt-store', [ReceiptController::class, 'store']);
 Route::post('receipt-show', [ReceiptController::class, 'show']);
-
+Route::get('receipt-edit{id?}', [ReceiptController::class, 'edit']);
+Route::post('receipt-update', [ReceiptController::class, 'update']);
+Route::get('receipt-image-delete{id?}', [ReceiptController::class, 'receiptImageDelete']);
+Route::post('receipt-add-image', [ReceiptController::class, 'receiptAddImage']);
 // User Player-Id Route
 Route::get('get-player-id', [UserPlayerIdController::class, 'index']);
 Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
