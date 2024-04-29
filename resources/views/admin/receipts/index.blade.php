@@ -143,14 +143,14 @@
                     creator.empty();
                     if (res.success) {
                         if (res.data.companies.length !== 0) {
-                            company.append('<option value="">Select Company</option>');
+                            company.append('<option value="">All</option>');
                             $.each(res.data.companies, function (ind, val) {
                                 company.append('<option value="' + val.id + '">' + val.name + '</option>');
                             });
                         }
 
                         if (res.data.users.length !== 0) {
-                            creator.append('<option value="">Select Creator</option>');
+                            creator.append('<option value="">All</option>');
                             $.each(res.data.users, function (ind, val) {
                                 creator.append('<option value="' + val.id + '">' + val.first_name+' '+val.last_name + '</option>');
                             });
