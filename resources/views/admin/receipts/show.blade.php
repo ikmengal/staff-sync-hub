@@ -65,7 +65,7 @@
                     <h5 class="card-title no-wrap mb-2">Status 
                       @if (isset($stock->status) && $stock->status == 1)
                         <span class="badge bg-label-warning" text-capitalized="">Pending</span>
-                      @elseif($stock->status == 2)
+                      @elseif(isset($stock->status) && $stock->status == 2)
                         <span class="badge bg-label-success" text-capitalized="">Approve</span>
                       @else
                         <span class="badge bg-label-danger" text-capitalized="">Rejected</span>
@@ -83,16 +83,27 @@
             <div class="card-body">
               <div class="border rounded p-3 mt-5">
                   @if(isset($stock->hasImages) && !blank($stock->hasImages))
-                    <div class="row gap-4 gap-sm-0">
+                      <div class="row gap-4 gap-sm-0">
                         @foreach ($stock->hasImages as $image)
-                            <div class="col-12 col-md-2 col-sm-2">
+                          <div class="col-md-2 col-sm-2 mb-4">
+                            @if(isset($image->type) && $image->type == 'pdf')
+                              <span class="fs-7">
+                                <i class="fa-solid fa-file-pdf" style="font-size: 20px"></i>
+                                <a href="{{ asset('public/admin/assets/img/stock/' . $image->image) }}" class="text-danger" download>
+                                    {{ $image->image }}
+                                </a>
+                              </span>
+                            @else
+                              <a href="{{ asset('public/admin/assets/img/stock/' . $image->image) }}" class="text-danger" download>
                                 <img class="card-img image-fluid" src="{{asset('public/admin/assets/img/stock')}}/{{$image->image??'' }}" id="image" alt="No Image" height="100px" width="10px" />
-                            </div>
-                        @endforeach
-                      @else
-                          <div class="col-12 text-center">
-                              <h3> No Image </h3>
+                              </a>
+                            @endif
                           </div>
+                        @endforeach
+                      </div>
+                  @else
+                    <div class="col-12 text-center">
+                        <h3> No Image </h3>
                     </div>
                   @endif
               </div>

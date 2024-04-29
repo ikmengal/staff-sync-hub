@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use DB;
 use Str;
 use App\Models\User;
 use App\Models\Stock;
@@ -10,6 +9,7 @@ use App\Models\Company;
 use App\Models\StockImage;
 use Illuminate\Http\Request;
 use App\Models\UserPlayerId;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -144,42 +144,54 @@ class ReceiptController extends Controller
             'remark' => 'required',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 400);
+    }
+    
+    $stock = Stock::find($request->stock_status_id);
+    $userPlayerId = UserPlayerId::where('user_id', $stock->user_id)->orderBy('id', 'DESC')->first();
+    if($stock){
+      DB::beginTransaction();
+        if(isset($request->status_data) && $request->status_data == 2) {
+            $stockStatus = 'Approved';
+        }elseif(isset($request->status_data) && $request->status_data == 3) {
+            $stockStatus = 'Rejected';
         }
-        
-        $stock = Stock::find($request->stock_status_id);
-        $userPlayerId = UserPlayerId::where('user_id', $stock->user_id)->orderBy('id', 'DESC')->first();
-        if($stock){
 
-            if(isset($request->status_data) && $request->status_data == 2) {
-                $stockStatus = 'Approved';
-            }elseif(isset($request->status_data) && $request->status_data == 3) {
-                $stockStatus = 'Rejected';
-            }
-
-            $updated = $stock->update([
-                'remarks' => $request->remark, 
-                'status' => $request->status_data,
-            ]);
-
-            if($updated){
+        $updated = $stock->update([
+            'remarks' => $request->remark, 
+            'status' => $request->status_data,
+        ]);
+        try { 
+            $responseMessage = "";
+            if($updated){ 
                 if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
                     $fields['include_player_ids'] = [$userPlayerId->player_id];
-                    // $fields['include_player_ids'] = ['6b834e10-5ef2-475f-a059-3f94b6d2e040'];
                     $title = $stock->title;
                     $message = "Your receipt ".$stock->title." has ".$stockStatus;
                     $fields['headings'] = ['en' => $title];
                     $oneSignal = \OneSignal::sendPush($fields, $message);
+                    if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
+                        $responseMessage .=  $oneSignal['errors'][0] ?? ''; 
+                    } 
                 }
-                return response()->json(['success' => true, "message" => 'Receipt status Updated successfully'], 200);
+                $responseMessage .= "Receipt status Updated successfully"; 
+                 DB::commit();
+                return response()->json(['success' => true, "message" => $responseMessage ], 200);
             }else{
+                DB::rollback();
                 return response()->json(['success' => true, "message" => 'Receipt status not updated successfully'], 401);
             }
-        }else{
-            return response()->json(['success' => false, "message" => 'No record found'], 401);
         }
+        catch(\Exception $e) {
+            DB::rollback();
+             return response()->json(['success' => false, "message" =>  $e->getMessage()], 401);
+        }
+    }else{
+        DB::rollback();
+        return response()->json(['success' => false, "message" => 'No record found'], 401);
     }
+}
 
     public function getSearchDataOnLoad(Request $request){
         $data['companies'] = Company::get();
