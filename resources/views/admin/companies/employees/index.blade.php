@@ -119,13 +119,13 @@
                             console.log(res.departments)
                             department.append('<option value="">Select Department</option>');
                             $.each(res.data.departments, function (ind, val) {
-                                department.append('<option value="' +  val.name + '">' + val.name + '</option>');
+                                department.append('<option value="' +  val + '">' + val + '</option>');
                             });
                         }
                         if (res.data.shifts.length !== 0) {
                             shift.append('<option value="">Select Shift</option>');
                             $.each(res.data.shifts, function (ind, val) {
-                                shift.append('<option value="' + val.name + '">' + val.name + '</option>');
+                                shift.append('<option value="' + val + '">' + val + '</option>');
                             });
                         }
                         if (res.data.statuses.length !== 0) {

@@ -157,8 +157,6 @@ class AdminController extends Controller
 
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = collect(getAllCompaniesEmployees()['total_employees']);
-
-
             return DataTables::of($records)
                 ->addIndexColumn()
                 ->addColumn('role', function ($model) {
@@ -212,12 +210,12 @@ class AdminController extends Controller
     }
     public function getCompaniesTerminatedEmployees(Request $request)
     {
+
         $data = [];
         $data['title'] = 'All Companies Terminated Employees';
-
+      
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getAllTerminatedEmployees()['all_terminated_employees'];
-
             return DataTables::of($records)
                 ->addIndexColumn()
                 ->editColumn('name', function ($model) {
@@ -237,6 +235,34 @@ class AdminController extends Controller
                 })
                 ->addColumn('emp_status', function ($model) {
                     return $model->employment_status;
+                })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('shift') && !empty($request->shift)) {
+                        $shift = $request->shift;
+                        $query->collection = $query->collection->filter(function ($record) use ($shift) {
+                            return str_contains(strtolower($record['shift']), strtolower($shift));
+                        });
+                    }
+                    if ($request->has('status')  && !empty($request->status)) {
+                        $status = $request->status;
+                     
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
+                          
+                            return str_contains(strtolower($record['employment_status']), strtolower($status));
+                        });
+                    }
+                    if ($request->has('department')  && !empty($request->department)) {
+                        $department = $request->department;
+                        $query->collection = $query->collection->filter(function ($record) use ($department) {
+                            return str_contains(strtolower($record['department']), strtolower($department));
+                        });
+                    }
+                    if ($request->has('company')  && !empty($request->company)) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
                 })
 
                 ->rawColumns(['name', 'role', 'Department', 'Company', 'shift', 'emp_status'])
@@ -347,6 +373,34 @@ class AdminController extends Controller
                 ->editColumn('name', function ($model) {
                     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
                 })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('shift') && !empty($request->shift)) {
+                        $shift = $request->shift;
+                        $query->collection = $query->collection->filter(function ($record) use ($shift) {
+                            return str_contains(strtolower($record['shift']), strtolower($shift));
+                        });
+                    }
+                    if ($request->has('status')  && !empty($request->status)) {
+                        $status = $request->status;
+                     
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
+                          
+                            return str_contains(strtolower($record['employment_status']), strtolower($status));
+                        });
+                    }
+                    if ($request->has('department')  && !empty($request->department)) {
+                        $department = $request->department;
+                        $query->collection = $query->collection->filter(function ($record) use ($department) {
+                            return str_contains(strtolower($record['department']), strtolower($department));
+                        });
+                    }
+                    if ($request->has('company')  && !empty($request->company)) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
+                })
                 ->rawColumns(['emp_status', 'name', 'role', 'Department', 'action'])
                 ->make(true);
         }
@@ -359,7 +413,7 @@ class AdminController extends Controller
         $data['status'] = 'new hiring employees of current month';
         $data['title'] = 'All Companies New Hiring Employees';
         if ($request->ajax() && $request->loaddata == "yes") {
-            $records = getAllCompaniesNewHiring()['all_new_hiring'];
+            $records = collect(getAllCompaniesNewHiring()['all_new_hiring']);
             return DataTables::of($records)
                 ->addIndexColumn()
                 ->addColumn('role', function ($model) {
@@ -379,6 +433,32 @@ class AdminController extends Controller
                 })
                 ->editColumn('name', function ($model) {
                     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
+                })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('shift')) {
+                        $shift = $request->shift;
+                        $query->collection = $query->collection->filter(function ($record) use ($shift) {
+                            return str_contains(strtolower($record['shift']), strtolower($shift));
+                        });
+                    }
+                    if ($request->has('status')) {
+                        $status = $request->status;
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
+                            return str_contains(strtolower($record['employment_status']), strtolower($status));
+                        });
+                    }
+                    if ($request->has('department')) {
+                        $department = $request->department;
+                        $query->collection = $query->collection->filter(function ($record) use ($department) {
+                            return str_contains(strtolower($record['department']), strtolower($department));
+                        });
+                    }
+                    if ($request->has('company')) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
                 })
                 ->rawColumns(['emp_status', 'name', 'role', 'Department', 'action'])
                 ->make(true);
