@@ -112,7 +112,7 @@
                         if (res.data.companies.length !== 0) {
                             company.append('<option value="">Select Company</option>');
                             $.each(res.data.companies, function (ind, val) {
-                                company.append('<option value="' +  val.name + '">' + val.name + '</option>');
+                                company.append('<option value="' +val.name+ '">' + val.name + '</option>');
                             });
                         }
                         if (res.data.departments.length !== 0) {
