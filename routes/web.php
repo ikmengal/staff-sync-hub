@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\MasterLoginController;
 use App\Http\Controllers\Admin\ReceiptController;
-
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +26,17 @@ use App\Http\Controllers\Admin\ReceiptController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+// Route::get("create-user" , function() {
+//     return User::create([
+        
+//         "first_name" => "Admin",
+//         "last_name" => "-",
+//         "email" => "admin@gmail.com",
+//         "password" => Hash::make("admin@123"),
+//         "is_employee" => 1,
+//         "slug" => Str::slug("-" , "Admin ")
+//     ]);
+// });
 //Resource Routes
 Route::get("check-config", function () {
     $config =  config("project.companies");

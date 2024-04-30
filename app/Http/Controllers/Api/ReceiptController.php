@@ -87,86 +87,123 @@ class ReceiptController extends Controller
         }
     }
 
+    
+
+
     public function store(Request $request){
         ini_set('upload_max_filesize' , '50M' );
         ini_set('post_max_size' , '256M' );
 
-        if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+    if($request->bearerToken() == ""){
+        return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+    }
+
+    $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
+    
+    if(empty($userToken)){
+        return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+    }else{
+        $validator = Validator::make($request->all(), [
+            'company_id' => 'required',
+            'title' => 'required',
+            'description' => 'required',
+            'quantity' => 'required',
+            'images.*' => 'nullable|file|mimes:png,jpg,jpeg,pdf',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 500);
         }
 
-        $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
-        
-        if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
-        }else{
-            $validator = Validator::make($request->all(), [
-                'company_id' => 'required',
-                'title' => 'required',
-                'description' => 'required',
-                'quantity' => 'required',
-                'images.*' => 'nullable|file|mimes:png,jpg,jpeg,pdf',
-            ]);
+        $user = User::where('id', $userToken->tokenable_id)->first();
+        $company = Company::where('company_id', $request->company_id)->first();
+        $stock = Stock::create([
+            'user_id' => $user->id,
+            'company_id' => $company->company_id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'quantity' => $request->quantity,
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
+        if(isset($stock) && !empty($stock)){
+            if(isset($request->type) && $request->type == 2){
+                if($request->hasFile('images')){
+                    $files = $request->file('images');
+                    foreach ($files as $index => $file) {
+                        $originalName = $file->getClientOriginalExtension();
+                        $mimeType = $file->getClientMimeType();
+                        $index = $index + 1;
+                        $type = explode('/', $file->getClientMimeType());
+                        $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
+                        $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
+                        $file->move(public_path('admin/assets/img/stock/'), $fileName);
 
-            $user = User::where('id', $userToken->tokenable_id)->first();
-            $company = Company::where('company_id', $request->company_id)->first();
-            $stock = Stock::create([
-                'user_id' => $user->id,
-                'company_id' => $company->company_id,
-                'title' => $request->title,
-                'description' => $request->description,
-                'quantity' => $request->quantity,
-            ]);
-
-            if(isset($stock) && !empty($stock)){
-                if(isset($request->type) && $request->type == 2){
-                    if($request->hasFile('images')){
-                        $files = $request->file('images');
-                        foreach ($files as $index => $file) {
-                            $originalName = $file->getClientOriginalExtension();
-                            $mimeType = $file->getClientMimeType();
-                            $index = $index + 1;
-                            $type = explode('/', $file->getClientMimeType());
-                            $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
-                            $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
-                            $file->move(public_path('admin/assets/img/stock/'), $fileName);
-    
-                            StockImage::create([
-                                'stock_id' => $stock->id,
-                                'image' => $fileName,
-                                'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
-                            ]);
-                        }
-                    }
-                }else if(isset($request->type) && $request->type == 1){
-                    if ($request->has('images')) {
-                        $image = $request->images;
-                        $image = str_replace('data:image/png;base64,', '', $image);
-                        $image = str_replace(' ', '+', $image);
-                        $index = 1;
-                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . 'png';
-                        $directory = public_path('admin/assets/img/stock/');
-                        $filePath = $directory . $imageName;
-                        \File::put($filePath, base64_decode($image));
                         StockImage::create([
                             'stock_id' => $stock->id,
-                            'image' => $imageName,
-                            'type' => 'image',
+                            'image' => $fileName,
+                            'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
+                            // 'request_type' => 2,
                         ]);
                     }
                 }
-                $data = Stock::where("id", $stock->id)->with("hasImages")->first();
-                $data = new StockResource($data);
-                return  apiResponse(true ,  $data , "Receipt added successfully.",   200); 
-            }else{
-                return  apiResponse(false,  null  , "Receipt not added...!",  500); 
+            }else if(isset($request->type) && $request->type == 1){
+                // if ($request->has('images')) {
+                //     $image = $request->images;
+                //     $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                //     $mime = explode('/', $mime);
+                //     $image = str_replace('data:image/'.'$mime[1]'.';base64,', '', $image);
+                //     $image = str_replace(' ', '+', $image);
+                //     $index = 1;
+                //     $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $mime[1];
+                //     $directory = public_path('admin/assets/img/stock/');
+                //     $filePath = $directory . $imageName;
+                //     \File::put($filePath, base64_decode($image));
+                //     StockImage::create([
+                //         'stock_id' => 10,
+                //         'image' => $imageName,
+                //         'type' => 'image',
+                //         'request_type' => 1,
+                //     ]);
+                // }
+                if ($request->has('images')) {
+                    $image = $request->images;
+                    $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                    switch ($mime) {
+                        case 'image/jpeg':
+                            $extension = 'jpeg';
+                            break;
+                        case 'image/png':
+                            $extension = 'png';
+                            break;
+                        case 'image/gif':
+                            $extension = 'gif';
+                            break;
+                        default:
+                            $extension = 'jpg';
+                    }
+        
+                    $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
+                    $image = str_replace(' ', '+', $image);
+                    $index = 1;
+                    $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
+                    $directory = public_path('admin/assets/img/stock/');
+                    $filePath = $directory . $imageName;
+                    \File::put($filePath, base64_decode($image));
+                    StockImage::create([
+                        'stock_id' => $stock->id,
+                        'image' => $imageName,
+                        'type' => 'image',
+                    ]);
+                }
             }
+            $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
+            $data = new StockResource($data);
+            return  apiResponse(true ,  $data , "Stock added successfully.",   200); 
+        }else{
+            return  apiResponse(false,  null  , "Stock not added...!",  500); 
         }
     }
+}
 
     public function show(Request $request){
         if($request->bearerToken() == ""){
@@ -286,7 +323,7 @@ class ReceiptController extends Controller
         if($request->bearerToken() == ""){
             return  apiResponse(false, $message = "Enter token", $code = 500); 
         }
-
+    
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
@@ -296,34 +333,17 @@ class ReceiptController extends Controller
                 'id' => 'required',
                 'images.*' => 'required|file|mimes:png,jpg,jpeg,pdf',
             ]);
-
+    
             if ($validator->fails()) {
-                return response()->json($validator->errors()->all(), 400);
+                return response()->json($validator->errors()->all(), 500);
             }
-
+    
             $user = User::where('id', $userToken->tokenable_id)->first();
+           
             $stock = Stock::where('id', $request->id)->where('user_id', $user->id)->first();
-            
+           
+             
             if(isset($stock) && !empty($stock)){
-                // if($request->hasFile('images')){
-                //     $files = $request->file('images');
-                //     foreach ($files as $index => $file) {
-                //         $originalName = $file->getClientOriginalExtension();
-                //         $mimeType = $file->getClientMimeType();
-                //         $index = $index + 1;
-                //         $type = explode('/', $file->getClientMimeType());
-                //         $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
-                //         $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
-                //         $file->move(public_path('admin/assets/img/stock/'), $fileName);
-
-                //         StockImage::create([
-                //             'stock_id' => $stock->id,
-                //             'image' => $fileName,
-                //             'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
-                //         ]);
-                //     }
-                // }
-
                 if(isset($request->type) && $request->type == 2){
                     if($request->hasFile('images')){
                         $files = $request->file('images');
@@ -336,20 +356,36 @@ class ReceiptController extends Controller
                             $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
                             $file->move(public_path('admin/assets/img/stock/'), $fileName);
     
-                            StockImage::create([
+                            $create =   StockImage::create([
                                 'stock_id' => $stock->id,
                                 'image' => $fileName,
                                 'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
+                                // 'request_type' => 2,
                             ]);
                         }
                     }
                 }else if(isset($request->type) && $request->type == 1){
                     if ($request->has('images')) {
                         $image = $request->images;
-                        $image = str_replace('data:image/png;base64,', '', $image);
+                        $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                        switch ($mime) {
+                            case 'image/jpeg':
+                                $extension = 'jpeg';
+                                break;
+                            case 'image/png':
+                                $extension = 'png';
+                                break;
+                            case 'image/gif':
+                                $extension = 'gif';
+                                break;
+                            default:
+                                $extension = 'jpg';
+                        }
+            
+                        $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
                         $image = str_replace(' ', '+', $image);
                         $index = 1;
-                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . 'png';
+                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
                         $directory = public_path('admin/assets/img/stock/');
                         $filePath = $directory . $imageName;
                         \File::put($filePath, base64_decode($image));
@@ -362,7 +398,7 @@ class ReceiptController extends Controller
                 }
                 return apiResponse(true, null, $index." Images uploaded successfully.", 200);
             }else{
-                return  apiResponse(false, null , "No image found...!", 500);
+                return  apiResponse(false, null , "Receipt not found...!", 500);
             }
         }
     }

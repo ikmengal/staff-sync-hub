@@ -16,23 +16,23 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->where("is_employee" , 1)->first();
         if(empty($request->email)){
-            return apiResponse(false, null, 'Please Enter Email', 401);
+            return apiResponse(false, null, 'Please Enter Email', 500);
         }
 
         if($request->password == ""){
-            return apiResponse(false, null, 'Please Enter Password', 401);
+            return apiResponse(false, null, 'Please Enter Password', 500);
         }
 
         if (!$user) {
-            return apiResponse(false, null, 'Invalid Email', 401);
+            return apiResponse(false, null, 'Invalid Email', 500);
         }
         
         // if($user) {
         //     if(isset($request->password) && !empty($request->password)){
         //         if(Hash::check($user->password, $request->password)){
-        //             return apiResponse(false, null, 'Invalid Password', 401);
+        //             return apiResponse(false, null, 'Invalid Password', 500);
         //         }
         //     }
         // }
@@ -51,9 +51,9 @@ class AuthController extends Controller
             
                 return  apiResponse($success = true, $data =  $record  , $message = "User Login Successfuly", $code = 200);
             // }
-            // return  apiResponse($success = false, $data =  null  , $message = "Unauthorized", $code = 401); 
+            // return  apiResponse($success = false, $data =  null  , $message = "Unauthorized", $code = 500); 
         }else{
-            return apiResponse(false, null, 'Incorrect Password', 401);
+            return apiResponse(false, null, 'Incorrect Password', 500);
         }
      
     }
@@ -68,7 +68,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), 500);
         }
 
         $user = User::create([
@@ -136,19 +136,19 @@ class AuthController extends Controller
 
         // Return validation errors if the validation fails
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), 500);
         }
         // Find the user by email
         $user = User::where('email', $request->email)->first();
 
         // Validate the OTP
         if ($user->otp !== $request->otp) {
-            return response()->json(['error' => 'Invalid OTP.'], 400);
+            return response()->json(['error' => 'Invalid OTP.'], 500);
         }
 
         // Check if OTP is expired
         if ($user->otp_expires < now()) {
-            return response()->json(['error' => 'OTP has expired.'], 400);
+            return response()->json(['error' => 'OTP has expired.'], 500);
         }
 
           // Reset the password
@@ -158,7 +158,7 @@ class AuthController extends Controller
         // Check if the password was reset successfully
         return Password::PASSWORD_RESET
             ?  apiResponse(true, null, "Password reset successfully.", 200)
-            : apiResponse(false, null, "Unable to reset password.", 400);
+            : apiResponse(false, null, "Unable to reset password.", 500);
     }
 
 
@@ -180,14 +180,14 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), 500);
         }
 
         $user = Auth::user();
 
         if (!Hash::check($request->current_password, $user->password)) {
             
-            return apiResponse(false, null, "Current password is incorrect.", 400);
+            return apiResponse(false, null, "Current password is incorrect.", 500);
         }
 
         $user->password = bcrypt($request->new_password);
