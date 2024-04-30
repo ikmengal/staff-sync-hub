@@ -82,7 +82,7 @@ class ReceiptController extends Controller
                 $data = StockResource::collection($stock);
                 return apiResponse($success = true, $data = $data  , $message = "All Receipts", $code = 200);
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 500);
+                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 200);
             }
         }
     }
