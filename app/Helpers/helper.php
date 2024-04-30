@@ -7,6 +7,7 @@ use App\Models\WorkShift;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
 use App\Models\AttendanceSummary;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 
@@ -86,17 +87,17 @@ function companies()
         'cyberonix' => env('CYBERONIX_DB_DATABASE'),
         'vertical' => env('VERTICAL_DB_DATABASE'),
         'braincell' => env('BRAINCELL_DB_DATABASE'),
-        // 'clevel' => env('CLEVEL_DB_DATABASE'),
-        // 'delve' => env('DELVE12_DB_DATABASE'),
-        // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
-        // 'mercury' => env('MERCURY_DB_DATABASE'),
-        // 'momyom' => env('MOMYOM_DB_DATABASE'),
-        // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
-        // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
-        // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
-        // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
-        // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
+        'clevel' => env('CLEVEL_DB_DATABASE'),
+        'delve' => env('DELVE12_DB_DATABASE'),
+        'horizontal' => env('HORIZONTAL_DB_DATABASE'),
+        'mercury' => env('MERCURY_DB_DATABASE'),
+        'momyom' => env('MOMYOM_DB_DATABASE'),
+        'softnova' => env('SOFTNOVA_DB_DATABASE'),
+        'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
+        'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
+        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
+        'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
+        'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
 
     return $companies;
@@ -765,4 +766,41 @@ function getUserName($id){
         return $user_name;
     }
 
+}
+
+
+function getDepartments()
+{
+    $connections = companies(); // Update with your actual connection names
+
+    $departments = collect();
+
+    foreach ($connections as $connectionName) {
+        // Query the department table for departments
+        $departmentsFromThisConnection = DB::connection($connectionName)->table('departments')->pluck('name'); // Assuming the table name is 'departments'
+
+        // Merge departments from this connection with the main collection
+        $departments = $departments->merge($departmentsFromThisConnection);
+    }
+
+    // Return the combined collection of departments from all databases
+    $uniqueDepartments = $departments->unique();
+    return $uniqueDepartments;
+}
+function getShifts()
+{
+    $connections = companies(); // Update with your actual connection names
+    $shifts = collect();
+    foreach ($connections as $connectionName) {
+        // Query the department table for departments
+        $shiftsFromThisConnection = DB::connection($connectionName)->table('work_shifts')->pluck('name'); // Assuming the table name is 'departments'
+
+        // Merge departments from this connection with the main collection
+
+        $shifts = $shifts->merge($shiftsFromThisConnection);
+    }
+    $uniqueShifts = $shifts->unique();
+    // Return the combined collection of departments from all databases
+
+    return $uniqueShifts;
 }
