@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use Auth;
 use App\Models\User;
 use App\Models\Company;
+use App\Models\WorkShift;
+use App\Models\Department;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\EmploymentStatus;
 use App\Http\Controllers\Controller;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -145,8 +148,36 @@ class AdminController extends Controller
     public function getCompaniesEmployees(Request $request){
         $data = [];
         $data['title'] = 'All Companies Employees';
+   
         if ($request->ajax() && $request->loaddata == "yes") {
-            $records = getAllCompaniesEmployees()['total_employees'];
+            $records = collect(getAllCompaniesEmployees()['total_employees']);
+
+            if ($request->has('shift')) {
+                $shift = $request->shift;
+              
+                $records = $records->filter(function ($record) use ($shift) {
+                    return str_contains(strtolower($record->shift), strtolower($shift));
+                });
+            }
+            if ($request->has('status')) {
+                $status = $request->status;
+                $records = $records->filter(function ($record) use ($status) {
+                    return str_contains(strtolower($record->employment_status), strtolower($status));
+                });
+            }
+            if ($request->has('department')) {
+                $department = $request->department;
+                $records = $records->filter(function ($record) use ($department) {
+                    return str_contains(strtolower($record->department), strtolower($department));
+                });
+            }
+            if ($request->has('company')) {
+                $company = $request->company;
+                $records = $records->filter(function ($record) use ($company) {
+                    return str_contains(strtolower($record->company), strtolower($company));
+                });
+            }
+          
             return DataTables::of($records)
                 ->addIndexColumn()
                 ->addColumn('role', function ($model) {
@@ -167,15 +198,9 @@ class AdminController extends Controller
                 ->editColumn('name', function ($model) {
                     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
                 })
-                ->filter(function ($instance) use ($request) {
-                    if(!empty($request['company'])) {
-                        $instance = $instance->where(function ($w) use ($request) {
-                            $search = $request['company'] ?? null;
-                            $w->where('Department', $search);
-                        });
-                    }
-                })
-                ->rawColumns(['emp_status', 'name', 'role', 'Department', 'action'])
+
+                
+                ->rawColumns(['name', 'role', 'Department','shift','emp_status','action'])
                 ->make(true);
         }
         return view('admin.companies.employees.index', compact('data'));
@@ -183,10 +208,15 @@ class AdminController extends Controller
     public function getCompaniesTerminatedEmployees(Request $request){
         $data = [];
         $data['title'] = 'All Companies Terminated Employees';
+   
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getAllTerminatedEmployees()['all_terminated_employees'];
+        
             return DataTables::of($records)
                 ->addIndexColumn()
+                ->editColumn('name', function ($model) {
+                    return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
+                })
                 ->addColumn('role', function ($model) {
                     return '<span class="badge bg-label-primary">' . $model->role . '</span>';
                 })
@@ -202,10 +232,8 @@ class AdminController extends Controller
                 ->addColumn('emp_status', function ($model) {
                     return $model->employment_status;
                 })
-                ->editColumn('name', function ($model) {
-                    return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
-                })
-                ->rawColumns(['emp_status', 'name', 'role', 'Department', 'action'])
+              
+                ->rawColumns([ 'name', 'role', 'Department','Company','shift','emp_status'])
                 ->make(true);
         }
         return view('admin.companies.employees.terminated_employees', compact('data'));
@@ -348,7 +376,11 @@ class AdminController extends Controller
     }
 
     public function getSearchDataOnLoad(Request $request){
+     
+        $data['departments'] = Department::get();
         $data['companies'] = Company::get();
+        $data['shifts'] = WorkShift::get();
+        $data['statuses'] = EmploymentStatus::get();
         return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }
 }

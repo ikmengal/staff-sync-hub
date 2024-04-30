@@ -157,7 +157,7 @@ function getAllCompanies()
             }
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
-            $settings['vehicle_percent'] = number_format(count($vehicleUsers) / count($total_employees) * 100);
+            $settings['vehicle_percent'] =  (count($vehicleUsers) != 0 && count($total_employees) != 0) ? number_format(count($vehicleUsers) / count($total_employees) * 100) : 0;
             $settings['portalDb'] = $portalDb;
             $settings['total_employees'] = $total_employees;
             $settings['total_new_hiring'] = $total_new_hiring;
@@ -187,6 +187,7 @@ function getCompanyEmployees($companyName = null)
 
 function getEmployees($companyName = null)
 {
+    
     $data = [];
     $allEmployees = [];
     $total_employees_count = 0;
@@ -199,6 +200,7 @@ function getEmployees($companyName = null)
             break;
         } elseif ($companyName == NULL) {
             $total_employees_count += count($company->total_employees);
+       
             foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
             }
@@ -408,11 +410,13 @@ function getEmployeesAttendanceCount($portalDb, $employees, $current_date, $next
 }
 function getAllTerminatedEmployees()
 {
+ 
     $data = [];
     $terminated_employees = 0;
     $all_terminated_employees = [];
     foreach (getAllCompanies() as $company) {
         $terminated_employees += count($company->total_terminated_employees);
+    
         foreach ($company->total_terminated_employees as $employee) {
             $all_terminated_employees[] = (object) employeeDetails($company, $employee);
         }
@@ -463,6 +467,7 @@ function employeeDetails($company, $employee)
     $profile = '';
     $employment_id = '-';
     if (!empty($employee->profile->profile)) {
+  
         $profile = $employee->profile->profile;
         $employment_id = $employee->profile->employment_id;
     }
@@ -472,7 +477,7 @@ function employeeDetails($company, $employee)
     }
     $department = '-';
     if (isset($employee->departmentBridge->department) && !empty($employee->departmentBridge->department)) {
-        $department = '<span class="text-primary">' . $employee->departmentBridge->department->name . '</span>';
+        $department = $employee->departmentBridge->department->name;
     }
     $shift = '-';
     if (isset($employee->userWorkingShift->workShift) && !empty($employee->userWorkingShift->workShift->name)) {
@@ -481,13 +486,13 @@ function employeeDetails($company, $employee)
     $employment_status = '-';
     if (isset($employee->employeeStatusEndDateNull->employmentStatus) && !empty($employee->employeeStatusEndDateNull->employmentStatus->name)) {
         if ($employee->employeeStatusEndDateNull->employmentStatus->name == 'Terminated') {
-            $employment_status = '<span class="badge bg-label-danger me-1">Terminated</span>';
+            $employment_status = 'Terminated';
         } elseif ($employee->employeeStatusEndDateNull->employmentStatus->name == 'Permanent') {
-            $employment_status = '<span class="badge bg-label-success me-1">Permanent</span>';
+            $employment_status = 'Permanent';
         } elseif ($employee->employeeStatusEndDateNull->employmentStatus->name == 'Probation') {
-            $employment_status = '<span class="badge bg-label-warning me-1">Probation</span>';
+            $employment_status = 'Probation';
         } else {
-            $employment_status = '<span class="badge bg-label-info me-1">' . $employee->employeeStatusEndDateNull->employmentStatus->name . '</span>';
+            $employment_status = $employee->employeeStatusEndDateNull->employmentStatus->name;
         }
     }
     $data = [
@@ -506,6 +511,8 @@ function employeeDetails($company, $employee)
         'shift' => $shift,
         'employment_status' => $employment_status,
     ];
+
+
 
     return $data;
 }
