@@ -81,7 +81,7 @@
                 <div>All Vehicles</div>
             </a>
         </li>
-        <li class="menu-item {{ request()->is('admin/stocks/index')?'active':'' }}">
+        <li class="menu-item {{ request()->is('receipts*')?'active':'' }}">
             <a href="{{ route('receipts.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-file-dollar"></i>
                 <div>Receipts</div>

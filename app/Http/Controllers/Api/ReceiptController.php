@@ -20,33 +20,33 @@ class ReceiptController extends Controller
 {
     public function companyIndex(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $company = Company::get();
             if (isset($company) && !blank($company)) {
                 $data = CompanyResource::collection($company);
-                return  apiResponse($success = true, $data =  $data  , $message = "All comapnies.", $code = 200); 
+                return apiResponse(true, $data, "All comapnies.", 200); 
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No companies record.", $code = 500);
+                return apiResponse(false, null, "No companies record.", 500);
             }
         }
     }
 
     public function index(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id);
@@ -79,9 +79,9 @@ class ReceiptController extends Controller
             $stock = $stock->orderBy("id", $sorting)->paginate($pageSize);
             if (isset($stock) && !blank($stock)) {
                 $data = StockResource::collection($stock);
-                return apiResponse($success = true, $data = $data  , $message = "All Receipts", $code = 200);
+                return apiResponse(true, $data, "All Receipts", 200);
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 500);
+                return apiResponse(false, null, "No Receipt found...!", 500);
             }
         }
     }
@@ -91,13 +91,13 @@ class ReceiptController extends Controller
         ini_set('post_max_size' , '256M' );
 
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $validator = Validator::make($request->all(), [
                 'company_id' => 'required',
@@ -194,22 +194,22 @@ class ReceiptController extends Controller
                 }
                 $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
                 $data = new StockResource($data);
-                return  apiResponse(true ,  $data , "Stock added successfully.",   200); 
+                return apiResponse(true, $data, "Stock added successfully.", 200); 
             }else{
-                return  apiResponse(false,  null  , "Stock not added...!",  500); 
+                return apiResponse(false, null, "Stock not added...!", 500); 
             }
         }
     }
 
     public function show(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, null, "Enter token", 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse(false , null, "Unauthorized", 500);
+            return apiResponse(false , null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id)->where('id', $request->id)->first();
@@ -217,20 +217,20 @@ class ReceiptController extends Controller
                 $data = new StockResource($stock);
                 return apiResponse(true, $data, "Stock Detail.", 200);
             }else{
-                return  apiResponse(false, null, "No stock record found...!", 500);
+                return apiResponse(false, null, "No stock record found...!", 500);
             }
         }
     }
 
     public function edit(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id)->where('id', $request->id)->first();
@@ -246,20 +246,20 @@ class ReceiptController extends Controller
                 ];
                 return apiResponse(true, $data, "receipt detail.", 200);
             }else{
-                return  apiResponse(false, null, "No receipt record found...!", 500);
+                return apiResponse(false, null, "No receipt record found...!", 500);
             }
         }
     }
 
     public function update(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
 
             $validator = Validator::make($request->all(), [
@@ -284,30 +284,30 @@ class ReceiptController extends Controller
                 $stock->remarks = $request->remarks ?? $stock->remarks;
                 $stock->save();
                 $data = new StockResource($stock);
-                return apiResponse(true, $data , "receipt updated successfully.", 200);
+                return piResponse(true, $data, "receipt updated successfully.", 200);
             }else{
-                return  apiResponse(false, null , "No receipt record found...!", 500);
+                return apiResponse(false, null, "No receipt record found...!", 500);
             }
         }
     }
 
     public function receiptImageDelete(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stockImage = StockImage::where('id', $request->id)->delete();
             
             if(isset($stockImage) && !empty($stockImage)){
-                return apiResponse(true, null , "Image deleted successfully.", 200);
+                return apiResponse(true, null, "Image deleted successfully.", 200);
             }else{
-                return  apiResponse(false, null , "No image found...!", 500);
+                return apiResponse(false, null, "No image found...!", 500);
             }
         }
     }
@@ -317,13 +317,13 @@ class ReceiptController extends Controller
         ini_set('post_max_size' , '256M' );
 
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
     
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $validator = Validator::make($request->all(), [
                 'id' => 'required',
@@ -395,7 +395,7 @@ class ReceiptController extends Controller
                 }
                 return apiResponse(true, null, $index." Images uploaded successfully.", 200);
             }else{
-                return  apiResponse(false, null , "Receipt not found...!", 500);
+                return apiResponse(false, null, "Receipt not found...!", 500);
             }
         }
     }
