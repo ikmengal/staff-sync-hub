@@ -4,7 +4,7 @@
             @if(isset(settings()->logo) && !empty(settings()->logo))
                 <img src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->logo }}" class="img-fluid light-logo img-logo" alt="{{ settings()->name }}" />
             @else
-                <img src="{{ asset('public/admin/default.png') }}" class="img-fluid light-logo img-logo" alt="Default" />
+                {{-- <img src="{{ asset('public/admin/default.png') }}" class="img-fluid light-logo img-logo" alt="Default" /> --}}
             @endif
         </a>
 

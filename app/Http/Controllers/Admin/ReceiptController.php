@@ -111,7 +111,11 @@ class ReceiptController extends Controller
     {
         $title = 'Receipt Detail';
         $stock = Stock::where('id', $id)->first();
-        return view('admin.receipts.show', compact('title', 'stock'));
+        if(isset($stock) && !empty($stock)){
+            return view('admin.receipts.show', compact('title', 'stock'));
+        }else{
+            abort(404);
+        }
     }
 
     /**
