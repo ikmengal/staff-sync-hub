@@ -69,6 +69,7 @@ Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login
 //Custom Routes
 
 
+
 //Authentication Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
