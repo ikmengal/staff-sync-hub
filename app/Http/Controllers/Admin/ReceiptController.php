@@ -26,7 +26,7 @@ class ReceiptController extends Controller
         $title = 'All Receipts';
 
         // $model = Stock::orderby('id', 'desc')->get();
-        $model = Stock::query()->orderBy('id', 'desc');
+        $model = Stock::select("*")->orderBy('id', 'desc');
         if($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($model)
             ->addIndexColumn()
@@ -59,27 +59,27 @@ class ReceiptController extends Controller
             ->addColumn('action', function($model){
                 return view('admin.receipts.action', ['model' => $model])->render();
             })
-            ->filter(function ($query) use ($request) {
+            ->filter(function ($instance) use ($request) {
                 if (!empty($request['search'])) {
                     $search = $request['search'];
-                    $query->where('title', "LIKE", "%$search%");
-                    $query->orWhere('description', "LIKE", "%$search%");
-                    $query->orWhere('quantity', "LIKE", "%$search%");
+                    $instance->where('title', "LIKE", "%$search%");
+                    $instance->orWhere('description', "LIKE", "%$search%");
+                    $instance->orWhere('quantity', "LIKE", "%$search%");
                 }
                 
                 if (!empty($request['company'])) {
                     $search = $request['company'];
-                    $query->where('company_id', $search);
+                    $instance->where('company_id', $search);
                 }
 
                 if (!empty($request['creator'])) {
                     $search = $request['creator'];
-                    $query->where('user_id', $search);
+                    $instance->where('user_id', $search);
                 }
 
                 if (!empty($request['filter_status'])) {
                     $search = $request['filter_status'];
-                    $query->where('status', $search);
+                    $instance->where('status', $search);
                 }
             })
             ->rawColumns(['title', 'description', 'creator', 'company', 'quantity', 'status', 'action'])
