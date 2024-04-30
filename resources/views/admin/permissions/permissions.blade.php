@@ -1,4 +1,4 @@
-@foreach(SubPermissions($model->label) as $label)
+@foreach(SubPermissions($permission->label) as $label)
     @php $permission_lab = explode('-', $label->name) @endphp
     @if($permission_lab[1]=='list')
         <span class="badge bg-label-success">View</span>

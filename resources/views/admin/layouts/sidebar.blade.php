@@ -1,5 +1,6 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
+      
         <a href="{{ url('/dashboard') }}" class="app-brand-link">
             @if(isset(settings()->logo) && !empty(settings()->logo))
                 <img src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->logo }}" class="img-fluid light-logo img-logo" alt="{{ settings()->name }}" />
@@ -7,23 +8,27 @@
                 <img src="{{ asset('public/admin/default.png') }}" class="img-fluid light-logo img-logo" alt="Default" />
             @endif
         </a>
+   
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
             <i class="ti menu-toggle-icon d-none d-xl-block ti-sm align-middle"></i>
             <i class="ti ti-x d-block d-xl-none ti-sm align-middle"></i>
         </a>
+       
     </div>
 
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
+        @can('dashboards-list')
         <li class="menu-item {{ request()->is('dashboard')?'active':'' }}">
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-smart-home"></i>
                 <div data-i18n="Dashboards">Dashboard</div>
             </a>
         </li>
+        @endcan
 
         <!-- Layouts -->
         <li class="menu-item">
@@ -51,6 +56,39 @@
                 <div>All Offices</div>
             </a>
         </li>
+        @canany([ 'users-list', 'roles-list', 'permissions-list', 'users-create', 'roles-create', 'permissions-create'])
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-user-sidebar"></i>
+                <div data-i18n="Users">Users</div>
+            </a>
+
+            <ul class="menu-sub">
+                @canany(['users-list','users-create'])
+                <li class="menu-item">
+                    <a href="{{route('users.index')}}" class="menu-link">
+                        <div data-i18n="Users">Users</div>
+                    </a>
+                </li>
+                @endcanany
+                @canany(['roles-list','roles-create'])
+                <li class="menu-item">
+                    <a href="{{route('roles.index')}}" class="menu-link">
+                        <div data-i18n="Roles">Roles</div>
+                    </a>
+                </li>
+                @endcanany
+                @canany(['permissions-list','permissions-create'])
+                <li class="menu-item">
+                    <a href="{{route('permissions.index')}}" class="menu-link">
+                        <div data-i18n="Permissions">Permissions</div>
+                    </a>
+                </li>
+                @endcanany
+            </ul>
+        </li>
+        @endcanany
+
         <li class="menu-item {{ request()->is('admin/companies/employees')?'active':'' }}">
             <a href="{{ route('admin.companies.employees') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-users"></i>
