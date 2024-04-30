@@ -18,7 +18,6 @@ use Storage;
 
 class ReceiptController extends Controller
 {
-
     public function companyIndex(Request $request){
         if($request->bearerToken() == ""){
             return  apiResponse($success = false, $message = "Enter token", $code = 500); 
