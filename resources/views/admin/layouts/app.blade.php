@@ -21,9 +21,9 @@
 
     <!-- Favicon -->
     @if(!empty(settings()))
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/{{ settings()->favicon }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @endif
     <!-- Favicon -->
 
@@ -60,6 +60,7 @@
     <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/css/pages/cards-advance.css" />
 
     <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/css/custom.css" />
     @stack('styles')
     <!-- Custom CSS -->
 
