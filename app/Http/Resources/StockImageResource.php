@@ -15,6 +15,7 @@ class StockImageResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'images' =>isset( $this->image ) && !empty( $this->image)  ?  asset('public/admin/assets/img/stock/').'/'.$this->image : '',
             'type' => isset($this->type) ? ($this->type == 'pdf' ? 'pdf' : 'image') : null,
         ];

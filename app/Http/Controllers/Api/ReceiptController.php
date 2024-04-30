@@ -109,7 +109,7 @@ class ReceiptController extends Controller
             ]);
     
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), 500);
             }
 
             $user = User::where('id', $userToken->tokenable_id)->first();
@@ -139,16 +139,32 @@ class ReceiptController extends Controller
                                 'stock_id' => $stock->id,
                                 'image' => $fileName,
                                 'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
+                                'request_type' => 2,
                             ]);
                         }
                     }
                 }else if(isset($request->type) && $request->type == 1){
                     if ($request->has('images')) {
                         $image = $request->images;
-                        $image = str_replace('data:image/png;base64,', '', $image);
+                        $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                        switch ($mime) {
+                            case 'image/jpeg':
+                                $extension = 'jpeg';
+                                break;
+                            case 'image/png':
+                                $extension = 'png';
+                                break;
+                            case 'image/gif':
+                                $extension = 'gif';
+                                break;
+                            default:
+                                $extension = 'jpg';
+                        }
+            
+                        $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
                         $image = str_replace(' ', '+', $image);
                         $index = 1;
-                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . 'png';
+                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
                         $directory = public_path('admin/assets/img/stock/');
                         $filePath = $directory . $imageName;
                         \File::put($filePath, base64_decode($image));
@@ -156,6 +172,7 @@ class ReceiptController extends Controller
                             'stock_id' => $stock->id,
                             'image' => $imageName,
                             'type' => 'image',
+                            'request_type' => 1,
                         ]);
                     }
                 }
@@ -238,7 +255,7 @@ class ReceiptController extends Controller
             ]);
     
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), 500);
             }
 
             $user = User::where('id', $userToken->tokenable_id)->first();
@@ -298,32 +315,13 @@ class ReceiptController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors()->all(), 400);
+                return response()->json($validator->errors()->all(), 500);
             }
 
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('id', $request->id)->where('user_id', $user->id)->first();
             
             if(isset($stock) && !empty($stock)){
-                // if($request->hasFile('images')){
-                //     $files = $request->file('images');
-                //     foreach ($files as $index => $file) {
-                //         $originalName = $file->getClientOriginalExtension();
-                //         $mimeType = $file->getClientMimeType();
-                //         $index = $index + 1;
-                //         $type = explode('/', $file->getClientMimeType());
-                //         $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
-                //         $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
-                //         $file->move(public_path('admin/assets/img/stock/'), $fileName);
-
-                //         StockImage::create([
-                //             'stock_id' => $stock->id,
-                //             'image' => $fileName,
-                //             'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
-                //         ]);
-                //     }
-                // }
-
                 if(isset($request->type) && $request->type == 2){
                     if($request->hasFile('images')){
                         $files = $request->file('images');
@@ -340,16 +338,32 @@ class ReceiptController extends Controller
                                 'stock_id' => $stock->id,
                                 'image' => $fileName,
                                 'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
+                                'request_type' => 2,
                             ]);
                         }
                     }
                 }else if(isset($request->type) && $request->type == 1){
                     if ($request->has('images')) {
                         $image = $request->images;
-                        $image = str_replace('data:image/png;base64,', '', $image);
+                        $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                        switch ($mime) {
+                            case 'image/jpeg':
+                                $extension = 'jpeg';
+                                break;
+                            case 'image/png':
+                                $extension = 'png';
+                                break;
+                            case 'image/gif':
+                                $extension = 'gif';
+                                break;
+                            default:
+                                $extension = 'jpg';
+                        }
+            
+                        $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
                         $image = str_replace(' ', '+', $image);
                         $index = 1;
-                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . 'png';
+                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
                         $directory = public_path('admin/assets/img/stock/');
                         $filePath = $directory . $imageName;
                         \File::put($filePath, base64_decode($image));
@@ -357,6 +371,7 @@ class ReceiptController extends Controller
                             'stock_id' => $stock->id,
                             'image' => $imageName,
                             'type' => 'image',
+                            'request_type' => 1,
                         ]);
                     }
                 }
