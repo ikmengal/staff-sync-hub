@@ -834,3 +834,4 @@ function getShifts()
 
     return $uniqueShifts;
 }
+ 

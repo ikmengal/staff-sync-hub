@@ -108,21 +108,36 @@
                 <div>All Vehicles</div>
             </a>
         </li>
-        <li class="menu-item {{Route::is('purchase-requests.*') ? 'active' : ''}} ">
-            <a href=" {{ route('purchase-requests.index') }}" class="menu-link">
-                <img src="{{asset('public/svgs/prism-plus.svg')}}" alt="" class="menu-icon">
-                <div>Purchase Requests</div>
+        <!-- purchases -->
+        <li class="menu-item {{ Route::is('purchase-requests.*') ||
+                Route::is('estimates.*') ||
+                Route::is('receipts.*') 
+                        ? 'open active'
+                    : '' }}">
+            <a href=" javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-layout-sidebar"></i>
+                <div data-i18n="Purchases">Purchases</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item hover is_shown {{Route::is('purchase-requests.*') ? 'active' : ''}} ">
+                    <a href="{{ route('purchase-requests.index') }}" class="menu-link">
+                        <div data-i18n="Requests">Requests</div>
+                    </a>
+                </li>
+                <li class="menu-item hover is_shown {{Route::is('estimates.*') ? 'active' : ''}} ">
+                    <a href="{{ route('estimates.index') }}" class="menu-link">
+                        <div data-i18n="Estimates">Estimates</div>
+                    </a>
+                </li>
+                <li class="menu-item hover is_shown {{Route::is('receipts.*') ? 'active' : ''}} ">
+                    <a href="{{ route('receipts.index') }}" class="menu-link">
+                        <div data-i18n="Receipts">Receipts</div>
+                    </a>
+                </li>
+            </ul>
         </li>
-        <li class="menu-item {{ request()->is('admin/stocks/index')?'active':'' }}">
-            <a href="{{ route('receipts.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-file-dollar"></i>
-                <div>Receipts</div>
-            </a>
-        </li>
 
 
-
-
+        <!-- purchases -->
     </ul>
 </aside>

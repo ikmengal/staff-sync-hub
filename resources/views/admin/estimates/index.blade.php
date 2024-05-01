@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
-@section('title', $title.' | '.appName()) 
+@section('title', $title.' | '.appName())
 @section('content')
 
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <input type="hidden" id="page_url" value="{{ route('purchase-requests.index') }}">
-    <input type="hidden" id="search_route" value="{{ route('purchase-requests.index') }}">
+    <input type="hidden" id="page_url" value="{{ route('estimates.index') }}">
+    <input type="hidden" id="search_route" value="{{ route('estimates.index') }}">
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -54,6 +54,7 @@
                     <div class="col-md-3 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
+                        <a href="{{route('estimates.create')}}"   class="btn btn-success  me-2">Add&nbsp;<i class="fa-solid fa-plus"></i></a>
                     </div>
                 </div>
                 <div class="card-datatable table-responsive">
@@ -65,8 +66,10 @@
                                         <th>#</th>
                                         <th>Company</th>
                                         <th>Creator</th>
-                                        <th>Subject</th>
+                                        <th>Request</th>
+                                        <th>Title</th>
                                         <th>Description</th>
+                                        <th>Price</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -179,12 +182,20 @@
                     name: 'creator'
                 },
                 {
-                    data: 'subject',
-                    name: 'subject'
+                    data: 'requestData',
+                    name: 'requestData'
+                },
+                {
+                    data: 'title',
+                    name: 'title'
                 },
                 {
                     data: 'description',
                     name: 'description'
+                },
+                {
+                    data: 'price',
+                    name: 'price'
                 },
                 {
                     data: 'status',
