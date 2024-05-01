@@ -23,13 +23,7 @@
             <!-- Stocks List Table -->
             <div class="card mt-4">
                 <div class="row p-3">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label" for="creator">Creator</label>
-                        <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
-                            <option value="">All</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="form-label" for="company">Company</label>
                         <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
                             <option value="">All</option>
@@ -42,7 +36,7 @@
                             @endif
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="form-label" for="filter_status">Status</label>
                         <select name="filter_status" id="filter_status" class="select2 form-select filter_status unselectValue">
                             <option value="">All</option>
@@ -51,7 +45,7 @@
                             <option value="3">Rejected</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mt-3 py-1">
+                    <div class="col-md-4 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
                     </div>
@@ -98,9 +92,9 @@
                                         <span id="remark_error" class="text-danger error"></span>
                                     </div>
                                 </div>
-                                <input type="hidden" name="route" id="route" value="{{route('receipts.status')}}">
+                                <input type="hidden" name="route" id="route" value="{{route('purchase-requests.status')}}">
                                 <input type="hidden" name="status_data" id="status_data" value="1">
-                                <input type="hidden" name="stock_status_id" id="stock_status_id" value="">
+                                <input type="hidden" name="purchase_status_id" id="purchase_status_id" value="">
                                 <div class="col-12 action-btn">
                                     <div class="demo-inline-spacing sub-btn">
                                         <button type="submit" class="btn btn-primary me-sm-3 me-1 submitBtn">Submit</button>
