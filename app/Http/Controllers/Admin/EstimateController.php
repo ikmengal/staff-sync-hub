@@ -137,11 +137,11 @@ class EstimateController extends Controller
      */
     public function show(string $id)
     {
-        $title = 'Estimate Detail';
-        $record = Estimate::where('id', $id)->first();
-        if (isset($record) && !empty($record)) {
+        $data['title'] = 'Estimate Detail';
+        $data['records'] = Estimate::where('request_id', $id)->get();
+        if (isset($data['records']) && !empty($data['records'])) {
             if (view()->exists('admin.estimates.show')) {
-                return view('admin.estimates.show', compact('record', 'title'));
+                return view('admin.estimates.show', $data);
             } else {
                 abort(404);
             }
