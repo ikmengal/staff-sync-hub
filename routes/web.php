@@ -139,3 +139,4 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
+
