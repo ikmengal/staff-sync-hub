@@ -835,3 +835,8 @@ function getShifts()
     return $uniqueShifts;
 }
  
+
+
+function getCountOfEstiamte($estimate) {
+    
+}
