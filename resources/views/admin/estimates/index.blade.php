@@ -54,7 +54,9 @@
                     <div class="col-md-3 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
+                        @can('estimates-create')
                         <a href="{{route('estimates.create')}}"   class="btn btn-success  me-2">Add&nbsp;<i class="fa-solid fa-plus"></i></a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-datatable table-responsive">

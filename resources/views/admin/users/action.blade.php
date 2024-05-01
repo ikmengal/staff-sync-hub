@@ -8,12 +8,12 @@
     <ul class="dropdown-menu">
 
         <li>
-            
+        @can('users-direct-permission')
          <a href="#" class="dropdown-item addPermission"
                     data-route="{{ route('users.directPermission', $user->id) }}" data-id="{{$user->id}}">
                  Permissions
                 </a>
-           
+        @endcan
         </li>
         <li>
             @can('users-delete')
