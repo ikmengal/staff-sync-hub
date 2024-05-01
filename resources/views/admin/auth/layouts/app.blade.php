@@ -20,9 +20,9 @@
 
     <!-- Favicon -->
     @if(isset(settings()->favicon) && !empty(settings()->favicon))
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/{{ settings()->favicon }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @endif
     <!-- Favicon -->
 
@@ -75,9 +75,9 @@
                             <a href="{{ route('admin.login') }}" class="app-brand-link gap-2">
                                 <div class="app-brand mb-4">
                                     @if(isset(settings()->black_logo) && !empty(settings()->black_logo))
-                                        <img width="82" height="72" src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->black_logo }}" class="img-fluid light-logo" alt="Logo" />
+                                        <img width="180" height="72" src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid light-logo" alt="Logo" />
                                     @else
-                                        <img width="82" height="72" src="{{ asset('public/admin/assets/img/logo/default.png') }}" class="img-fluid light-logo" alt="Logo" />
+                                        <img width="180" height="72" src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid light-logo" alt="Logo" />
                                     @endif
                                 </div>
                             </a>

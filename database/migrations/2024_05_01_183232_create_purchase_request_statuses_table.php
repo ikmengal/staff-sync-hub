@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('{{ table }}', function (Blueprint $table) {
+        Schema::create('purchase_request_statuses', function (Blueprint $table) {
             $table->id();
+            $table->string("name")->nullable();
+            $table->string("class")->nullable();
             $table->integer("status")->default(1)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
-        
     }
 
     /**
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('{{ table }}');
+        Schema::dropIfExists('purchase_request_statuses');
     }
 };
