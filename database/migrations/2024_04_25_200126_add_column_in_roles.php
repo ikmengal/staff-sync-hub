@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('{{ table }}', function (Blueprint $table) {
-            $table->id();
-            $table->integer("status")->default(1)->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+        Schema::table('roles', function (Blueprint $table) {
+            $table->string('display_name')->nullable();
         });
-        
     }
 
     /**
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('{{ table }}');
+        Schema::table('roles', function (Blueprint $table) {
+            //
+        });
     }
 };

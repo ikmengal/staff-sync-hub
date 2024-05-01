@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('{{ table }}', function (Blueprint $table) {
+        Schema::create('otps', function (Blueprint $table) {
             $table->id();
-            $table->integer("status")->default(1)->nullable();
+            $table->integer('user_id')->nullable();
+            $table->string('otp')->nullable();
+            $table->timestamp('otp_expires')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
-        
     }
 
     /**
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('{{ table }}');
+        Schema::dropIfExists('otps');
     }
 };

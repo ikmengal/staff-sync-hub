@@ -21,9 +21,9 @@
 
     <!-- Favicon -->
     @if(!empty(settings()))
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/{{ settings()->favicon }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin') }}/assets/img/favicon/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @endif
     <!-- Favicon -->
 
@@ -55,11 +55,14 @@
     <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
     <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
     <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/vendor/css/pages/cards-advance.css" />
 
     <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('public/admin') }}/assets/css/custom.css" />
     @stack('styles')
     <!-- Custom CSS -->
 
@@ -128,6 +131,7 @@
     <script src="{{ asset('public/admin') }}/assets/vendor/libs/apex-charts/apexcharts.js"></script>
     <script src="{{ asset('public/admin') }}/assets/vendor/libs/swiper/swiper.js"></script>
     <script src="{{ asset('public/admin') }}/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Main JS -->
     <script src="{{ asset('public/admin') }}/assets/js/main.js"></script>
@@ -135,6 +139,8 @@
     <!-- Page JS -->
     <script src="{{ asset('public/admin') }}/assets/js/dashboards-analytics.js"></script>
     <script src="{{ asset('public/admin') }}/assets/js/attendance-daily-report.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <!-- Required JS -->
     <script>

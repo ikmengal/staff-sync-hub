@@ -518,6 +518,7 @@
             });
         }, 1000);
     }
+    
 
     $(document).ready(function() {
         loadPageData()

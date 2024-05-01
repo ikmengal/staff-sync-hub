@@ -14,6 +14,7 @@ use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
@@ -22,10 +23,11 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
+        
         $this->authorize('roles-list');
         $data['per_page_records'] = 10;
         $data['title'] = 'All Roles';
-        $data['models'] = Permission::orderby('id','DESC')->groupBy('label')->get();
+        $data['models'] = Permission::groupBy('label')->select('label')->get();
         $data['work_shifts'] = WorkShift::orderby('id', 'desc')->get();
         $data['designations'] = Designation::orderby('id', 'desc')->where('status', 1)->get();
         $data['roles'] = Role::orderby('id', 'desc')->get();
@@ -154,103 +156,96 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'name' => ['required', 'unique:roles', 'max:100'],
-        ]);
+        $this->authorize('roles-create');
+        $rules = [
+            'name' => 'required|unique:roles',
+            'permissions.*' => 'required'
+        ];
 
-        DB::beginTransaction();
+        $message = [
+            'name.unique' => 'This Role name has already been taken.'
+        ];
 
-        try{
-            $role = Role::create(['name' => $request->name]);
-            $role->syncPermissions($request->input('permissions'));
 
-            if($role){
-                DB::commit();
-            }
-
-            \LogActivity::addToLog('New Role Added');
-
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['error' => $e->getMessage()]);
+        $validator = Validator::make($request->all(), $rules, $message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors(), 'validation' => false]);
         }
+   
+        $role = Role::create([
+            'name' => $request->name ?? null,
+            'display_name' => $request->name ?? null,
+            'guard_name' => 'web',
+        ]);
+        if (isset($request->permissions) && !empty($request->permissions)) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        if (isset($role) && !empty($role)) {
+
+             
+            $result = ['success' => true, 'message' => 'Role successfuly created', 'status' => 200];
+        } else {
+            $result = ['success' => false, 'message' => 'Role not created, something went wrong', 'status' => 501];
+        }
+
+        return $result;
     }
+
+ 
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
+        
         $this->authorize('roles-edit');
         $role = Role::where('id', $id)->first();
-        $role_permissions = $role->getPermissionNames();
+        $role_permissions = $role->permissions->pluck('name')->toArray();
         $models = Permission::orderby('id','DESC')->groupBy('label')->get();
         $roles = Role::orderby('id', 'desc')->get();
-
-        return (string) view('admin.roles.edit_content', compact('role', 'models', 'roles', 'role_permissions'));
+        $view = view('admin.roles.edit_content',compact('role', 'models', 'roles', 'role_permissions'))->render();
+        return ['success' => true, 'view' => $view];
+       
     }
 
-    public function editRole(Request $request, $id){
-        $this->authorize('roles-edit');
-        $title = 'Edit Role & Permissions';
-        $role = Role::where('id', $id)->first();
-        $role_permissions = $role->getPermissionNames();
-        $roles = Role::orderby('id', 'desc')->get();
-
-        $models = Permission::orderby('id','DESC')->groupBy('label')->get();
-        $records = Permission::latest()->groupBy('label')->select("*");
-        if ($request->ajax() && $request->loaddata == "yes") {
-            return DataTables::of($records)
-                ->addIndexColumn()
-                ->addColumn('label', function ($model) {
-                    return ucfirst($model->label);
-                })
-                ->addColumn('sub_permissions', function ($model) use($role_permissions) {
-                    return view('admin.roles.sub-permissions', ['permission' => $model, 'role_permissions' => $role_permissions])->render();
-                })
-                ->filter(function ($instance) use ($request) {
-                    if (!empty($request->get('search'))) {
-                        $search = $request->get('search');
-                        $instance->where('label', 'LIKE', "%$search%");
-                    }
-                    if (!empty($request->model_name) && $request->model_name != "all") {
-                        $model_name = $request->get('model_name');
-                        $instance->where('label', 'LIKE', "%$model_name%");
-                    }
-                })
-                ->rawColumns(['label', 'sub_permissions'])
-                ->make(true);
-        }
-
-        return view('admin.roles.edit', compact('role', 'roles', 'title', 'models'));
-    }
+   
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request)
+  
+
+
+    public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'name' => 'required|max:150|unique:roles,id,'.$request->role_id,
-        ]);
+        $this->authorize('roles-edit');
+        $update = Role::where('id', $id)->first();
+        $update->name = $request->name;
+        $update->save();
+        $update->syncPermissions($request->permissions);
+  
+        if (isset($update) && !empty($update)) {
 
-        DB::beginTransaction();
-
-        try{
-            $role = Role::where('id', $request->role_id)->first();
-            $role->name = $request->name;
-            $role->save();
-            $role->syncPermissions($request->input('permissions'));
-
-            DB::commit();
-
-            \LogActivity::addToLog('Role Updated');
-
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['error' => $e->getMessage()]);
+            $result = ['success' => true, 'message' => 'Role successfuly updated', 'status' => 200];
+        } else {
+            $result = ['success' => false, 'message' => 'Role not updated, something went wrong', 'status' => 501];
         }
+
+        return $result;
+    }
+
+
+
+    public function showAllUsers(Request $request)
+    {
+        $this->authorize('roles-all-user');
+        $record = Role::where('id', $request->id)->first();
+        $users = $record->users ?? null;
+        $title = "User List";
+        $view = view('admin.roles.show-all-users-modal', compact('users', 'title'))->render();
+        return ['success' => true, 'view' => $view];
     }
 }

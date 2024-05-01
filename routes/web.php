@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
@@ -13,7 +14,9 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\MasterLoginController;
+use App\Http\Controllers\Admin\PurchaseRequestController;
 use App\Http\Controllers\Admin\ReceiptController;
+use App\Models\PurchaseRequest;
 use App\Models\User;
 
 /*
@@ -28,7 +31,7 @@ use App\Models\User;
 */
 // Route::get("create-user" , function() {
 //     return User::create([
-        
+
 //         "first_name" => "Admin",
 //         "last_name" => "-",
 //         "email" => "admin@gmail.com",
@@ -43,6 +46,16 @@ Route::get("check-config", function () {
 
     return  $config;
 });
+Route::resource('/requisitions', EmployeeRequisitionController::class);
+Route::resource('/settings', SettingController::class);
+Route::resource('/departments', DepartmentController::class);
+Route::resource('/roles', RoleController::class);
+Route::resource('/permissions', PermissionController::class);
+Route::resource('/designations', DesignationController::class);
+Route::resource('/work_shifts', WorkShiftController::class);
+Route::resource('users', UserController::class);
+Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
+Route::resource('/stocks', StockController::class);
 
 //Resource Routes
 
@@ -101,8 +114,12 @@ Route::middleware('auth')->group(function () {
     Route::get('receipt-filter', [ReceiptController::class, 'getSearchDataOnLoad'])->name('receipts.getSearchDataOnLoad');
 
 
+    // Purchase Request Route
+    Route::post('purchase-requests-status', [PurchaseRequestController::class, 'status'])->name('purchase-requests.status');
+ 
 
 
+    Route::resource('/purchase-requests', PurchaseRequestController::class);
     Route::resource('/requisitions', EmployeeRequisitionController::class);
     Route::resource('/settings', SettingController::class);
     Route::resource('/departments', DepartmentController::class);

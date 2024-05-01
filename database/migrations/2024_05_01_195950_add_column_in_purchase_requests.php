@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('{{ table }}', function (Blueprint $table) {
-            $table->id();
-            $table->integer("status")->default(1)->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+        Schema::table('purchase_requests', function (Blueprint $table) {
+            $table->longText("remarks")->nullable()->after("raw_data");
         });
-        
     }
 
     /**
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('{{ table }}');
+        Schema::table('purchase_requests', function (Blueprint $table) {
+            //
+        });
     }
 };
