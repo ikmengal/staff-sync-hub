@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\PurchaseRequestController;
 use App\Http\Controllers\Api\ReceiptController;
 use App\Http\Controllers\Api\UserPlayerIdController;
 
@@ -49,3 +50,12 @@ Route::post('receipt-add-image', [ReceiptController::class, 'receiptAddImage']);
 // User Player-Id Route
 Route::get('get-player-id', [UserPlayerIdController::class, 'index']);
 Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
+
+
+
+
+
+
+
+// for other portals
+Route::post("store-purchase-request", [PurchaseRequestController::class, 'store']);

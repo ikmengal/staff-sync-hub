@@ -21,7 +21,7 @@ class ReceiptController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
+{
         // $this->authorize('stock-list');
         $title = 'All Receipts';
 
