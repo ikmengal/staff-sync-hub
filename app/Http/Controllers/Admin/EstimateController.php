@@ -10,6 +10,7 @@ use App\Models\PurchaseRequest;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -23,7 +24,7 @@ class EstimateController extends Controller
         $data['title'] = 'Estimates';
         $data['companies'] = Company::get();
         $data['requests'] = PurchaseRequest::get();
-        $records = Estimate::groupBy("request_id")->select("*");
+        $records = Estimate::groupBy("request_id")->select("*", DB::raw("count(*) as count"));
         if ($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($records)
                 ->addIndexColumn()
@@ -52,7 +53,7 @@ class EstimateController extends Controller
                 })
                 ->addColumn('count', function ($model) {
                     $data = '';
-                    $data = '<span class="badge bg-label-success">'. $model->requestData->count() .'</span>';
+                    $data = '<span class="badge bg-label-success">' . $model->count   . '</span>';
                     return $data;
                 })
                 ->addColumn('price', function ($model) {
@@ -136,15 +137,15 @@ class EstimateController extends Controller
      */
     public function show(string $id)
     {
-        $title = 'Estimate Detail';
-        $record = Estimate::where('id', $id)->first();
-        if(isset($record) && !empty($record)){
-            if(view()->exists('admin.estimates.show')){
-                return view('admin.estimates.show', compact('record', 'title'));
-            }else{
+        $data['title'] = 'Estimate Detail';
+        $data['records'] = Estimate::where('request_id', $id)->get();
+        if (isset($data['records']) && !empty($data['records'])) {
+            if (view()->exists('admin.estimates.show')) {
+                return view('admin.estimates.show', $data);
+            } else {
                 abort(404);
             }
-        }else{
+        } else {
             abort(404);
         }
     }
