@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Company;
+use App\Models\User;
 use App\Models\Estimate;
 use App\Models\PurchaseRequest;
 use Exception;
@@ -23,6 +24,7 @@ class EstimateController extends Controller
     {
         $data['title'] = 'Estimates';
         $data['companies'] = Company::get();
+        $data['users'] = User::get();
         $data['requests'] = PurchaseRequest::get();
         $records = Estimate::groupBy("request_id")->select("*", DB::raw("count(*) as count"));
         if ($request->ajax() && $request->loaddata == "yes") {
@@ -69,7 +71,28 @@ class EstimateController extends Controller
                 ->addColumn('action', function ($model) {
                     return view('admin.estimates.action', ['model' => $model])->render();
                 })
-                ->filter(function ($query) use ($request) {
+                ->filter(function ($instance) use ($request) {
+                    if(!empty($request['search'])){
+                        $search = $request['search'];
+                        $instance->where("title", "LIKE", "%$search%");
+                        $instance->orWhere("description", "LIKE", "%$search%");
+                        $instance->orWhere("price", "LIKE", "%$search%");
+                    }
+
+                    if(!empty($request['creator'])){
+                        $search = $request['creator'];
+                        $instance->where("creator_id", $search);
+                    }
+
+                    if(!empty($request['company'])){
+                        $search = $request['company'];
+                        $instance->where("company_id", $search);
+                    }
+
+                    if(!empty($request['filter_status'])){
+                        $search = $request['filter_status'];
+                        $instance->where("status", $search);
+                    }
                 })
                 ->rawColumns(['title', 'description', 'count', 'creator', 'company', 'requestData',  'price',  'status', 'action'])
                 ->make(true);
