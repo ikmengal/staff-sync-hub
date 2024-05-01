@@ -41,18 +41,7 @@
                        
                     </select>
                 </div>
-                <div class="col-md-2 mb-3">
-                    <label for="">Shift</label>
-                    <select name="shift" id="shift" class="select2 form-select shift unselectValue">
-                      
-                    </select>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="">Status</label>
-                    <select name="status" id="status" class="select2 form-select status unselectValue">
-               
-                    </select>
-                </div>
+            
                 <div class="col-md-2 mt-3 py-1">
                     <button type="button" class="btn btn-primary searchBtn me-2"><i
                         class="fa-solid fa-filter"></i></button>
@@ -105,8 +94,7 @@
                     data: function (d) {
                         d.company = $('#company').val();
                         d.department = $("#department").val();
-                        d.shift = $("#shift").val();
-                        d.status = $("#status").val();
+                   
                     },
                     error: function(xhr, error, code) {
                         console.log(xhr);
@@ -157,18 +145,7 @@
                                 department.append('<option value="' +  val + '">' + val + '</option>');
                             });
                         }
-                        if (res.data.shifts.length !== 0) {
-                            shift.append('<option value="">Select Shift</option>');
-                            $.each(res.data.shifts, function (ind, val) {
-                                shift.append('<option value="' + val + '">' + val + '</option>');
-                            });
-                        }
-                        if (res.data.statuses.length !== 0) {
-                            status.append('<option value="">Select Status</option>');
-                            $.each(res.data.statuses, function (ind, val) {
-                                status.append('<option value="' + val.name + '">' + val.name + '</option>');
-                            });
-                        }
+                    
                     }
                 }
             });
