@@ -263,7 +263,6 @@ class AdminController extends Controller
                         });
                     }
                 })
-
                 ->rawColumns(['name', 'role', 'Department', 'Company', 'shift', 'emp_status'])
                 ->make(true);
         }
@@ -275,6 +274,7 @@ class AdminController extends Controller
         $data['title'] = 'All Companies Vehicles';
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getAllCompaniesVehicles()['vehicles'];
+
             return DataTables::of($records)
                 ->addIndexColumn()
                 ->addColumn('vehicleName', function ($model) {
@@ -285,6 +285,34 @@ class AdminController extends Controller
                 })
                 ->addColumn('company', function ($model) {
                     return $model->company ?? '-';
+                })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('shift') && !empty($request->shift)) {
+                        $shift = $request->shift;
+                        $query->collection = $query->collection->filter(function ($record) use ($shift) {
+                            return str_contains(strtolower($record['shift']), strtolower($shift));
+                        });
+                    }
+                    if ($request->has('status')  && !empty($request->status)) {
+                        $status = $request->status;
+                     
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
+                          
+                            return str_contains(strtolower($record['employment_status']), strtolower($status));
+                        });
+                    }
+                    if ($request->has('department')  && !empty($request->department)) {
+                        $department = $request->department;
+                        $query->collection = $query->collection->filter(function ($record) use ($department) {
+                            return str_contains(strtolower($record['department']), strtolower($department));
+                        });
+                    }
+                    if ($request->has('company')  && !empty($request->company)) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
                 })
                 ->rawColumns(['vehicleName', 'name'])
                 ->make(true);
