@@ -69,6 +69,7 @@
                                         <th>Request</th>
                                         <th>Title</th>
                                         <th>Description</th>
+                                        <th>Count</th>
                                         <th>Price</th>
                                         <th>Status</th>
                                         <th>Action</th>
@@ -192,6 +193,10 @@
                 {
                     data: 'description',
                     name: 'description'
+                },
+                {
+                    data: 'count',
+                    name: 'count'
                 },
                 {
                     data: 'price',
