@@ -804,3 +804,4 @@ function getShifts()
 
     return $uniqueShifts;
 }
+ 

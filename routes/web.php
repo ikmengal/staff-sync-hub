@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
+use App\Http\Controllers\Admin\EstimateController;
 use App\Http\Controllers\Admin\MasterLoginController;
 use App\Http\Controllers\Admin\PurchaseRequestController;
 use App\Http\Controllers\Admin\ReceiptController;
@@ -117,6 +118,7 @@ Route::middleware('auth')->group(function () {
  
 
 
+    Route::resource('/estimates', EstimateController::class);
     Route::resource('/purchase-requests', PurchaseRequestController::class);
     Route::resource('/requisitions', EmployeeRequisitionController::class);
     Route::resource('/settings', SettingController::class);
