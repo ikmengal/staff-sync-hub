@@ -125,8 +125,13 @@ function getAllCompanies()
                 ->select(['id', 'slug', 'first_name', 'last_name', 'email'])
                 ->get();
 
-            $total_terminated_employees = User::on($portalDb)->where('is_employee', 0)->get();
-            $terminatedUsersOfCurrentMonth = User::on($portalDb)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
+            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
+                $q->where('employment_status_id',3);
+            })->where('is_employee', 0)->get();
+
+            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
+                $q->where('employment_status_id',3);
+            })->where('is_employee', 0)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
                 $query->whereMonth('last_working_date', $currentMonth)
                     ->whereYear('last_working_date', $currentYear);
             })->get();

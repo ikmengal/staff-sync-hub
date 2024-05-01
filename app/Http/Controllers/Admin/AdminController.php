@@ -213,7 +213,6 @@ class AdminController extends Controller
 
         $data = [];
         $data['title'] = 'All Companies Terminated Employees';
-      
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getAllTerminatedEmployees()['all_terminated_employees'];
             return DataTables::of($records)

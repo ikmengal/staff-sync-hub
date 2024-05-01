@@ -59,7 +59,7 @@
         @canany([ 'users-list', 'roles-list', 'permissions-list', 'users-create', 'roles-create', 'permissions-create'])
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-user-sidebar"></i>
+                <i class="menu-icon tf-icons ti ti-user"></i>
                 <div data-i18n="Users">Users</div>
             </a>
 
