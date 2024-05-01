@@ -81,26 +81,34 @@ class AdminController extends Controller
     }
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials, $request->has('remember'))) {
-            $user = Auth::user();
-            if ($user->status == 1) {
-                //Remember me
-                if ($request->has('remember') && !empty($request->remember)) {
-                    setcookie("email", $request->email, time() + 3600);
-                    setcookie("password", $request->password, time() + 3600);
+        $user = User::where('email',$request->email)->first();
+        if($user->user_for_portal != null){
+            $credentials = $request->only('email', 'password');
+            if (Auth::attempt($credentials, $request->has('remember'))) {
+                $user = Auth::user();
+                if ($user->status == 1) {
+                    //Remember me
+                    if ($request->has('remember') && !empty($request->remember)) {
+                        setcookie("email", $request->email, time() + 3600);
+                        setcookie("password", $request->password, time() + 3600);
+                    } else {
+                        setcookie("email", "");
+                        setcookie("password", "");
+                    }
+                    return response()->json(['success' => true, 'route' => route('dashboard')]);
                 } else {
-                    setcookie("email", "");
-                    setcookie("password", "");
+                    Auth::logout(); // Log out the user if they are not active
+                    return response()->json(['error' => 'Your account is not active.']);
                 }
-                return response()->json(['success' => true, 'route' => route('dashboard')]);
             } else {
-                Auth::logout(); // Log out the user if they are not active
-                return response()->json(['error' => 'Your account is not active.']);
+                return response()->json(['error' => 'Invalid credentials']);
             }
-        } else {
-            return response()->json(['error' => 'Invalid credentials']);
+
         }
+        else {
+            return response()->json(['error' => 'Your Are Not Allowed To Login']);
+        }
+       
     }
 
     public function logOut()
@@ -213,7 +221,6 @@ class AdminController extends Controller
 
         $data = [];
         $data['title'] = 'All Companies Terminated Employees';
-      
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getAllTerminatedEmployees()['all_terminated_employees'];
             return DataTables::of($records)
@@ -245,6 +252,55 @@ class AdminController extends Controller
                     }
                     if ($request->has('status')  && !empty($request->status)) {
                         $status = $request->status;
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {   
+                            return str_contains(strtolower($record['employment_status']), strtolower($status));
+                        });
+                    }
+                    if ($request->has('department')  && !empty($request->department)) {
+                        $department = $request->department;
+                        $query->collection = $query->collection->filter(function ($record) use ($department) {
+                            return str_contains(strtolower($record['department']), strtolower($department));
+                        });
+                    }
+                    if ($request->has('company')  && !empty($request->company)) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
+                })
+                ->rawColumns(['name', 'role', 'Department', 'Company', 'shift', 'emp_status'])
+                ->make(true);
+        }
+        return view('admin.companies.employees.terminated_employees', compact('data'));
+    }
+    public function getCompaniesVehicles(Request $request)
+    {
+        $data = [];
+        $data['title'] = 'All Companies Vehicles';
+        if ($request->ajax() && $request->loaddata == "yes") {
+            $records = getAllCompaniesVehicles()['vehicles'];
+
+            return DataTables::of($records)
+                ->addIndexColumn()
+                ->addColumn('vehicleName', function ($model) {
+                    return view('admin.companies.vehicles.vehicle-profile', ['model' => $model])->render();
+                })
+                ->addColumn('name', function ($model) {
+                    return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
+                })
+                ->addColumn('company', function ($model) {
+                    return $model->company ?? '-';
+                })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('shift') && !empty($request->shift)) {
+                        $shift = $request->shift;
+                        $query->collection = $query->collection->filter(function ($record) use ($shift) {
+                            return str_contains(strtolower($record['shift']), strtolower($shift));
+                        });
+                    }
+                    if ($request->has('status')  && !empty($request->status)) {
+                        $status = $request->status;
                      
                         $query->collection = $query->collection->filter(function ($record) use ($status) {
                           
@@ -263,29 +319,6 @@ class AdminController extends Controller
                             return str_contains(strtolower($record['company']), strtolower($company));
                         });
                     }
-                })
-
-                ->rawColumns(['name', 'role', 'Department', 'Company', 'shift', 'emp_status'])
-                ->make(true);
-        }
-        return view('admin.companies.employees.terminated_employees', compact('data'));
-    }
-    public function getCompaniesVehicles(Request $request)
-    {
-        $data = [];
-        $data['title'] = 'All Companies Vehicles';
-        if ($request->ajax() && $request->loaddata == "yes") {
-            $records = getAllCompaniesVehicles()['vehicles'];
-            return DataTables::of($records)
-                ->addIndexColumn()
-                ->addColumn('vehicleName', function ($model) {
-                    return view('admin.companies.vehicles.vehicle-profile', ['model' => $model])->render();
-                })
-                ->addColumn('name', function ($model) {
-                    return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
-                })
-                ->addColumn('company', function ($model) {
-                    return $model->company ?? '-';
                 })
                 ->rawColumns(['vehicleName', 'name'])
                 ->make(true);

@@ -125,8 +125,13 @@ function getAllCompanies()
                 ->select(['id', 'slug', 'first_name', 'last_name', 'email'])
                 ->get();
 
-            $total_terminated_employees = User::on($portalDb)->where('is_employee', 0)->get();
-            $terminatedUsersOfCurrentMonth = User::on($portalDb)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
+            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
+                $q->where('employment_status_id',3);
+            })->where('is_employee', 0)->get();
+
+            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
+                $q->where('employment_status_id',3);
+            })->where('is_employee', 0)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
                 $query->whereMonth('last_working_date', $currentMonth)
                     ->whereYear('last_working_date', $currentYear);
             })->get();
@@ -239,9 +244,7 @@ function getVehicles($companyName = null)
                         $query->select('id', 'owner_id', 'name', 'thumbnail', 'model_year', 'engine_capacity');
                         $query->with('hasImage');
                     },
-                    'hasUser' => function ($query) {
-                        $query->select('id', 'slug', 'status', 'first_name', 'last_name', 'email');
-                    }
+                    'hasUser'
                 ])
                 ->where('end_date', null)
                 ->where('status', 1)
@@ -251,6 +254,7 @@ function getVehicles($companyName = null)
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
             $setting['company'] = $portalDb->name;
+     
             $allCompaniesVehicles[$portalName] = $setting;
 
             break;
@@ -261,18 +265,18 @@ function getVehicles($companyName = null)
                         $query->select('id', 'owner_id', 'name', 'thumbnail', 'model_year', 'engine_capacity');
                         $query->with('hasImage');
                     },
-                    'hasUser' => function ($query) {
-                        $query->select('id', 'slug', 'status', 'first_name', 'last_name', 'email');
-                    }
+                    'hasUser.departmentBridge'
                 ])
                 ->where('end_date', null)
                 ->where('status', 1)
                 ->select(['vehicle_id', 'user_id', 'deliver_date'])
                 ->get();
+              
             $setting['vehicles'] = $vehicleUsers;
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
-            $setting['company'] = $portalDb->name;
+            $setting['company'] = $portalDb->name; 
+       
             $allCompaniesVehicles[$portalName] = $setting;
         }
     }
@@ -302,6 +306,28 @@ function getVehicles($companyName = null)
                 $vehicleModelYear = $companyVehicle->hasVehicle->model_year;
             }
 
+            $department = "";
+            if(isset($companyVehicle->hasUser) && !empty($companyVehicle->hasUser)){
+                 $department =  !empty($companyVehicle->hasUser->departmentBridge->department) ? $companyVehicle->hasUser->departmentBridge->department->name : "";
+
+            }
+            $shift = '-';
+            if (isset($companyVehicle->hasUser->userWorkingShift->workShift) && !empty($companyVehicle->hasUser->userWorkingShift->workShift->name)) {
+                $shift = $companyVehicle->hasUser->userWorkingShift->workShift->name;
+            }
+            $employment_status = '-';
+            if (isset($companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus) && !empty($companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus->name)) {
+                if ($companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus->name == 'Terminated') {
+                    $employment_status = 'Terminated';
+                } elseif ($companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus->name == 'Permanent') {
+                    $employment_status = 'Permanent';
+                } elseif ($companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus->name == 'Probation') {
+                    $employment_status = 'Probation';
+                } else {
+                    $employment_status = $companyVehicle->hasUser->employeeStatusEndDateNull->employmentStatus->name;
+                }
+            }
+
             $vehicles[] = (object)[
                 'base_url' => $companyVehicles['base_url'],
                 'company' => $companyVehicles['company'],
@@ -314,11 +340,15 @@ function getVehicles($companyName = null)
                 'vehicleThumbnail' => $vehicleThumbnail,
                 'vehicleModelYear' => $vehicleModelYear,
                 'vehicleCc' => $vehicleCc,
+                'department' => $department,
+                'shift'=>$shift,
+                'employment_status'=>$employment_status
             ];
         }
     }
     $data['vehicles'] = $vehicles;
     $data['totalEmployees'] = $totalEmployees;
+  
     return $data;
 }
 //Get Vehicles & Employees

@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
@@ -33,11 +34,11 @@ class UserController extends Controller
         $data['per_page_records'] = 10;
         $data['title'] = "Users List";
         $model = $this->model::orderby('id', 'desc')->get();
-        if($request->ajax() && $request->loaddata == "yes") {
+        if ($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($model)
                 ->addIndexColumn()
-                ->addColumn('name', function($model){
-                    return $model->first_name .' '.$model->last_name;
+                ->addColumn('name', function ($model) {
+                    return $model->first_name . ' ' . $model->last_name;
                 })
                 ->addColumn('role', function ($model) {
                     $role_name = "";
@@ -48,20 +49,18 @@ class UserController extends Controller
                     }
                     return $role_name;
                 })
-               ->addColumn('created_at', function ($model) {
+                ->addColumn('created_at', function ($model) {
                     return formatDate($model->created_at);
                 })
-               
-                ->addColumn('action', function($model){
+
+                ->addColumn('action', function ($model) {
                     return view('admin.users.action', ['user' => $model])->render();
                 })
-                ->rawColumns(['name','role','created_at', 'action'])
+                ->rawColumns(['name', 'role', 'created_at', 'action'])
                 ->make(true);
         }
 
         return view('admin.users.index', $data);
-
-        
     }
 
     /**
@@ -87,11 +86,12 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
-            
+            'user_type' => 'required'
+
 
         ];
 
-      
+
 
 
         $message = [
@@ -102,17 +102,34 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => $validator->errors()->toArray(), 'validation' => false]);
         }
-      
+
         $user = new $this->model;
         $first_name = $request->first_name ?? null;
-        $last_name = $request->last_name?? null;
+        $last_name = $request->last_name ?? null;
+        $user_portal = null;
+        $user_api = null;
+        if ($request->user_type == 1) {
+            $user_portal = 1;
+            $user_api = null;
+        }
+        if ($request->user_type == 2) {
+            $user_portal = null;
+            $user_api = 1;
+        }
+        if ($request->user_type == 3) {
+
+            $user_portal = 1;
+            $user_api = 1;
+        }
         $result = $this->model::create([
             'first_name' => $first_name,
             'last_name' => $last_name,
             'email' => $request->email ?? null,
             'password' => Hash::make('12345678'),
             'slug' => getSlug(),
-         
+            'user_for_portal' => $user_portal,
+            'user_for_api' => $user_api
+
         ]);
 
 
@@ -163,13 +180,13 @@ class UserController extends Controller
             'email' => "required|email|unique:users,email,$id,id,deleted_at,NULL",
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
-           
+
 
         ];
 
-       
 
-       
+
+
 
         $message = [
             'role_id.required' => "Please select role"
@@ -181,21 +198,21 @@ class UserController extends Controller
         }
         $update = $this->model::where('id', $id)->first();
 
-        $first_name =$request->first_name ?? null;
-        $last_name =$request->last_name ?? null;
+        $first_name = $request->first_name ?? null;
+        $last_name = $request->last_name ?? null;
         $result = $update->update([
-            'first_name' =>$request->first_name ?? null,
-            'last_name' =>$request->last_name ?? null,
-            'email' =>$request->email ?? null,
+            'first_name' => $request->first_name ?? null,
+            'last_name' => $request->last_name ?? null,
+            'email' => $request->email ?? null,
             'password' => Hash::make('12345678'),
-       
-         
+
+
         ]);
 
         if (isset($result) && !empty($result)) {
 
 
-            $roles =$request->role_id;
+            $roles = $request->role_id;
             $update->syncRoles($roles);
             $result = ['success' => true, 'message' => 'User successfuly updated', 'status' => 200];
         } else {
@@ -215,13 +232,74 @@ class UserController extends Controller
         if (isset($record) && !empty($record)) {
             $result = $record->delete();
             if ($result) {
-          
+
                 return ['success' => true, 'message' => 'User deleted successfully', 'status' => 200];
             } else {
                 return ['success' => false, 'message' => 'User not deleted', 'status' => 501];
             }
         } else {
             return ['success' => false, 'message' => 'User not found', 'status' => 501];
+        }
+    }
+
+    public function directPermission($id)
+    {
+        $title = "Assign Permission";
+        $allPermissions = Permission::groupBy('label')
+            ->select('label')
+            ->get();
+        $user = $this->model::where('id', $id)->first();
+
+        $userPermissions = "";
+        if (isset($user->permissions) && !empty($user->permissions)) {
+            $userPermissions = $user->permissions->pluck('id')->toArray() ?? null;
+        }
+
+        if (isset($user) && !empty($user)) {
+            $view = view('admin.users.partials.direct_permission_modal', compact('allPermissions', 'userPermissions', 'id', 'title'))->render();
+            return ['success' => true, 'view' => $view];
+        } else {
+            return ['success' => true, 'message' => 'user not found'];
+        }
+    }
+
+    public function storeDirectPermission(Request $request)
+    {
+        $roles = [
+            'permissions' => 'array|min:1|required',
+            'permissions.*' => 'required',
+        ];
+
+        $message = [
+            'permissions.required' => "Please select permissions"
+        ];
+
+        $validator = Validator::make($request->all(), $roles, $message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+        }
+        $user = $this->model::find($request->user_id);
+        if (!empty($user) && !empty($user)) {
+            if (!empty($user->getDirectPermissions())) {
+                foreach ($user->getDirectPermissions() as $index => $value) {
+                    $user->revokePermissionTo($value);
+                }
+            }
+
+            if (!empty($request->permissions)) {
+                $permissions = Permission::whereIn("id", $request->permissions)->get();
+            }
+
+            if (!empty($permissions)) {
+                foreach ($permissions as $permission) {
+                    if (!empty($user)) {
+                        $user->givePermissionTo($permission->name);
+                    }
+                }
+                return ['success' => true, 'message' =>  'Direct permission assign the user', 'status' => 200];
+            }
+        } else {
+            return ['success' => false, 'message', 'User not found', 'status' => 404];
         }
     }
 }

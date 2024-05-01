@@ -4,7 +4,7 @@
     {{-- <h4 class="mb-1 pt-2">Welcome to @if(isset(settings()->name) && !empty(settings()->name)) {{ settings()->name }} @endif! 👋</h4> --}}
     <h4 class="mb-1 pt-2">Welcome to Cyberonix Consulting Limited 👋</h4>
     <p class="mb-4">Please sign-in to your account and start the adventure</p>
-
+      <span id="errorMessage"></span>
     <form id="loginForm" action="{{ route('admin.login') }}" method="POST">
         @csrf
         <input type="hidden" name="secretKey" id="secretKey">

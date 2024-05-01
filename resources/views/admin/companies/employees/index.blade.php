@@ -158,16 +158,7 @@
             var table = $('.data_table').DataTable({
                 processing: true,
                 serverSide: true,
-                searching: true,
-                // ajax: {
-                //     url: page_url + "?loaddata=yes",
-                //     type: "GET",
-                //     error: function(xhr, error, code) {
-                //         console.log(xhr);
-                //         console.log(error);
-                //         console.log(code);
-                //     }
-                // },
+          
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",
@@ -181,7 +172,8 @@
                 columns: [
                 {
                     data: 'name',
-                    name: 'name'
+                    name: 'name',
+                  
                 },
                 {
                     data: 'role',
@@ -208,10 +200,23 @@
         }
         //datatable
 
-        $('input[type="search"]').on('keyup', function () {
+        // $('input[type="search"]').on('keyup', function () {
+            
+        //     var table = $('.data_table').DataTable();
+        //     table.search($(this).val()).draw();
+        // });
+
+
+        $(document).on('keyup','input[type="search"]',function(){
             var table = $('.data_table').DataTable();
             table.search($(this).val()).draw();
-        });
+        })
+
+
+        if ($.fn.DataTable.isDataTable('.data_table')) {
+                table.destroy();
+            }
+            $.fn.dataTable.ext.errMode = 'throw';
 
 
 

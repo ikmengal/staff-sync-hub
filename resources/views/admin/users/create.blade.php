@@ -23,9 +23,16 @@
                 tabindex="-1" />
             <span id="email_error" class="text-danger"></span>
         </div>
-
-
-
+        <div class="col-12 mb-4">
+            <label class="form-label" for="name">User Type <span class="text-danger">*</span></label>
+            <select class="form-control select2" name="user_type">
+                <option value="">Select</option>
+                <option value="1">Portal User</option>
+                <option value="2">API User</option>
+                <option value="3">Both</option>
+            </select>
+            <span id="user_type_error" class="text-danger"></span>
+        </div>
         <div class="col-12 mb-4">
             <label class="required fw-semibold fs-6 mb-5">Role</label>
             <span id="role_id_error" class="custom_error" style="color: #ea868f;"></span>
@@ -49,6 +56,7 @@
             @endif
 
         </div>
+
 
         <!-- Permission table -->
         </div>

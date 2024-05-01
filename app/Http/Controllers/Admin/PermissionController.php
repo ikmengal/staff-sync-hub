@@ -165,7 +165,7 @@ class PermissionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $this->authorize('permissions-edit');
+      
         $rules = [
             'name' => 'required:unique:permissions,name,'.$id,
             'custom_permission' => 'required',

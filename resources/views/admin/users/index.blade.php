@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-
+    <div id="permissionModal"></div>
     @include('admin.users.partials.create_modal')
     @include('admin.users.partials.edit_modal')
 @endsection
@@ -283,6 +283,66 @@
                             });
                         }
                     });
+                }
+            });
+        }
+
+        $(document).on("click", ".addPermission", function() {
+            var route = $(this).attr('data-route');
+            var id = $(this).attr('data-id');
+            $.ajax({
+                type: 'GET',
+                url: route,
+                success: function(res) {
+                    console.log(res)
+                    $("#permissionModal").empty();
+                    $("#permissionModal").html(res.view);
+                    $("#direct_permission_modal").modal('show');
+
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors
+                    console.error(xhr.responseText);
+                }
+            });
+
+        })
+
+        function storeDirectPermission(event) {
+            var formData = $("#add_role_form").serializeArray();
+            var route = event.data('route');
+            $.ajax({
+                type: "POST",
+                url: route,
+                data: formData,
+                beforeSend: function() {
+                    $(".indicator-label").css({
+                        'display': 'none'
+                    });
+                    $(".indicator-progress").css({
+                        'display': 'block'
+                    });
+                    $(".permissionBtn").addClass('disabled');
+                },
+                success: function(res) {
+                  
+                    $(".permissionBtn").removeClass('disabled');
+                    if (res.success == true) {
+                        var table = $('.data_table').DataTable();
+                        table.ajax.reload(null, false);
+                   
+                        $("#direct_permission_modal").modal('hide');
+                    } else {
+                      alert(res.message)
+                        
+                    }
+                },
+                error: function(xhr, status, error) {
+                  
+                    $(".permissionBtn").removeClass('disabled');
+                    alert(res.message)
+                        
+
                 }
             });
         }

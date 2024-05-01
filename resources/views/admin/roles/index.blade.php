@@ -37,7 +37,7 @@
                                                 class="avatar avatar-sm pull-up">
                                                 @if (isset($role_user->profile) && !empty($role_user->profile->profile))
                                                     <img class="rounded-circle"
-                                                        src="{{ resize(asset('public/admin/assets/img/avatars') . '/' . $role_user->profile->profile, null) }}"
+                                                        src="{{ asset('public/admin/assets/img/avatars') . '/' . $role_user->profile->profile }}"
                                                         alt="Avatar" />
                                                 @else
                                                     <img class="rounded-circle"
