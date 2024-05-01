@@ -116,6 +116,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('users/direct-permision/{id}', [UserController::class, 'directPermission'])->name('users.directPermission');
     Route::post('users/store-direct-permision', [UserController::class, 'storeDirectPermission'])->name('users.storeDirectPermission');
+
+    // Purchase Request Route
+    Route::post('purchase-requests-status', [PurchaseRequestController::class, 'status'])->name('purchase-requests.status');
  
 
 

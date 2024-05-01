@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <div class="col-xl-12 col-mb-6 col-lg-7 col-12 mt-3">
+        <div class="col-xl-12 col-mb-6 col-lg-6 col-12 mt-3">
           <div class="card h-100">
             <div class="card-body">
               <div class="row gy-3">
@@ -29,7 +29,7 @@
                 </div>
                 <div class="col-md-6 col-6">
                   <div class="d-flex align-items-center">
-                    <div class="card-info">
+                    <div class="card-info px-2">
                       <h6 class="mb-2">Receipt Creator</h6>
                       <small>{{ $stock->hasUSer->first_name ?? '' }} {{ $stock->hasUSer->last_name ?? '' }}</small>
                     </div>
@@ -45,7 +45,7 @@
                 </div>
                 <div class="col-md-6 col-6">
                   <div class="d-flex align-items-center">
-                    <div class="card-info">
+                    <div class="card-info px-2">
                       <h6 class="mb-2">Receipt Quantity</h6>
                       <small>{{ $stock->quantity ?? '' }}</small>
                     </div>
@@ -53,14 +53,14 @@
                 </div>
               </div>
             </div>
-            <div class="d-flex align-items-end row">
-              <div class="col-md-6">
+            <div class="d-flex align-items-center">
+              <div class="col-md-6 col-6">
                 <div class="card-body">
                   <h5 class="card-title mb-2">Description</h5>
                   <p class="mb-2">{{ $stock->description ?? '' }}</p>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6 col-6">
                   <div class="card-body">
                     <h5 class="card-title no-wrap mb-2">Status 
                       @if (isset($stock->status) && $stock->status == 1)
@@ -85,7 +85,7 @@
                   @if(isset($stock->hasImages) && !blank($stock->hasImages))
                       <div class="row gap-4 gap-sm-0">
                         @foreach ($stock->hasImages as $image)
-                          <div class="col-md-2 col-sm-2 mb-4">
+                          <div class="col-md-2 col-sm-2 mb-4 text-center">
                             @if(isset($image->type) && $image->type == 'pdf')
                               <span class="fs-7">
                                 <i class="fa-solid fa-file-pdf" style="font-size: 20px"></i>
@@ -93,10 +93,13 @@
                                     {{ $image->image }}
                                 </a>
                               </span>
-                            @else
+                              <br>
+                              <span class="fs-7 text-danger text-center">{{ isset($image->request_type) ? ($image->request_type == 1 ? 'Camera' : ($image->request_type == 2 ? 'Upload File' : '')) : '' }}</span>
+                              @else
                               <a href="{{ asset('public/admin/assets/img/stock/' . $image->image) }}" class="text-danger" download>
                                 <img class="card-img image-fluid" src="{{asset('public/admin/assets/img/stock')}}/{{$image->image??'' }}" id="image" alt="No Image" height="100px" width="10px" />
                               </a>
+                              <span class="fs-7 text-danger text-center">{{ isset($image->request_type) ? ($image->request_type == 1 ? 'Camera' : ($image->request_type == 2 ? 'Upload File' : '')) : '' }}</span>
                             @endif
                           </div>
                         @endforeach

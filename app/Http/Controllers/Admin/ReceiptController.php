@@ -26,7 +26,7 @@ class ReceiptController extends Controller
         $title = 'All Receipts';
 
         // $model = Stock::orderby('id', 'desc')->get();
-        $model = Stock::query()->orderBy('id', 'desc');
+        $model = Stock::select("*")->orderBy('id', 'desc');
         if($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($model)
             ->addIndexColumn()
@@ -59,27 +59,27 @@ class ReceiptController extends Controller
             ->addColumn('action', function($model){
                 return view('admin.receipts.action', ['model' => $model])->render();
             })
-            ->filter(function ($query) use ($request) {
+            ->filter(function ($instance) use ($request) {
                 if (!empty($request['search'])) {
                     $search = $request['search'];
-                    $query->where('title', "LIKE", "%$search%");
-                    $query->orWhere('description', "LIKE", "%$search%");
-                    $query->orWhere('quantity', "LIKE", "%$search%");
+                    $instance->where('title', "LIKE", "%$search%");
+                    $instance->orWhere('description', "LIKE", "%$search%");
+                    $instance->orWhere('quantity', "LIKE", "%$search%");
                 }
                 
                 if (!empty($request['company'])) {
                     $search = $request['company'];
-                    $query->where('company_id', $search);
+                    $instance->where('company_id', $search);
                 }
 
                 if (!empty($request['creator'])) {
                     $search = $request['creator'];
-                    $query->where('user_id', $search);
+                    $instance->where('user_id', $search);
                 }
 
                 if (!empty($request['filter_status'])) {
                     $search = $request['filter_status'];
-                    $query->where('status', $search);
+                    $instance->where('status', $search);
                 }
             })
             ->rawColumns(['title', 'description', 'creator', 'company', 'quantity', 'status', 'action'])
@@ -111,7 +111,11 @@ class ReceiptController extends Controller
     {
         $title = 'Receipt Detail';
         $stock = Stock::where('id', $id)->first();
-        return view('admin.receipts.show', compact('title', 'stock'));
+        if(isset($stock) && !empty($stock)){
+            return view('admin.receipts.show', compact('title', 'stock'));
+        }else{
+            abort(404);
+        }
     }
 
     /**
@@ -144,54 +148,54 @@ class ReceiptController extends Controller
             'remark' => 'required',
         ]);
 
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 400);
-    }
-    
-    $stock = Stock::find($request->stock_status_id);
-    $userPlayerId = UserPlayerId::where('user_id', $stock->user_id)->orderBy('id', 'DESC')->first();
-    if($stock){
-      DB::beginTransaction();
-        if(isset($request->status_data) && $request->status_data == 2) {
-            $stockStatus = 'Approved';
-        }elseif(isset($request->status_data) && $request->status_data == 3) {
-            $stockStatus = 'Rejected';
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
         }
-
-        $updated = $stock->update([
-            'remarks' => $request->remark, 
-            'status' => $request->status_data,
-        ]);
-        try { 
-            $responseMessage = "";
-            if($updated){ 
-                if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
-                    $fields['include_player_ids'] = [$userPlayerId->player_id];
-                    $title = $stock->title;
-                    $message = "Your receipt ".$stock->title." has ".$stockStatus;
-                    $fields['headings'] = ['en' => $title];
-                    $oneSignal = \OneSignal::sendPush($fields, $message);
-                    if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
-                        $responseMessage .=  $oneSignal['errors'][0] ?? ''; 
-                    } 
-                }
-                $responseMessage .= "Receipt status Updated successfully"; 
-                 DB::commit();
-                return response()->json(['success' => true, "message" => $responseMessage ], 200);
-            }else{
-                DB::rollback();
-                return response()->json(['success' => true, "message" => 'Receipt status not updated successfully'], 401);
+        
+        $stock = Stock::find($request->stock_status_id);
+        $userPlayerId = UserPlayerId::where('user_id', $stock->user_id)->orderBy('id', 'DESC')->first();
+        if($stock){
+        DB::beginTransaction();
+            if(isset($request->status_data) && $request->status_data == 2) {
+                $stockStatus = 'Approved';
+            }elseif(isset($request->status_data) && $request->status_data == 3) {
+                $stockStatus = 'Rejected';
             }
-        }
-        catch(\Exception $e) {
+
+            $updated = $stock->update([
+                'remarks' => $request->remark, 
+                'status' => $request->status_data,
+            ]);
+            try { 
+                $responseMessage = "";
+                if($updated){ 
+                    if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
+                        $fields['include_player_ids'] = [$userPlayerId->player_id];
+                        $title = $stock->title;
+                        $message = "Your receipt ".$stock->title." has ".$stockStatus;
+                        $fields['headings'] = ['en' => $title];
+                        $oneSignal = \OneSignal::sendPush($fields, $message);
+                        if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
+                            $responseMessage .=  $oneSignal['errors'][0] ?? ''; 
+                        } 
+                    }
+                    $responseMessage .= "Receipt status Updated successfully"; 
+                    DB::commit();
+                    return response()->json(['success' => true, "message" => $responseMessage ], 200);
+                }else{
+                    DB::rollback();
+                    return response()->json(['success' => true, "message" => 'Receipt status not updated successfully'], 401);
+                }
+            }
+            catch(\Exception $e) {
+                DB::rollback();
+                return response()->json(['success' => false, "message" =>  $e->getMessage()], 401);
+            }
+        }else{
             DB::rollback();
-             return response()->json(['success' => false, "message" =>  $e->getMessage()], 401);
+            return response()->json(['success' => false, "message" => 'No record found'], 401);
         }
-    }else{
-        DB::rollback();
-        return response()->json(['success' => false, "message" => 'No record found'], 401);
     }
-}
 
     public function getSearchDataOnLoad(Request $request){
         $data['companies'] = Company::get();

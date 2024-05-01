@@ -23,13 +23,7 @@
             <!-- Stocks List Table -->
             <div class="card mt-4">
                 <div class="row p-3">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label" for="creator">Creator</label>
-                        <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
-                            <option value="">All</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="form-label" for="company">Company</label>
                         <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
                             <option value="">All</option>
@@ -42,7 +36,7 @@
                             @endif
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="form-label" for="filter_status">Status</label>
                         <select name="filter_status" id="filter_status" class="select2 form-select filter_status unselectValue">
                             <option value="">All</option>
@@ -51,7 +45,7 @@
                             <option value="3">Rejected</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mt-3 py-1">
+                    <div class="col-md-4 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
                     </div>
@@ -98,9 +92,9 @@
                                         <span id="remark_error" class="text-danger error"></span>
                                     </div>
                                 </div>
-                                <input type="hidden" name="route" id="route" value="{{route('receipts.status')}}">
+                                <input type="hidden" name="route" id="route" value="{{route('purchase-requests.status')}}">
                                 <input type="hidden" name="status_data" id="status_data" value="1">
-                                <input type="hidden" name="stock_status_id" id="stock_status_id" value="">
+                                <input type="hidden" name="purchase_status_id" id="purchase_status_id" value="">
                                 <div class="col-12 action-btn">
                                     <div class="demo-inline-spacing sub-btn">
                                         <button type="submit" class="btn btn-primary me-sm-3 me-1 submitBtn">Submit</button>
@@ -160,7 +154,6 @@
                 data: function(d) {
                     d.search = $('input[type="search"]').val()
                     d.company = $('#company').val()
-                    d.creator = $('#creator').val()
                     d.filter_status = $('#filter_status').val()
                 },
             },
@@ -217,5 +210,49 @@
         var table = $('.data_table').DataTable();
         table.ajax.reload(null, false)
     });
+
+    $(document).on('change', "#status", function(){
+        var statusValue = $(this).val();
+        var purchaseId = $(this).attr('purchaseId');
+        if(statusValue == 2){
+            $("#remark").html('Approved');
+            $('#status_data').val(statusValue);
+            $('#purchase_status_id').val(purchaseId);
+            $('#create-form-modal').modal('show');
+        }else{
+            $("#remark").html('');
+            $('#status_data').val(statusValue);
+            $('#purchase_status_id').val(purchaseId);
+            $('#create-form-modal').modal('show');
+        }
+    });
+
+    $(document).on('click', '.submitBtn', function(){
+        event.preventDefault();
+        var route = $('#route').val();
+        var formData = $('#create-form').serialize();
+        
+        $.ajax({
+                url: route,
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if(response.success == true){
+                        toastr.success(response.message);
+                        $('#create-form-modal').modal('hide');
+                        loadPageData();
+                    }else{
+                        toastr.error(response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    var response = JSON.parse(xhr.responseText);
+                    $('#remark_error').text(response.remark[0]);
+                }
+            });
+
+    })
+
 </script>
 @endpush

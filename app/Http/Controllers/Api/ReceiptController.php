@@ -18,36 +18,35 @@ use Storage;
 
 class ReceiptController extends Controller
 {
-
     public function companyIndex(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $company = Company::get();
             if (isset($company) && !blank($company)) {
                 $data = CompanyResource::collection($company);
-                return  apiResponse($success = true, $data =  $data  , $message = "All comapnies.", $code = 200); 
+                return apiResponse(true, $data, "All comapnies.", 200); 
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No companies record.", $code = 500);
+                return apiResponse(false, null, "No companies record.", 500);
             }
         }
     }
 
     public function index(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse($success = false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id);
@@ -80,140 +79,137 @@ class ReceiptController extends Controller
             $stock = $stock->orderBy("id", $sorting)->paginate($pageSize);
             if (isset($stock) && !blank($stock)) {
                 $data = StockResource::collection($stock);
-                return apiResponse($success = true, $data = $data  , $message = "All Receipts", $code = 200);
+                return apiResponse(true, $data, "All Receipts", 200);
             }else{
-                return  apiResponse($success = false, $data = null  , $message = "No Receipt found...!", $code = 200);
+                return apiResponse(false, null, "No Receipt found...!", 500);
             }
         }
     }
-
     
-
-
     public function store(Request $request){
         ini_set('upload_max_filesize' , '50M' );
         ini_set('post_max_size' , '256M' );
 
-    if($request->bearerToken() == ""){
-        return  apiResponse($success = false, $message = "Enter token", $code = 500); 
-    }
-
-    $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
-    
-    if(empty($userToken)){
-        return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
-    }else{
-        $validator = Validator::make($request->all(), [
-            'company_id' => 'required',
-            'title' => 'required',
-            'description' => 'required',
-            'quantity' => 'required',
-            'images.*' => 'nullable|file|mimes:png,jpg,jpeg,pdf',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 500);
-        }
-
-        $user = User::where('id', $userToken->tokenable_id)->first();
-        $company = Company::where('company_id', $request->company_id)->first();
-        $stock = Stock::create([
-            'user_id' => $user->id,
-            'company_id' => $company->company_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'quantity' => $request->quantity,
-        ]);
-
-        if(isset($stock) && !empty($stock)){
-            if(isset($request->type) && $request->type == 2){
-                if($request->hasFile('images')){
-                    $files = $request->file('images');
-                    foreach ($files as $index => $file) {
-                        $originalName = $file->getClientOriginalExtension();
-                        $mimeType = $file->getClientMimeType();
-                        $index = $index + 1;
-                        $type = explode('/', $file->getClientMimeType());
-                        $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
-                        $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
-                        $file->move(public_path('admin/assets/img/stock/'), $fileName);
-
-                        StockImage::create([
-                            'stock_id' => $stock->id,
-                            'image' => $fileName,
-                            'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
-                            // 'request_type' => 2,
-                        ]);
-                    }
-                }
-            }else if(isset($request->type) && $request->type == 1){
-                // if ($request->has('images')) {
-                //     $image = $request->images;
-                //     $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
-                //     $mime = explode('/', $mime);
-                //     $image = str_replace('data:image/'.'$mime[1]'.';base64,', '', $image);
-                //     $image = str_replace(' ', '+', $image);
-                //     $index = 1;
-                //     $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $mime[1];
-                //     $directory = public_path('admin/assets/img/stock/');
-                //     $filePath = $directory . $imageName;
-                //     \File::put($filePath, base64_decode($image));
-                //     StockImage::create([
-                //         'stock_id' => 10,
-                //         'image' => $imageName,
-                //         'type' => 'image',
-                //         'request_type' => 1,
-                //     ]);
-                // }
-                if ($request->has('images')) {
-                    $image = $request->images;
-                    $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
-                    switch ($mime) {
-                        case 'image/jpeg':
-                            $extension = 'jpeg';
-                            break;
-                        case 'image/png':
-                            $extension = 'png';
-                            break;
-                        case 'image/gif':
-                            $extension = 'gif';
-                            break;
-                        default:
-                            $extension = 'jpg';
-                    }
-        
-                    $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
-                    $image = str_replace(' ', '+', $image);
-                    $index = 1;
-                    $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
-                    $directory = public_path('admin/assets/img/stock/');
-                    $filePath = $directory . $imageName;
-                    \File::put($filePath, base64_decode($image));
-                    StockImage::create([
-                        'stock_id' => $stock->id,
-                        'image' => $imageName,
-                        'type' => 'image',
-                    ]);
-                }
-            }
-            $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
-            $data = new StockResource($data);
-            return  apiResponse(true ,  $data , "Stock added successfully.",   200); 
-        }else{
-            return  apiResponse(false,  null  , "Stock not added...!",  500); 
-        }
-    }
-}
-
-    public function show(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, null, "Enter token", 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse(false , null, "Unauthorized", 500);
+            return apiResponse(false, null, "Unauthorized", 500);
+        }else{
+            $validator = Validator::make($request->all(), [
+                'company_id' => 'required',
+                'title' => 'required',
+                'description' => 'required',
+                'quantity' => 'required',
+                'images.*' => 'nullable|file|mimes:png,jpg,jpeg,pdf',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 500);
+            }
+
+            $user = User::where('id', $userToken->tokenable_id)->first();
+            $company = Company::where('company_id', $request->company_id)->first();
+            $stock = Stock::create([
+                'user_id' => $user->id,
+                'company_id' => $company->company_id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'quantity' => $request->quantity,
+            ]);
+
+            if(isset($stock) && !empty($stock)){
+                if(isset($request->type) && $request->type == 2){
+                    if($request->hasFile('images')){
+                        $files = $request->file('images');
+                        foreach ($files as $index => $file) {
+                            $originalName = $file->getClientOriginalExtension();
+                            $mimeType = $file->getClientMimeType();
+                            $index = $index + 1;
+                            $type = explode('/', $file->getClientMimeType());
+                            $fileType = isset($type[1]) && !blank($type[1]) ? $type[1] : NULL;  
+                            $fileName = "STOCK-IMAGE-" .  $index  . "-" . time() . '.' . $file->getClientOriginalExtension();
+                            $file->move(public_path('admin/assets/img/stock/'), $fileName);
+
+                            StockImage::create([
+                                'stock_id' => $stock->id,
+                                'image' => $fileName,
+                                'type' => isset($fileType) ? ($fileType == 'pdf' ? 'pdf' : 'image') : NULL,
+                            ]);
+                        }
+                    }
+                }else if(isset($request->type) && $request->type == 1){
+                    // if ($request->has('images')) {
+                    //     $image = $request->images;
+                    //     $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                    //     $mime = explode('/', $mime);
+                    //     $image = str_replace('data:image/'.'$mime[1]'.';base64,', '', $image);
+                    //     $image = str_replace(' ', '+', $image);
+                    //     $index = 1;
+                    //     $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $mime[1];
+                    //     $directory = public_path('admin/assets/img/stock/');
+                    //     $filePath = $directory . $imageName;
+                    //     \File::put($filePath, base64_decode($image));
+                    //     StockImage::create([
+                    //         'stock_id' => 10,
+                    //         'image' => $imageName,
+                    //         'type' => 'image',
+                    //         'request_type' => 1,
+                    //     ]);
+                    // }
+                    if ($request->has('images')) {
+                        $image = $request->images;
+                        $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                        switch ($mime) {
+                            case 'image/jpeg':
+                                $extension = 'jpeg';
+                                break;
+                            case 'image/png':
+                                $extension = 'png';
+                                break;
+                            case 'image/gif':
+                                $extension = 'gif';
+                                break;
+                            default:
+                                $extension = 'jpg';
+                        }
+            
+                        $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
+                        $image = str_replace(' ', '+', $image);
+                        $index = 1;
+                        $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
+                        $directory = public_path('admin/assets/img/stock/');
+                        $filePath = $directory . $imageName;
+                        \File::put($filePath, base64_decode($image));
+                        StockImage::create([
+                            'stock_id' => $stock->id,
+                            'image' => $imageName,
+                            'type' => 'image',
+                            'request_type' => 1,
+                        ]);
+                    }
+                }
+                $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
+                $data = new StockResource($data);
+                return apiResponse(true, $data, "Stock added successfully.", 200); 
+            }else{
+                return apiResponse(false, null, "Stock not added...!", 500); 
+            }
+        }
+    }
+
+    public function show(Request $request){
+        if($request->bearerToken() == ""){
+            return apiResponse(false, null, "Enter token", 500); 
+        }
+
+        $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
+        
+        if(empty($userToken)){
+            return apiResponse(false , null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id)->where('id', $request->id)->first();
@@ -221,20 +217,20 @@ class ReceiptController extends Controller
                 $data = new StockResource($stock);
                 return apiResponse(true, $data, "Stock Detail.", 200);
             }else{
-                return  apiResponse(false, null, "No stock record found...!", 500);
+                return apiResponse(false, null, "No stock record found...!", 500);
             }
         }
     }
 
     public function edit(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stock = Stock::where('user_id', $user->id)->where('id', $request->id)->first();
@@ -250,20 +246,20 @@ class ReceiptController extends Controller
                 ];
                 return apiResponse(true, $data, "receipt detail.", 200);
             }else{
-                return  apiResponse(false, null, "No receipt record found...!", 500);
+                return apiResponse(false, null, "No receipt record found...!", 500);
             }
         }
     }
 
     public function update(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
 
             $validator = Validator::make($request->all(), [
@@ -275,7 +271,7 @@ class ReceiptController extends Controller
             ]);
     
             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
+                return response()->json($validator->errors(), 500);
             }
 
             $user = User::where('id', $userToken->tokenable_id)->first();
@@ -288,30 +284,30 @@ class ReceiptController extends Controller
                 $stock->remarks = $request->remarks ?? $stock->remarks;
                 $stock->save();
                 $data = new StockResource($stock);
-                return apiResponse(true, $data , "receipt updated successfully.", 200);
+                return piResponse(true, $data, "receipt updated successfully.", 200);
             }else{
-                return  apiResponse(false, null , "No receipt record found...!", 500);
+                return apiResponse(false, null, "No receipt record found...!", 500);
             }
         }
     }
 
     public function receiptImageDelete(Request $request){
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $stockImage = StockImage::where('id', $request->id)->delete();
             
             if(isset($stockImage) && !empty($stockImage)){
-                return apiResponse(true, null , "Image deleted successfully.", 200);
+                return apiResponse(true, null, "Image deleted successfully.", 200);
             }else{
-                return  apiResponse(false, null , "No image found...!", 500);
+                return apiResponse(false, null, "No image found...!", 500);
             }
         }
     }
@@ -321,13 +317,13 @@ class ReceiptController extends Controller
         ini_set('post_max_size' , '256M' );
 
         if($request->bearerToken() == ""){
-            return  apiResponse(false, $message = "Enter token", $code = 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
     
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse($success = false , $message = "Unauthorized", $code = 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $validator = Validator::make($request->all(), [
                 'id' => 'required',
@@ -393,12 +389,13 @@ class ReceiptController extends Controller
                             'stock_id' => $stock->id,
                             'image' => $imageName,
                             'type' => 'image',
+                            'request_type' => 1,
                         ]);
                     }
                 }
                 return apiResponse(true, null, $index." Images uploaded successfully.", 200);
             }else{
-                return  apiResponse(false, null , "Receipt not found...!", 500);
+                return apiResponse(false, null, "Receipt not found...!", 500);
             }
         }
     }

@@ -18,4 +18,7 @@ class PurchaseRequest extends Model
     public function getStatus() {
         return $this->belongsTo(PurchaseRequestStatus::class ,'status' , 'id');
     }
+    public function modifiedBy() {
+        return $this->belongsTo(User::class ,'modified_by' , 'id');
+    }
 }

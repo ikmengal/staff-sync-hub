@@ -34,7 +34,7 @@ class EstimateController extends Controller
                     return getUserName($model->creator_id) ?? '';
                 })
                 ->addColumn('requestData', function ($model) {
-                    return  $model->requestData ?? '';
+                    return  $model->requestData->subject ?? '';
                 })
                 ->addColumn('title', function ($model) {
                     return $model->title;
@@ -50,6 +50,11 @@ class EstimateController extends Controller
                     }
                     return $description;
                 })
+                ->addColumn('count', function ($model) {
+                    $data = '';
+                    $data = '<span class="badge bg-label-success">'. $model->requestData->count() .'</span>';
+                    return $data;
+                })
                 ->addColumn('price', function ($model) {
                     return $model->price ?? 0;
                 })
@@ -61,10 +66,11 @@ class EstimateController extends Controller
                     return $data;
                 })
                 ->addColumn('action', function ($model) {
+                    return view('admin.estimates.action', ['model' => $model])->render();
                 })
                 ->filter(function ($query) use ($request) {
                 })
-                ->rawColumns(['title', 'description', 'creator', 'company', 'requestData',  'price',  'status', 'action'])
+                ->rawColumns(['title', 'description', 'count', 'creator', 'company', 'requestData',  'price',  'status', 'action'])
                 ->make(true);
         }
         return view('admin.estimates.index',  $data);
@@ -130,7 +136,17 @@ class EstimateController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $title = 'Estimate Detail';
+        $record = Estimate::where('id', $id)->first();
+        if(isset($record) && !empty($record)){
+            if(view()->exists('admin.estimates.show')){
+                return view('admin.estimates.show', compact('record', 'title'));
+            }else{
+                abort(404);
+            }
+        }else{
+            abort(404);
+        }
     }
 
     /**

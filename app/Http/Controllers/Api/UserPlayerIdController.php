@@ -16,13 +16,13 @@ class UserPlayerIdController extends Controller
     public function index(Request $request)
     {
         if($request->bearerToken() == ""){
-            return apiResponse(false, "Enter Token", 500);
+            return apiResponse(false, null, "Enter Token", 500);
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
         if(empty($userToken)){
-            return apiResponse(false, "Unauthorized", 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $user = User::where('id', $userToken->tokenable_id)->first();
             $UserPlayerId = UserPlayerId::where('user_id', $user->id)->get();
@@ -31,7 +31,7 @@ class UserPlayerIdController extends Controller
                 $data = PlayerIdResource::collection($UserPlayerId);
                 return apiResponse(true, $data, 'All user player ids', 200);
             }else{
-                return apiResponse(false, null, 'No player ids for this user', 500);
+                return apiResponse(false, null, 'No player id for this user', 500);
             }
         }
     }
@@ -39,13 +39,13 @@ class UserPlayerIdController extends Controller
     public function store(Request $request)
     {
         if($request->bearerToken() == ""){
-            return  apiResponse(false, "Enter token", 500); 
+            return apiResponse(false, null, "Enter token", 500); 
         }
 
         $userToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
         
         if(empty($userToken)){
-            return  apiResponse(false , "Unauthorized", 500);
+            return apiResponse(false, null, "Unauthorized", 500);
         }else{
             $validator = Validator::make($request->all(), [
                 'player_id' => 'required',
@@ -64,9 +64,9 @@ class UserPlayerIdController extends Controller
 
             if(isset($UserPlayerId) && !empty($UserPlayerId)){
                 $data = new PlayerIdResource($UserPlayerId);
-                return  apiResponse(true , $data , "User Player Id added successfully.", 200); 
+                return apiResponse(true, $data, "User Player Id added successfully.", 200); 
             }else{
-                return  apiResponse(false, null , "User player id not added...!", 500);
+                return apiResponse(false, null, "User player id not added...!", 500);
             }
         }
     }
