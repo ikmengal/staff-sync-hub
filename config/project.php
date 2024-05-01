@@ -14,4 +14,9 @@ return [
     "swyftzone_base_url" => env("SWYFTZONE_BASE_URL", "https://swyftzone.me/"),
     "techcombrade_base_url" => env("TECHCOMBRADE_BASE_URL", "https://tech-comrade.com/"),
     "rocketflare_base_url" => env("ROCKETFLARE_BASE_URL", "https://rocketflarelabs.com/"),
+
+
+    "upload_path" => [
+        "estimates" => "/attachments/estimates/" ,
+    ],
 ];

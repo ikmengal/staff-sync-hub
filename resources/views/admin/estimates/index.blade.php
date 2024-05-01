@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
-@section('title', $title.' | '.appName()) 
+@section('title', $title.' | '.appName())
 @section('content')
 
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <input type="hidden" id="page_url" value="{{ route('purchase-requests.index') }}">
-    <input type="hidden" id="search_route" value="{{ route('purchase-requests.index') }}">
+    <input type="hidden" id="page_url" value="{{ route('estimates.index') }}">
+    <input type="hidden" id="search_route" value="{{ route('estimates.index') }}">
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -54,6 +54,7 @@
                     <div class="col-md-3 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
+                        <a href="{{route('estimates.create')}}"   class="btn btn-success  me-2">Add&nbsp;<i class="fa-solid fa-plus"></i></a>
                     </div>
                 </div>
                 <div class="card-datatable table-responsive">
@@ -65,8 +66,10 @@
                                         <th>#</th>
                                         <th>Company</th>
                                         <th>Creator</th>
-                                        <th>Subject</th>
+                                        <th>Request</th>
+                                        <th>Title</th>
                                         <th>Description</th>
+                                        <th>Price</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -160,6 +163,7 @@
                 data: function(d) {
                     d.search = $('input[type="search"]').val()
                     d.company = $('#company').val()
+                    d.creator = $('#creator').val()
                     d.filter_status = $('#filter_status').val()
                 },
             },
@@ -178,12 +182,20 @@
                     name: 'creator'
                 },
                 {
-                    data: 'subject',
-                    name: 'subject'
+                    data: 'requestData',
+                    name: 'requestData'
+                },
+                {
+                    data: 'title',
+                    name: 'title'
                 },
                 {
                     data: 'description',
                     name: 'description'
+                },
+                {
+                    data: 'price',
+                    name: 'price'
                 },
                 {
                     data: 'status',
@@ -216,49 +228,5 @@
         var table = $('.data_table').DataTable();
         table.ajax.reload(null, false)
     });
-
-    $(document).on('change', "#status", function(){
-        var statusValue = $(this).val();
-        var purchaseId = $(this).attr('purchaseId');
-        if(statusValue == 2){
-            $("#remark").html('Approved');
-            $('#status_data').val(statusValue);
-            $('#purchase_status_id').val(purchaseId);
-            $('#create-form-modal').modal('show');
-        }else{
-            $("#remark").html('');
-            $('#status_data').val(statusValue);
-            $('#purchase_status_id').val(purchaseId);
-            $('#create-form-modal').modal('show');
-        }
-    });
-
-    $(document).on('click', '.submitBtn', function(){
-        event.preventDefault();
-        var route = $('#route').val();
-        var formData = $('#create-form').serialize();
-        
-        $.ajax({
-                url: route,
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    if(response.success == true){
-                        toastr.success(response.message);
-                        $('#create-form-modal').modal('hide');
-                        loadPageData();
-                    }else{
-                        toastr.error(response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                    var response = JSON.parse(xhr.responseText);
-                    $('#remark_error').text(response.remark[0]);
-                }
-            });
-
-    })
-
 </script>
 @endpush
