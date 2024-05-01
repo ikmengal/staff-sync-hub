@@ -7,6 +7,7 @@ use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
@@ -238,6 +239,67 @@ class UserController extends Controller
             }
         } else {
             return ['success' => false, 'message' => 'User not found', 'status' => 501];
+        }
+    }
+
+    public function directPermission($id)
+    {
+        $title = "Assign Permission";
+        $allPermissions = Permission::groupBy('label')
+            ->select('label')
+            ->get();
+        $user = $this->model::where('id', $id)->first();
+
+        $userPermissions = "";
+        if (isset($user->permissions) && !empty($user->permissions)) {
+            $userPermissions = $user->permissions->pluck('id')->toArray() ?? null;
+        }
+
+        if (isset($user) && !empty($user)) {
+            $view = view('admin.users.partials.direct_permission_modal', compact('allPermissions', 'userPermissions', 'id', 'title'))->render();
+            return ['success' => true, 'view' => $view];
+        } else {
+            return ['success' => true, 'message' => 'user not found'];
+        }
+    }
+
+    public function storeDirectPermission(Request $request)
+    {
+        $roles = [
+            'permissions' => 'array|min:1|required',
+            'permissions.*' => 'required',
+        ];
+
+        $message = [
+            'permissions.required' => "Please select permissions"
+        ];
+
+        $validator = Validator::make($request->all(), $roles, $message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+        }
+        $user = $this->model::find($request->user_id);
+        if (!empty($user) && !empty($user)) {
+            if (!empty($user->getDirectPermissions())) {
+                foreach ($user->getDirectPermissions() as $index => $value) {
+                    $user->revokePermissionTo($value);
+                }
+            }
+
+            if (!empty($request->permissions)) {
+                $permissions = Permission::whereIn("id", $request->permissions)->get();
+            }
+
+            if (!empty($permissions)) {
+                foreach ($permissions as $permission) {
+                    if (!empty($user)) {
+                        $user->givePermissionTo($permission->name);
+                    }
+                }
+                return ['success' => true, 'message' =>  'Direct permission assign the user', 'status' => 200];
+            }
+        } else {
+            return ['success' => false, 'message', 'User not found', 'status' => 404];
         }
     }
 }

@@ -113,7 +113,8 @@ Route::middleware('auth')->group(function () {
     Route::post('receipt-status', [ReceiptController::class, 'status'])->name('receipts.status');
     Route::get('receipt-filter', [ReceiptController::class, 'getSearchDataOnLoad'])->name('receipts.getSearchDataOnLoad');
 
-
+    Route::get('users/direct-permision/{id}', [UserController::class, 'directPermission'])->name('users.directPermission');
+    Route::post('users/store-direct-permision', [UserController::class, 'storeDirectPermission'])->name('users.storeDirectPermission');
  
 
 

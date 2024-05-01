@@ -32,21 +32,7 @@
         </li>
         @endcan
 
-        <!-- Layouts -->
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-layout-sidebar"></i>
-                <div data-i18n="Layouts">Layouts</div>
-            </a>
-
-            <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="layouts-collapsed-menu.html" class="menu-link">
-                        <div data-i18n="Collapsed menu">Collapsed menu</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
+  
 
         <!-- Apps & Pages -->
         <li class="menu-header small text-uppercase">

@@ -81,26 +81,34 @@ class AdminController extends Controller
     }
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials, $request->has('remember'))) {
-            $user = Auth::user();
-            if ($user->status == 1) {
-                //Remember me
-                if ($request->has('remember') && !empty($request->remember)) {
-                    setcookie("email", $request->email, time() + 3600);
-                    setcookie("password", $request->password, time() + 3600);
+        $user = User::where('email',$request->email)->first();
+        if($user->user_for_portal != null){
+            $credentials = $request->only('email', 'password');
+            if (Auth::attempt($credentials, $request->has('remember'))) {
+                $user = Auth::user();
+                if ($user->status == 1) {
+                    //Remember me
+                    if ($request->has('remember') && !empty($request->remember)) {
+                        setcookie("email", $request->email, time() + 3600);
+                        setcookie("password", $request->password, time() + 3600);
+                    } else {
+                        setcookie("email", "");
+                        setcookie("password", "");
+                    }
+                    return response()->json(['success' => true, 'route' => route('dashboard')]);
                 } else {
-                    setcookie("email", "");
-                    setcookie("password", "");
+                    Auth::logout(); // Log out the user if they are not active
+                    return response()->json(['error' => 'Your account is not active.']);
                 }
-                return response()->json(['success' => true, 'route' => route('dashboard')]);
             } else {
-                Auth::logout(); // Log out the user if they are not active
-                return response()->json(['error' => 'Your account is not active.']);
+                return response()->json(['error' => 'Invalid credentials']);
             }
-        } else {
-            return response()->json(['error' => 'Invalid credentials']);
+
         }
+        else {
+            return response()->json(['error' => 'Your Are Not Allowed To Login']);
+        }
+       
     }
 
     public function logOut()
@@ -244,9 +252,7 @@ class AdminController extends Controller
                     }
                     if ($request->has('status')  && !empty($request->status)) {
                         $status = $request->status;
-                     
-                        $query->collection = $query->collection->filter(function ($record) use ($status) {
-                          
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {   
                             return str_contains(strtolower($record['employment_status']), strtolower($status));
                         });
                     }
