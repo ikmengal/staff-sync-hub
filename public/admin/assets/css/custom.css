@@ -1,0 +1,22 @@
+.img-logo {
+    width: 80%;
+    z-index: 3;
+    margin: 0 auto;
+}
+.layout-menu-collapsed .img-logo {
+    width: 75%;
+    margin: unset;
+}
+
+.layout-menu-hover .img-logo{
+    /* width: 75%; */
+    margin: 0 auto;
+}
+
+.light-style .light-logo {
+    display: none;
+}
+
+.dark-style .dark-logo{
+    display: none;
+}

@@ -22,24 +22,24 @@
                                         <div class="col-6">
                                             <ul class="list-unstyled mb-0">
                                                 <li class="d-flex mb-4 align-items-center">
-                                                    <p class="mb-0 fw-semibold me-2 website-analytics-text-bg">{{ count($company->total_employees) }}</p>
-                                                    <p class="mb-0">Active Employees</p>
+                                                    <p class="mb-0 text-white fw-semibold me-2 website-analytics-text-bg">{{ count($company->total_employees) }}</p>
+                                                    <p class="mb-0 text-white">Active Employees</p>
                                                 </li>
                                                 <li class="d-flex align-items-center mb-2">
-                                                    <p class="mb-0 fw-semibold me-2 website-analytics-text-bg">{{ count($company->vehicles) }}</p>
-                                                    <p class="mb-0">Vehicles</p>
+                                                    <p class="mb-0 text-white  fw-semibold me-2 website-analytics-text-bg">{{ count($company->vehicles) }}</p>
+                                                    <p class="mb-0 text-white ">Vehicles</p>
                                                 </li>
                                             </ul>
                                         </div>
                                         <div class="col-6">
                                             <ul class="list-unstyled mb-0">
                                                 <li class="d-flex mb-4 align-items-center">
-                                                    <p class="mb-0 fw-semibold me-2 website-analytics-text-bg">{{ count($company->total_terminated_employees) }}</p>
-                                                    <p class="mb-0">Terminated Employees</p>
+                                                    <p class="mb-0 text-white  fw-semibold me-2 website-analytics-text-bg">{{ count($company->total_terminated_employees) }}</p>
+                                                    <p class="mb-0 text-white ">Terminated Employees</p>
                                                 </li>
                                                 <li class="d-flex align-items-center mb-2">
-                                                    <p class="mb-0 fw-semibold me-2 website-analytics-text-bg">{{ $company->vehicle_percent }}%</p>
-                                                    <p class="mb-0">Vehhicles Percent</p>
+                                                    <p class="mb-0 text-white  fw-semibold me-2 website-analytics-text-bg">{{ $company->vehicle_percent }}%</p>
+                                                    <p class="mb-0 text-white ">Vehhicles Percent</p>
                                                 </li>
                                             </ul>
                                         </div>
