@@ -71,7 +71,7 @@ class EstimateController extends Controller
                         'creator' => $value->company->name ?? null,
                         'price' => $value->price ?? null,
                         'description' => $value->description ?? null,
-                        'status' => $value->status ?? null,
+                        'status' => $value->getStatus->name ?? null,
                         'images' => isset($value->attachments) && !empty($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
                     ];
                 }
@@ -79,6 +79,50 @@ class EstimateController extends Controller
                 return apiResponse(true, $data, "All estimates", 200);
             }else{
                 return apiResponse(false, null, "No Estimate record found...!", 500);
+            }
+        }
+    }
+
+    public function estimateApprove(Request $request)
+    {
+        if($request->bearerToken() == ""){
+            return apiResponse(false, null, "Enter token", 500);
+        }
+
+        $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
+
+        if(empty($bearerToken)){
+            return apiResponse(false, null, "Unauthorized", 500);
+        }else{
+            $user = User::where('id', $bearerToken->tokenable_id)->first();
+            $estimate = Estimate::where("id", $request->id)->first();
+            if (!empty($estimate)) {
+                if(isset($estimate) && $estimate->status == 1){
+                    $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
+                    if (!empty($otherEstimates)) {
+                        $otherEstimates->toQuery()->update([
+                            "status" => 3, // 3  rejected
+                            "remarks" => "Rejected",
+                        ]);
+                    }
+                    $update = $estimate->update([
+                        "status" => 2, // 2 approved
+                        "remarks" => $request->remarks ?? "Approved",
+                    ]);
+                    $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
+                    if (!empty($purchaseRequest)) {
+                        $purchaseRequest->update(['status' => 2,  "remarks" => $request->remarks ?? "Approved"]);  // 2 approved
+                    }
+                    if($update == 1) {
+                        return apiResponse(true, null, "Approved successfuly!", 200);
+                    }else{
+                        return apiResponse(false, null, "Failed to approve!", 500);
+                    }
+                }else{
+                    return apiResponse(false, null, "Estimate status already ". $estimate->getStatus->name, 500);                    
+                }
+            }else{
+                return apiResponse(false, null, "No estimate record found", 500);
             }
         }
     }
