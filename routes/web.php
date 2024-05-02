@@ -112,6 +112,9 @@ Route::middleware('auth')->group(function () {
     Route::post('approve-estimate', [EstimateController::class, 'approve'])->name('estimates.approve');
  
 
+    Route::resource('/users', UserController::class);
+    Route::resource('/roles', RoleController::class);
+    Route::resource('/permissions', PermissionController::class);
     Route::resource('/estimates', EstimateController::class);
     Route::resource('/purchase-requests', PurchaseRequestController::class);
     Route::resource('/requisitions', EmployeeRequisitionController::class);
