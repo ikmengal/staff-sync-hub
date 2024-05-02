@@ -61,8 +61,8 @@ class EstimateController extends Controller
                 })
                 ->addColumn('status', function ($model) {
                     $data = '';
-                    $class = $model->getStatus->class  ?? "primary";
-                    $name = $model->getStatus->name  ?? "-";
+                    $class = $model->requestData->getStatus->class  ?? "primary";
+                    $name = $model->requestData->getStatus->name  ?? "-";
                     $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
                     return $data;
                 })
@@ -139,6 +139,7 @@ class EstimateController extends Controller
     {
         $data['title'] = 'Estimate Detail';
         $data['records'] = Estimate::where('request_id', $id)->get();
+        $data['requestData'] = PurchaseRequest::where("id", $id)->first();
         if (isset($data['records']) && !empty($data['records'])) {
             if (view()->exists('admin.estimates.show')) {
                 return view('admin.estimates.show', $data);
@@ -172,5 +173,42 @@ class EstimateController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function approve(Request $request)
+    {
+        if (!empty($request->estimate_id)) {
+            $estimate = Estimate::where("id", $request->estimate_id)->first();
+            if (!empty($estimate)) {
+                $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
+                if (!empty($otherEstimates)) {
+                    $otherEstimates->toQuery()->update([
+                        "status" => 3, // 3  rejected
+                        "remarks" => "Rejected",
+                    ]);
+                }
+                $update = $estimate->update([
+                    "status" => 2, // 2 approved
+                    "remarks" => $request->remarks ?? "Approved",
+                ]);
+                $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
+                if (!empty($purchaseRequest)) {
+                    $purchaseRequest->update(['status' => 2,  "remarks" => $request->remarks ?? "Approved"]);  // 2 approved
+                }
+                if ($update == 1) {
+                    return response()->json([
+                        "success" => true,
+                        "message" => "Approved successfuly!",
+                        "code" => 200,
+                    ]);
+                } else {
+                    return response()->json([
+                        "success" => false,
+                        "message" => "Failed to approve!",
+                        "code" => 200,
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -16,9 +16,9 @@ class PurchaseRequestStatusSeeder extends Seeder
     {
         DB::table("purchase_request_statuses")->truncate();
         $array = [
-            ['name' => 'pending', 'class' => 'warning'],
-            ['name' => 'approved', 'class' => 'success'],
-            ['name' => 'rejected', 'class' => 'danger'],
+            ['name' => 'Pending', 'class' => 'warning'],
+            ['name' => 'Approved', 'class' => 'success'],
+            ['name' => 'Rejected', 'class' => 'danger'],
         ];
         foreach ($array as $value) {
             PurchaseRequestStatus::create([
