@@ -30,6 +30,12 @@
             </a>
             @endcan
         </li>
+        @can('users-edit-password')
+        <li>
+            <a href="#" class="btn btn-active-light-primary editPasswordBtn" data-route="{{route('users.update.password.form')}}" data-id="{{$user->id}}">Update Password</a>
+        </li>
+        @endcan
+      
      
 
 

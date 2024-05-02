@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
@@ -150,7 +151,14 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $title = "User Detail";
+        $user = User::where('id',$id)->first();
+        if(!empty($user)){
+
+            return view('admin.users.show',compact('user','title'));
+
+        }
+        
     }
 
     /**
@@ -323,4 +331,47 @@ class UserController extends Controller
             return ['success' => false, 'message', 'User not found', 'status' => 404];
         }
     }
+
+    public function updatePasswordForm(Request $request)
+    {
+        $this->authorize('users-edit-password');
+        $title = "Edit Password";
+        $edit = $this->model::where('id', $request->id)->first();
+        if (isset($edit) && !empty($edit)) {
+            $view = view('admin.users.partials.update_password_modal', compact('edit','title'))->render();
+            return ['success' => true, 'view' => $view, 'title' => $title];
+        } else {
+            return ['success' => false, 'message' => 'User not found'];
+        }
+    }
+
+    public function updatePassword(Request $request){
+
+        $roles = [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ];
+
+        $message = [
+            'permissions.required' => "Please select permissions"
+        ];
+
+        $validator = Validator::make($request->all(), $roles, $message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+        }
+
+        $user = $this->model::where('id',$request->user_id)->first();
+        if (!Hash::check($request->current_password, $user->password)) {
+
+            return  ['success' => true, 'message' =>  'Current password is incorrect.', 'status' => 500];
+        }
+
+        $user->password = Hash::make($request->new_password);
+        if($user->save()){
+            return  ['success' => true, 'message' =>  'Password updated successfully.', 'status' => 200];
+        }
+
+    }
+
 }
