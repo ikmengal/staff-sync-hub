@@ -72,52 +72,6 @@
                 </div>
             </div>
             <!-- Stocks List Table -->
-
-            <!-- Add Remark Modal -->
-            <div class="modal fade" id="create-form-modal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-md modal-dialog-centered modal-add-new-role">
-                    <div class="modal-content p-3 p-md-5">
-                        <button type="button" class="btn-close btn-pinned" data-bs-dismiss="modal" aria-label="Close"></button>
-                        <div class="modal-body">
-                            <div class="mb-4">
-                                <h3 class="role-title mb-2">Remark</h3>
-                            </div>
-                            <form class="pt-0 fv-plugins-bootstrap5 fv-plugins-framework" data-method="" data-modal-id="create-form-modal" id="create-form">
-                                @csrf
-                                <div class="row">
-                                    <div class="mb-1 fv-plugins-icon-container col-12">
-                                        <label class="form-label" for="remark">Remark<span class="text-danger">*</span></label>
-                                        <textarea class="form-control" id="remark" placeholder="Enter Remark" name="remark" cols="15" rows="5"></textarea>
-                                        <div class="fv-plugins-message-container invalid-feedback"></div>
-                                        <span id="remark_error" class="text-danger error"></span>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="route" id="route" value="{{route('purchase-requests.status')}}">
-                                <input type="hidden" name="status_data" id="status_data" value="1">
-                                <input type="hidden" name="purchase_status_id" id="purchase_status_id" value="">
-                                <div class="col-12 action-btn">
-                                    <div class="demo-inline-spacing sub-btn">
-                                        <button type="submit" class="btn btn-primary me-sm-3 me-1 submitBtn">Submit</button>
-                                        <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                    <div class="demo-inline-spacing loading-btn" style="display: none;">
-                                        <button class="btn btn-primary waves-effect waves-light" type="button" disabled="">
-                                            <span class="spinner-border me-1" role="status" aria-hidden="true"></span>
-                                            Loading...
-                                        </button>
-                                        <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Add Remark Modal -->
         </div>
     </div>
 </div>
@@ -210,49 +164,5 @@
         var table = $('.data_table').DataTable();
         table.ajax.reload(null, false)
     });
-
-    $(document).on('change', "#status", function(){
-        var statusValue = $(this).val();
-        var purchaseId = $(this).attr('purchaseId');
-        if(statusValue == 2){
-            $("#remark").html('Approved');
-            $('#status_data').val(statusValue);
-            $('#purchase_status_id').val(purchaseId);
-            $('#create-form-modal').modal('show');
-        }else{
-            $("#remark").html('');
-            $('#status_data').val(statusValue);
-            $('#purchase_status_id').val(purchaseId);
-            $('#create-form-modal').modal('show');
-        }
-    });
-
-    $(document).on('click', '.submitBtn', function(){
-        event.preventDefault();
-        var route = $('#route').val();
-        var formData = $('#create-form').serialize();
-        
-        $.ajax({
-                url: route,
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    if(response.success == true){
-                        toastr.success(response.message);
-                        $('#create-form-modal').modal('hide');
-                        loadPageData();
-                    }else{
-                        toastr.error(response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                    var response = JSON.parse(xhr.responseText);
-                    $('#remark_error').text(response.remark[0]);
-                }
-            });
-
-    })
-
 </script>
 @endpush
