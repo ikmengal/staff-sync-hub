@@ -26,7 +26,7 @@
                                     <div class="ms-6">
                                         <a href="#" class="d-flex align-items-center fs-5 fw-bold text-gray-900 text-hover-primary">{{ $record->full_name ?? "-" }} 
                                         <span class="badge badge-light fs-8 fw-semibold ms-2">{{isset($record->roles) && !empty($record->roles) ? implode($record->roles->pluck('name')->toArray()) : "-"}}</span></a>
-                                        <div class="fw-semibold text-muted">{{ $record->email ?? "-" }}</div>
+                                        <div class="fw-semibold text-muted" style="margin-left:30px;">{{ $record->email ?? "-" }}</div>
                                     </div>
                                 </div>
                             </div>

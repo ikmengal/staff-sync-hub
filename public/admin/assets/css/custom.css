@@ -3,12 +3,13 @@
     z-index: 3;
     margin: 0 auto;
 }
+
 .layout-menu-collapsed .img-logo {
     width: 75%;
     margin: unset;
 }
 
-.layout-menu-hover .img-logo{
+.layout-menu-hover .img-logo {
     /* width: 75%; */
     margin: 0 auto;
 }
@@ -17,7 +18,7 @@
     display: none;
 }
 
-.dark-style .dark-logo{
+.dark-style .dark-logo {
     display: none;
 }
 

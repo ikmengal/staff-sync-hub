@@ -112,6 +112,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('approve-estimate', [EstimateController::class, 'approve'])->name('estimates.approve');
  
+    Route::get('users-edit-password',[UserController::class,'updatePasswordForm'])->name('users.update.password.form');
+    Route::post('users-update-password',[UserController::class,'updatePassword'])->name('users.updatePassword');
+    Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);
@@ -126,6 +129,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('/designations', DesignationController::class);
     Route::resource('/work_shifts', WorkShiftController::class);
     Route::resource('/receipts', ReceiptController::class);
+    Route::resource('users', UserController::class);
+
+
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
@@ -133,6 +139,7 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
+
 
 
 

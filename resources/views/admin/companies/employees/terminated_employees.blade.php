@@ -29,18 +29,19 @@
         <!-- Users List Table -->
         <div class="card mt-4">
             <div class="row p-3">
-                <div class="col-md-2 mb-3">
-                    <label for="">Department</label>
-                    <select name="department" id="department" data-control="select2" class="select2 form-select department  unselectValue">
-                   
-                    </select>
-                </div>
                 <div class="col-md-3 mb-3">
                     <label for="">Company</label>
                     <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
                        
                     </select>
                 </div>
+                <div class="col-md-2 mb-3">
+                    <label for="">Department</label>
+                    <select name="department" id="department" data-control="select2" class="select2 form-select department  unselectValue">
+                   
+                    </select>
+                </div>
+              
                 <div class="col-md-2 mb-3">
                     <label for="">Shift</label>
                     <select name="shift" id="shift" class="select2 form-select shift unselectValue">

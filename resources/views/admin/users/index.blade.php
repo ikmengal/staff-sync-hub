@@ -15,15 +15,15 @@
                     <div class="col-md-6">
                         <div class="dt-buttons btn-group flex-wrap float-end mt-4">
                             @can('users-create')
-                            <button id="add-btn" data-modal-id="createUserModal" data-toggle="tooltip"
-                                data-placement="top" title="Add User" data-url="{{ route('users.create') }}"
-                                class="btn add-new btn-primary mb-3 mb-md-0 mx-3" tabindex="0"
-                                aria-controls="DataTables_Table_0" type="button" data-bs-toggle="modal">
-                                <span>
-                                    <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i>
-                                    <span class="d-none d-sm-inline-block"> Add User </span>
-                                </span>
-                            </button>
+                                <button id="add-btn" data-modal-id="createUserModal" data-toggle="tooltip"
+                                    data-placement="top" title="Add User" data-url="{{ route('users.create') }}"
+                                    class="btn add-new btn-primary mb-3 mb-md-0 mx-3" tabindex="0"
+                                    aria-controls="DataTables_Table_0" type="button" data-bs-toggle="modal">
+                                    <span>
+                                        <i class="ti ti-plus me-0 me-sm-1 ti-xs"></i>
+                                        <span class="d-none d-sm-inline-block"> Add User </span>
+                                    </span>
+                                </button>
                             @endcan
                         </div>
                     </div>
@@ -57,6 +57,7 @@
         </div>
     </div>
     <div id="permissionModal"></div>
+    <div id="editPasswordModal"></div>
     @include('admin.users.partials.create_modal')
     @include('admin.users.partials.edit_modal')
 @endsection
@@ -228,8 +229,11 @@
                             $.each(res.message, function(index, value) {
                                 // Display error below respective input field
                                 const fieldName = index;
-                                const errorElement = $(`#${fieldName}_error`);
+                                const errorElement = $(`.${fieldName}_error`);
+
+
                                 errorElement.html(value[0]);
+
                             });
                         }
                     }
@@ -327,23 +331,102 @@
                     $(".permissionBtn").addClass('disabled');
                 },
                 success: function(res) {
-                  
+
                     $(".permissionBtn").removeClass('disabled');
                     if (res.success == true) {
                         var table = $('.data_table').DataTable();
                         table.ajax.reload(null, false);
-                   
+
                         $("#direct_permission_modal").modal('hide');
                     } else {
-                      alert(res.message)
-                        
+                        alert(res.message)
+
                     }
                 },
                 error: function(xhr, status, error) {
-                  
+
                     $(".permissionBtn").removeClass('disabled');
-                    alert(res.message)
-                        
+
+
+
+                }
+            });
+        }
+
+        $(document).on("click", ".editPasswordBtn", function() {
+
+            var route = $(this).attr('data-route');
+
+            var id = $(this).attr('data-id');
+
+            $.ajax({
+                type: 'GET',
+                url: route,
+                data: {
+                    id: id
+                },
+                success: function(res) {
+                    console.log(res)
+                    $("#editPasswordModal").empty();
+                    $("#editPasswordModal").html(res.view);
+                    $("#updatePasswordModal").modal('show');
+
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors
+                    console.error(xhr.responseText);
+                }
+            });
+
+
+
+        });
+
+        function updatePassword(event) {
+            var formData = $("#updatePasswordForm").serializeArray();
+  
+            var route = event.data('route');
+        
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: route,
+                data: formData,
+                beforeSend: function() {
+                    $(".indicator-label").css({
+                        'display': 'none'
+                    });
+                    $(".indicator-progress").css({
+                        'display': 'block'
+                    });
+
+                },
+                success: function(res) {
+
+
+                    if (res.success == true) {
+                        var table = $('.data_table').DataTable();
+                        table.ajax.reload(null, false);
+                        $("#updatePasswordModal").modal('hide');
+                    } else {
+                        if (res.validation === false) {
+                            $(".error").html("")
+                            $(".error").html(res.message)
+                    
+                           
+                        }
+
+                    }
+                },
+                error: function(xhr, status, error) {
+
+
+
+
 
                 }
             });
