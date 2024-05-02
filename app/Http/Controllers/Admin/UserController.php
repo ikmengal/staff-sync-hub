@@ -305,7 +305,7 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), $roles, $message);
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+            return response()->json(['success' => false, 'message' => $validator->errors(), 'validation' => false]);
         }
         $user = $this->model::find($request->user_id);
         if (!empty($user) && !empty($user)) {
@@ -352,11 +352,9 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ];
 
-        $message = [
-            'permissions.required' => "Please select permissions"
-        ];
+      
 
-        $validator = Validator::make($request->all(), $roles, $message);
+        $validator = Validator::make($request->all(), $roles);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
         }

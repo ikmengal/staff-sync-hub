@@ -21,6 +21,8 @@
                                     data-kt-scroll-max-height="auto"
                                     data-kt-scroll-dependencies="#kt_modal_add_role_header"
                                     data-kt-scroll-wrappers="#kt_modal_add_role_scroll" data-kt-scroll-offset="300px">
+                                    <span id="error"
+                                    class="text-danger error"></span>
                                     <div class="col-12 mb-4">
                                         <label class="form-label" for="password">Current Password<span
                                                 class="text-danger">*</span></label>
@@ -34,13 +36,13 @@
                                                 class="text-danger">*</span></label>
                                         <input type="password" id="new_password" name="password"
                                             class="form-control" placeholder="Enter New Password" tabindex="-1" />
-                                        <span id="new_password_error" class="text-danger new_password_error"></span>
+                                        <span id="password_error" class="text-danger password_error"></span>
                                     </div>
                                     <div class="col-12 mb-4">
                                         <label class="form-label" for="password">Confirm Password</label>
                                         <input type="password" id="confirmation_password" name="password_confirmation"
                                             class="form-control" placeholder="Confirm Password">
-                                        <span id="confirm_password" class="text-danger"></span>
+                                        <span id="" class="text-danger confirm_password"></span>
                                     </div>
 
                                     <!--end::Permissions-->

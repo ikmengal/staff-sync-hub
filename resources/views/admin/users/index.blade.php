@@ -415,16 +415,9 @@
                     } else {
                         if (res.validation === false) {
                             $(".error").html("")
-                            // Loop through each error message
-                            $.each(res.message, function(index, value) {
-                                // Display error below respective input field
-                                const fieldName = index;
-                                const errorElement = $(`.${fieldName}_error`);
-
-
-                                errorElement.html(value[0]);
-
-                            });
+                            $(".error").html(res.message)
+                    
+                           
                         }
 
                     }
