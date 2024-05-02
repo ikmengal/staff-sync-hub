@@ -62,4 +62,4 @@ Route::post("store-purchase-request", [PurchaseRequestController::class, 'store'
 
 // Estimate Route
 Route::get("get-estimates", [EstimateController::class, 'index']);
-
+Route::get("estimates-detail{id?}", [EstimateController::class, 'estimatesDetail']);
