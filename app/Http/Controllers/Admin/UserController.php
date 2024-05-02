@@ -86,7 +86,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
-            'user_type' => 'required'
+            'user_type' => 'required',
+            "password"=>'required|confirmed'
 
 
         ];
@@ -125,10 +126,10 @@ class UserController extends Controller
             'first_name' => $first_name,
             'last_name' => $last_name,
             'email' => $request->email ?? null,
-            'password' => Hash::make('12345678'),
             'slug' => getSlug(),
             'user_for_portal' => $user_portal,
-            'user_for_api' => $user_api
+            'user_for_api' => $user_api,
+            'password' =>  Hash::make($request->password) ?? null
 
         ]);
 
@@ -180,12 +181,14 @@ class UserController extends Controller
             'email' => "required|email|unique:users,email,$id,id,deleted_at,NULL",
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
+            'password' => 'confirmed'
+          
 
 
         ];
 
 
-
+      
 
 
         $message = [
@@ -200,11 +203,29 @@ class UserController extends Controller
 
         $first_name = $request->first_name ?? null;
         $last_name = $request->last_name ?? null;
+        $user_portal = null;
+        $user_api = null;
+        if ($request->user_type == 1) {
+            $user_portal = 1;
+            $user_api = null;
+        }
+        if ($request->user_type == 2) {
+            $user_portal = null;
+            $user_api = 1;
+        }
+        if ($request->user_type == 3) {
+
+            $user_portal = 1;
+            $user_api = 1;
+        }
+        
         $result = $update->update([
             'first_name' => $request->first_name ?? null,
             'last_name' => $request->last_name ?? null,
             'email' => $request->email ?? null,
-            'password' => Hash::make('12345678'),
+            'user_for_portal' => $user_portal,
+            'user_for_api' => $user_api,
+            'password' =>  Hash::make($request->password) ?? $update->password
 
 
         ]);

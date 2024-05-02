@@ -4,26 +4,29 @@
     @csrf
 
     <span id="edit-content">
-
-        <div class="col-12 mb-4">
+      <div class="row">
+        <div class="col-6 mb-4">
             <label class="form-label" for="name">First Name <span class="text-danger">*</span></label>
             <input type="text" id="name" name="first_name" class="form-control"
                 placeholder="Enter a role first_name" tabindex="-1" />
             <span id="first_name_error" class="text-danger"></span>
         </div>
-        <div class="col-12 mb-4">
+        <div class="col-6 mb-4">
             <label class="form-label" for="name">Last Name <span class="text-danger">*</span></label>
             <input type="text" id="last_name" name="last_name" class="form-control"
                 placeholder="Enter a role last_name" tabindex="-1" />
             <span id="last_name_error" class="text-danger"></span>
         </div>
-        <div class="col-12 mb-4">
+
+      </div>
+      <div class="row">
+        <div class="col-6 mb-4">
             <label class="form-label" for="name">Email <span class="text-danger">*</span></label>
             <input type="text" id="email" name="email" class="form-control" placeholder="Enter a email"
                 tabindex="-1" />
             <span id="email_error" class="text-danger"></span>
         </div>
-        <div class="col-12 mb-4">
+        <div class="col-6 mb-4">
             <label class="form-label" for="name">User Type <span class="text-danger">*</span></label>
             <select class="form-control select2" name="user_type">
                 <option value="">Select</option>
@@ -33,6 +36,18 @@
             </select>
             <span id="user_type_error" class="text-danger"></span>
         </div>
+    </div>
+    <div class="row">
+        <div class="col-6 mb-4">
+             <label class="form-label" for="password">Password</label>
+             <input name="password" type="password" class="form-control" placeholder="Enter Password">
+             <span class="text-danger" id="password_error"></span>
+        </div>
+        <div class="col-6 mb-4">
+            <label class="form-label" for="password">Confirm Password</label>
+            <input name="password_confirmation" type="password" class="form-control" placeholder="Confirm Password">
+        </div>
+    </div>
         <div class="col-12 mb-4">
             <label class="required fw-semibold fs-6 mb-5">Role</label>
             <span id="role_id_error" class="custom_error" style="color: #ea868f;"></span>

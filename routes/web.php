@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/designations', DesignationController::class);
     Route::resource('/work_shifts', WorkShiftController::class);
     Route::resource('/receipts', ReceiptController::class);
+    Route::resource('users', UserController::class);
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");

@@ -228,8 +228,11 @@
                             $.each(res.message, function(index, value) {
                                 // Display error below respective input field
                                 const fieldName = index;
-                                const errorElement = $(`#${fieldName}_error`);
+                                const errorElement = $(`.${fieldName}_error`);
+                              
+                               
                                 errorElement.html(value[0]);
+
                             });
                         }
                     }
