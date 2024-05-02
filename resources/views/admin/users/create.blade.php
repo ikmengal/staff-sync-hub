@@ -39,7 +39,7 @@
     </div>
     <div class="row">
         <div class="col-6 mb-4">
-             <label class="form-label" for="password">Password</label>
+             <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
              <input name="password" type="password" class="form-control" placeholder="Enter Password">
              <span class="text-danger" id="password_error"></span>
         </div>
