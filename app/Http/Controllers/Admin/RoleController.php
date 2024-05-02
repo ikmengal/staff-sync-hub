@@ -23,14 +23,14 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        
+
         $this->authorize('roles-list');
         $data['per_page_records'] = 10;
         $data['title'] = 'All Roles';
         $data['models'] = Permission::groupBy('label')->select('label')->get();
         $data['work_shifts'] = WorkShift::orderby('id', 'desc')->get();
         $data['designations'] = Designation::orderby('id', 'desc')->where('status', 1)->get();
-        $data['roles'] = Role::orderby('id', 'desc')->get();
+        $data['roles'] = Role::get();
         $data['departments'] = Department::orderby('id', 'desc')->where('status', 1)->get();
         $data['employment_statues'] = EmploymentStatus::orderby('id', 'desc')->get();
         $data['employees_users'] = User::orderby('id', 'desc')->where('is_employee', 1)->take(5)->get();
@@ -38,35 +38,35 @@ class RoleController extends Controller
         $data['termination_employment_statues'] = EmploymentStatus::whereIn('name', $emp_statuses)->get();
 
         $model = User::orderby('id', 'desc')->where('is_employee', 1)->get();
-        if($request->ajax() && $request->loaddata == "yes") {
+        if ($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($model)
                 ->addIndexColumn()
-                ->addColumn('role', function($model){
+                ->addColumn('role', function ($model) {
                     return $model->getRoleNames()->first();
                 })
-                ->addColumn('Department', function($model){
-                    if(isset($model->departmentBridge->department) && !empty($model->departmentBridge->department)){
+                ->addColumn('Department', function ($model) {
+                    if (isset($model->departmentBridge->department) && !empty($model->departmentBridge->department)) {
                         return $model->departmentBridge->department->name;
-                    }else{
+                    } else {
                         return '-';
                     }
                 })
-                ->addColumn('shift', function($model){
-                    if(isset($model->userWorkingShift->workShift) && !empty($model->userWorkingShift->workShift->name)) {
+                ->addColumn('shift', function ($model) {
+                    if (isset($model->userWorkingShift->workShift) && !empty($model->userWorkingShift->workShift->name)) {
                         return $model->userWorkingShift->workShift->name;
-                    }else{
+                    } else {
                         return '-';
                     }
                 })
                 ->addColumn('emp_status', function ($model) {
                     $label = '-';
 
-                    if(isset($model->employeeStatus->employmentStatus) && !empty($model->employeeStatus->employmentStatus->name)){
-                        if($model->employeeStatus->employmentStatus->name=='Terminated'){
+                    if (isset($model->employeeStatus->employmentStatus) && !empty($model->employeeStatus->employmentStatus->name)) {
+                        if ($model->employeeStatus->employmentStatus->name == 'Terminated') {
                             $label = '<span class="badge bg-label-danger me-1">Terminated</span>';
-                        }elseif($model->employeeStatus->employmentStatus->name=='Permanent'){
+                        } elseif ($model->employeeStatus->employmentStatus->name == 'Permanent') {
                             $label = '<span class="badge bg-label-success me-1">Permanent</span>';
-                        }elseif($model->employeeStatus->employmentStatus->name=='Probation'){
+                        } elseif ($model->employeeStatus->employmentStatus->name == 'Probation') {
                             $label = '<span class="badge bg-label-warning me-1">Probation</span>';
                         }
                     }
@@ -76,7 +76,7 @@ class RoleController extends Controller
                 ->editColumn('first_name', function ($model) {
                     return view('admin.employees.employee-profile', ['employee' => $model])->render();
                 })
-                ->addColumn('action', function($model){
+                ->addColumn('action', function ($model) {
                     return view('admin.employees.employee-action', ['employee' => $model])->render();
                 })
                 ->rawColumns(['first_name', 'action', 'emp_status'])
@@ -86,7 +86,8 @@ class RoleController extends Controller
         return view('admin.roles.index', $data);
     }
 
-    public function getRoleEmployees(Request $request) {
+    public function getRoleEmployees(Request $request)
+    {
         $records = User::where('is_employee', 1)->select("*");
         if ($request->ajax()) {
             return DataTables::of($records)
@@ -148,7 +149,6 @@ class RoleController extends Controller
                 ->rawColumns(['emp_status', 'status', 'first_name', 'role', 'Department', 'action'])
                 ->make(true);
         }
-
     }
 
     /**
@@ -171,7 +171,7 @@ class RoleController extends Controller
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => $validator->errors(), 'validation' => false]);
         }
-   
+
         $role = Role::create([
             'name' => $request->name ?? null,
             'display_name' => $request->name ?? null,
@@ -183,7 +183,7 @@ class RoleController extends Controller
 
         if (isset($role) && !empty($role)) {
 
-             
+
             $result = ['success' => true, 'message' => 'Role successfuly created', 'status' => 200];
         } else {
             $result = ['success' => false, 'message' => 'Role not created, something went wrong', 'status' => 501];
@@ -192,7 +192,7 @@ class RoleController extends Controller
         return $result;
     }
 
- 
+
 
 
     /**
@@ -200,23 +200,22 @@ class RoleController extends Controller
      */
     public function edit(string $id)
     {
-        
+
         $this->authorize('roles-edit');
         $role = Role::where('id', $id)->first();
         $role_permissions = $role->permissions->pluck('name')->toArray();
-        $models = Permission::orderby('id','DESC')->groupBy('label')->get();
+        $models = Permission::orderby('id', 'DESC')->groupBy('label')->get();
         $roles = Role::orderby('id', 'desc')->get();
-        $view = view('admin.roles.edit_content',compact('role', 'models', 'roles', 'role_permissions'))->render();
+        $view = view('admin.roles.edit_content', compact('role', 'models', 'roles', 'role_permissions'))->render();
         return ['success' => true, 'view' => $view];
-       
     }
 
-   
+
 
     /**
      * Update the specified resource in storage.
      */
-  
+
 
 
     public function update(Request $request, $id)
@@ -226,7 +225,7 @@ class RoleController extends Controller
         $update->name = $request->name;
         $update->save();
         $update->syncPermissions($request->permissions);
-  
+
         if (isset($update) && !empty($update)) {
 
             $result = ['success' => true, 'message' => 'Role successfuly updated', 'status' => 200];

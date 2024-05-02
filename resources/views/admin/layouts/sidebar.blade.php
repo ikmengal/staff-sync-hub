@@ -86,9 +86,9 @@
                 <i class="menu-icon tf-icons ti ti-users"></i>
                 <div>All Employees</div>
             </a>
-                
+
             @endcan
-        
+
         </li>
         <li class="menu-item {{ request()->is('admin/companies/employees/new_hiring')?'active':'' }}">
             @can('employees-new-hired-employee')
@@ -151,12 +151,12 @@
                     @endcan
                 </li>
                 <li class="menu-item hover is_shown {{Route::is('receipts.*') ? 'active' : ''}} ">
-                  @can('receipts-list')
+                    @can('receipts-list')
                     <a href="{{ route('receipts.index') }}" class="menu-link">
                         <div data-i18n="Receipts">Receipts</div>
                     </a>
-                   @endcan
-                   
+                    @endcan
+
                 </li>
             </ul>
             @endcan
