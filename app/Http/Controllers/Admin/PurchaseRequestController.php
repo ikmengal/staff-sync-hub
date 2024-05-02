@@ -17,6 +17,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('purchases-request');
         $data['title'] = 'Purchase Requests';
         $data['companies'] = Company::get();
         $records = PurchaseRequest::select("*");
