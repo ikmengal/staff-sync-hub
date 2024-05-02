@@ -22,6 +22,7 @@ class EstimateController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize("estimates-list");
         $data['title'] = 'Estimates';
         $data['companies'] = Company::get();
         $data['users'] = User::get();

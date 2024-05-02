@@ -7,6 +7,7 @@ use App\Models\WorkShift;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
 use App\Models\AttendanceSummary;
+use App\Models\Department;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
@@ -807,7 +808,8 @@ function getDepartments()
 
     foreach ($connections as $connectionName) {
         // Query the department table for departments
-        $departmentsFromThisConnection = DB::connection($connectionName)->table('departments')->pluck('name'); // Assuming the table name is 'departments'
+        // $departmentsFromThisConnection = DB::connection($connectionName)->table('departments')->pluck('name'); // Assuming the table name is 'departments'
+        $departmentsFromThisConnection = Department::on($connectionName)->pluck('name');
 
         // Merge departments from this connection with the main collection
         $departments = $departments->merge($departmentsFromThisConnection);
@@ -823,7 +825,8 @@ function getShifts()
     $shifts = collect();
     foreach ($connections as $connectionName) {
         // Query the department table for departments
-        $shiftsFromThisConnection = DB::connection($connectionName)->table('work_shifts')->pluck('name'); // Assuming the table name is 'departments'
+        // $shiftsFromThisConnection = DB::connection($connectionName)->table('work_shifts')->pluck('name'); // Assuming the table name is 'departments'
+        $shiftsFromThisConnection = WorkShift::on($connectionName)->pluck('name');
 
         // Merge departments from this connection with the main collection
 
