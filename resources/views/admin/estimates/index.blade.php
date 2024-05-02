@@ -28,9 +28,9 @@
                         <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
                             <option value="">All</option>
                             @if(isset($users) && !empty($users))
-                                @foreach($users as $index => $user)
-                                    <option value="{{$user->id}}">{{$user->first_name ?? ''}} {{$user->last_name ?? ''}}</option>
-                                @endforeach
+                            @foreach($users as $index => $user)
+                            <option value="{{$user->id}}">{{$user->first_name ?? ''}} {{$user->last_name ?? ''}}</option>
+                            @endforeach
                             @endif
                         </select>
                     </div>
@@ -59,7 +59,7 @@
                     <div class="col-md-3 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
-                        <a href="{{route('estimates.create')}}"   class="btn btn-success  me-2">Add&nbsp;<i class="fa-solid fa-plus"></i></a>
+                        <a href="{{route('estimates.create')}}" class="btn btn-success  me-2">Add&nbsp;<i class="fa-solid fa-plus"></i></a>
                     </div>
                 </div>
                 <div class="card-datatable table-responsive">
@@ -72,10 +72,7 @@
                                         <th>Company</th>
                                         <th>Creator</th>
                                         <th>Request</th>
-                                        <th>Title</th>
-                                        <th>Description</th>
-                                        <th>Count</th>
-                                        <th>Price</th>
+                                        <th>Total Estimates</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -191,22 +188,12 @@
                     data: 'requestData',
                     name: 'requestData'
                 },
-                {
-                    data: 'title',
-                    name: 'title'
-                },
-                {
-                    data: 'description',
-                    name: 'description'
-                },
+
                 {
                     data: 'count',
                     name: 'count'
                 },
-                {
-                    data: 'price',
-                    name: 'price'
-                },
+
                 {
                     data: 'status',
                     name: 'status'
