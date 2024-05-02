@@ -5,12 +5,38 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PurchaseResource;
 use App\Models\PurchaseRequest;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseRequestController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        if($request->bearerToken() == "")
+        {
+            return apiResponse(false, null, "Enter Token", 500);
+        }
+
+        $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
+
+        if(empty($bearerToken))
+        {
+            return apiResponse(false, null, "Unauthorized", 500);
+        }else{
+            $user = User::where('id', $bearerToken->tokenable_id)->first();
+            $purchaseRequest = PurchaseRequest::get();
+            if(isset($purchaseRequest) && !blank($purchaseRequest)){
+                return PurchaseResource::collection($purchaseRequest);
+            }else{
+                return apiResponse(false, null, "No purchase request record found");
+            }
+        }
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
