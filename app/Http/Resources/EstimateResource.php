@@ -18,7 +18,7 @@ class EstimateResource extends JsonResource
             'id' => $this->id,
             // 'receipt' => isset($this->receipt) && !empty($this->receipt) ? $this->receipt->title : null,
             'creator' => isset($this->creator) && !empty($this->creator) ? new UserResource($this->creator) : null,
-            'company' => isset($this->company) && !empty($this->company) ? new companyResource($this->company) : null,
+            'company' => isset($this->company) && !empty($this->company) ? new CompanyResource($this->company) : null,
             'request' => isset($this->requestData) && !empty($this->requestData) ? new purchaseRequestResource($this->requestData) : null,
             'title' => $this->title ?? null,
             'description' => $this->description ?? null,
