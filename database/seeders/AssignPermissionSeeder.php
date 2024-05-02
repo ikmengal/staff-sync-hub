@@ -14,9 +14,9 @@ class AssignPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $role = Role::where('id', 1)->first();
+        $role = Role::where('name', "Super Admin")->first();
         $permissions = Permission::pluck('name')->toArray();
-        if(isset($role) && !empty($role) && isset($permissions) && !empty($permissions)) {
+        if (isset($role) && !empty($role) && isset($permissions) && !empty($permissions)) {
             $role->syncPermissions($permissions);
         }
     }

@@ -14,6 +14,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="dt-buttons btn-group flex-wrap float-end mt-4">
+                            @can('users-create')
                             <button id="add-btn" data-modal-id="createUserModal" data-toggle="tooltip"
                                 data-placement="top" title="Add User" data-url="{{ route('users.create') }}"
                                 class="btn add-new btn-primary mb-3 mb-md-0 mx-3" tabindex="0"
@@ -23,6 +24,7 @@
                                     <span class="d-none d-sm-inline-block"> Add User </span>
                                 </span>
                             </button>
+                            @endcan
                         </div>
                     </div>
                 </div>

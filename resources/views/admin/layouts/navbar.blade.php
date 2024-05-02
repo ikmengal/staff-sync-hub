@@ -125,12 +125,14 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
+                        @can('users-profile')
                         <a class="dropdown-item" href="{{ route('profile.edit') }}">
                         <i class="ti ti-user-check me-2 ti-sm"></i>
                         <span class="align-middle">My Profile</span>
                         </a>
+                        @endcan
                     </li>
-                    @can('setting-create')
+                    @can('settings-create')
                         <li>
                             <a class="dropdown-item" href="{{ route('settings.create') }}">
                                 <i class="ti ti-settings me-2 ti-sm"></i>

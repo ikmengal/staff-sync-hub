@@ -215,9 +215,7 @@ class PermissionController extends Controller
      */
     public function destroy($id)
     {
-     
-      
-        $this->authorize('permission-delete');
+        $this->authorize('permissions-delete');
         $find = Permission::where('label', $id);
         if (isset($find) && !empty($find)) {
          
