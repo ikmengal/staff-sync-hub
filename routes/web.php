@@ -108,6 +108,7 @@ Route::middleware('auth')->group(function () {
     // Purchase Request Route
     Route::post('purchase-requests-status', [PurchaseRequestController::class, 'status'])->name('purchase-requests.status');
  
+    Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
     Route::post('approve-estimate', [EstimateController::class, 'approve'])->name('estimates.approve');
  
