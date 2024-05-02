@@ -50,7 +50,11 @@ class PurchaseRequestController extends Controller
                     // $name = $model->getStatus->name  ?? "-";
                     // $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
                     // return $data;
-                    return view('admin.purchase-requests.status', ['model' => $model])->render();
+                    $data = '';
+                    $class = $model->getStatus->class  ?? "primary";
+                    $name = $model->getStatus->name  ?? "-";
+                    $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
+                    return $data;
                 })
                 ->addColumn('action', function ($model) {
                     return view('admin.purchase-requests.action', ['model' => $model])->render();
