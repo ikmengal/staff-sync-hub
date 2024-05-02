@@ -218,7 +218,12 @@ class EstimateController extends Controller
                 ]);
                 $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
                 if (!empty($purchaseRequest)) {
-                    $purchaseRequest->update(['status' => 2,  "remarks" => $request->remarks ?? "Approved"]);  // 2 approved
+                    $purchaseRequest->update([
+                        'status' => 2,
+                        "remarks" => $request->remarks ?? "Approved",
+                        "modified_by" => Auth()->id() ?? NULL,
+                        "modified_at" => now() ?? NULL,
+                    ]);  // 2 approved
                 }
                 if ($update == 1) {
                     return response()->json([

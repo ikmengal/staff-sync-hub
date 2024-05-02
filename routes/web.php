@@ -108,6 +108,7 @@ Route::middleware('auth')->group(function () {
     // Purchase Request Route
     Route::post('purchase-requests-status', [PurchaseRequestController::class, 'status'])->name('purchase-requests.status');
  
+    Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
     Route::post('approve-estimate', [EstimateController::class, 'approve'])->name('estimates.approve');
  
@@ -115,6 +116,9 @@ Route::middleware('auth')->group(function () {
     Route::post('users-update-password',[UserController::class,'updatePassword'])->name('users.updatePassword');
     Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
+    Route::resource('/users', UserController::class);
+    Route::resource('/roles', RoleController::class);
+    Route::resource('/permissions', PermissionController::class);
     Route::resource('/estimates', EstimateController::class);
     Route::resource('/purchase-requests', PurchaseRequestController::class);
     Route::resource('/requisitions', EmployeeRequisitionController::class);
@@ -135,6 +139,8 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
+
+
 
 
 

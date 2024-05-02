@@ -185,6 +185,9 @@ class AdminController extends Controller
                 ->editColumn('name', function ($model) {
                     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
                 })
+                // ->editColumn('action', function ($model) {
+                //     return view('admin.companies.employees.employee-profile', ['employee' => $model])->render();
+                // })
                 ->filter(function ($query) use ($request) {
                     if ($request->has('shift')) {
                         $shift = $request->shift;
