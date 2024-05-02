@@ -27,6 +27,10 @@ class Estimate extends Model
     {
         return $this->belongsTo(EstimateStatus::class, 'status', 'id');
     }
+    public function receipt()
+    {
+        return $this->belongsTo(Stock::class, 'id', 'estimate_id');
+    }
     public function attachments()
     {
         return $this->hasMany(Attachment::class, 'model_id', 'id')->where("model_name", "\App\Models\Estimate");

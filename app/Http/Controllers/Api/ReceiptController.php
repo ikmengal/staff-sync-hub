@@ -116,6 +116,7 @@ class ReceiptController extends Controller
             $stock = Stock::create([
                 'user_id' => $user->id,
                 'company_id' => $company->company_id,
+                'estimate_id' => $request->estimate_id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'quantity' => $request->quantity,
@@ -238,6 +239,7 @@ class ReceiptController extends Controller
 
                 $data = [
                     'id' => $stock->id,
+                    'estimate_id' => $stock->estimate_id,
                     'company_id' => $stock->company_id,
                     'title' => $stock->title,
                     'description' => $stock->description,
@@ -278,6 +280,7 @@ class ReceiptController extends Controller
             $stock = Stock::where('user_id', $user->id)->where('id', $request->id)->first();
             if(isset($stock) && !empty($stock)){
                 $stock->company_id = $request->company_id ?? $stock->company_id;
+                $stock->estimate_id = $request->estimate_id ?? $stock->estimate_id;
                 $stock->title = $request->title ?? $stock->title;
                 $stock->description = $request->description ?? $stock->description;
                 $stock->quantity = $request->quantity ?? $stock->quantity;

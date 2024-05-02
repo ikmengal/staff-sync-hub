@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Company;
+use App\Models\User;
 use App\Models\Estimate;
 use App\Models\PurchaseRequest;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -22,8 +24,9 @@ class EstimateController extends Controller
     {
         $data['title'] = 'Estimates';
         $data['companies'] = Company::get();
+        $data['users'] = User::get();
         $data['requests'] = PurchaseRequest::get();
-        $records = Estimate::groupBy("request_id")->select("*");
+        $records = Estimate::groupBy("request_id")->select("*", DB::raw("count(*) as count"));
         if ($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($records)
                 ->addIndexColumn()
@@ -52,7 +55,7 @@ class EstimateController extends Controller
                 })
                 ->addColumn('count', function ($model) {
                     $data = '';
-                    $data = '<span class="badge bg-label-success">'. $model->requestData->count() .'</span>';
+                    $data = '<span class="badge bg-label-success">' . $model->count   . '</span>';
                     return $data;
                 })
                 ->addColumn('price', function ($model) {
@@ -60,15 +63,36 @@ class EstimateController extends Controller
                 })
                 ->addColumn('status', function ($model) {
                     $data = '';
-                    $class = $model->getStatus->class  ?? "primary";
-                    $name = $model->getStatus->name  ?? "-";
+                    $class = $model->requestData->getStatus->class  ?? "primary";
+                    $name = $model->requestData->getStatus->name  ?? "-";
                     $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
                     return $data;
                 })
                 ->addColumn('action', function ($model) {
                     return view('admin.estimates.action', ['model' => $model])->render();
                 })
-                ->filter(function ($query) use ($request) {
+                ->filter(function ($instance) use ($request) {
+                    if(!empty($request['search'])){
+                        $search = $request['search'];
+                        $instance->where("title", "LIKE", "%$search%");
+                        $instance->orWhere("description", "LIKE", "%$search%");
+                        $instance->orWhere("price", "LIKE", "%$search%");
+                    }
+
+                    if(!empty($request['creator'])){
+                        $search = $request['creator'];
+                        $instance->where("creator_id", $search);
+                    }
+
+                    if(!empty($request['company'])){
+                        $search = $request['company'];
+                        $instance->where("company_id", $search);
+                    }
+
+                    if(!empty($request['filter_status'])){
+                        $search = $request['filter_status'];
+                        $instance->where("status", $search);
+                    }
                 })
                 ->rawColumns(['title', 'description', 'count', 'creator', 'company', 'requestData',  'price',  'status', 'action'])
                 ->make(true);
@@ -136,15 +160,16 @@ class EstimateController extends Controller
      */
     public function show(string $id)
     {
-        $title = 'Estimate Detail';
-        $record = Estimate::where('id', $id)->first();
-        if(isset($record) && !empty($record)){
-            if(view()->exists('admin.estimates.show')){
-                return view('admin.estimates.show', compact('record', 'title'));
-            }else{
+        $data['title'] = 'Estimate Detail';
+        $data['records'] = Estimate::where('request_id', $id)->get();
+        $data['requestData'] = PurchaseRequest::where("id", $id)->first();
+        if (isset($data['records']) && !empty($data['records'])) {
+            if (view()->exists('admin.estimates.show')) {
+                return view('admin.estimates.show', $data);
+            } else {
                 abort(404);
             }
-        }else{
+        } else {
             abort(404);
         }
     }
@@ -171,5 +196,42 @@ class EstimateController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function approve(Request $request)
+    {
+        if (!empty($request->estimate_id)) {
+            $estimate = Estimate::where("id", $request->estimate_id)->first();
+            if (!empty($estimate)) {
+                $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
+                if (!empty($otherEstimates)) {
+                    $otherEstimates->toQuery()->update([
+                        "status" => 3, // 3  rejected
+                        "remarks" => "Rejected",
+                    ]);
+                }
+                $update = $estimate->update([
+                    "status" => 2, // 2 approved
+                    "remarks" => $request->remarks ?? "Approved",
+                ]);
+                $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
+                if (!empty($purchaseRequest)) {
+                    $purchaseRequest->update(['status' => 2,  "remarks" => $request->remarks ?? "Approved"]);  // 2 approved
+                }
+                if ($update == 1) {
+                    return response()->json([
+                        "success" => true,
+                        "message" => "Approved successfuly!",
+                        "code" => 200,
+                    ]);
+                } else {
+                    return response()->json([
+                        "success" => false,
+                        "message" => "Failed to approve!",
+                        "code" => 200,
+                    ]);
+                }
+            }
+        }
     }
 }

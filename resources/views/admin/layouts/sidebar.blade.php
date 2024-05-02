@@ -32,7 +32,7 @@
         </li>
         @endcan
 
-  
+
 
         <!-- Apps & Pages -->
         <li class="menu-header small text-uppercase">
