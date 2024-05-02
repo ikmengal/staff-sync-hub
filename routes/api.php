@@ -59,8 +59,11 @@ Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
 
 // for other portals
 Route::post("store-purchase-request", [PurchaseRequestController::class, 'store']);
+Route::get("get-purchase-request", [PurchaseRequestController::class, 'index']);
 
 // Estimate Route
 Route::get("get-estimates", [EstimateController::class, 'index']);
+Route::get("get-approved-estimates", [EstimateController::class, 'getApproveEstimate']);
+Route::post("store-estimate", [EstimateController::class, 'store']);
 Route::get("estimates-detail{id?}", [EstimateController::class, 'estimatesDetail']);
 Route::post("estimate-approve{id?}", [EstimateController::class, 'estimateApprove']);
