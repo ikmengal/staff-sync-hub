@@ -47,18 +47,6 @@ Route::get("check-config", function () {
 
     return  $config;
 });
-Route::resource('/requisitions', EmployeeRequisitionController::class);
-Route::resource('/settings', SettingController::class);
-Route::resource('/departments', DepartmentController::class);
-Route::resource('/roles', RoleController::class);
-Route::resource('/permissions', PermissionController::class);
-Route::resource('/designations', DesignationController::class);
-Route::resource('/work_shifts', WorkShiftController::class);
-Route::resource('users', UserController::class);
-Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
-Route::resource('/stocks', StockController::class);
-
-//Resource Routes
 
 //cache clear
 Route::get('/cache-clear', function () {
