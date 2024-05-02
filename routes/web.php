@@ -123,6 +123,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/work_shifts', WorkShiftController::class);
     Route::resource('/receipts', ReceiptController::class);
     Route::resource('users', UserController::class);
+    Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
