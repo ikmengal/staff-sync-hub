@@ -1,7 +1,7 @@
 @foreach(SubPermissions($permission->label) as $label)
     @php $permission_lab = explode('-', $label->name) @endphp
     @if($permission_lab[1]=='list')
-        <span class="badge bg-label-success">View</span>
+        <span class="badge bg-label-success">List</span>
     @elseif($permission_lab[1]=='create')
         <span class="badge bg-label-primary">Create</span>
     @elseif($permission_lab[1]=='edit')
