@@ -32,6 +32,12 @@ class PermissionSeeder extends Seeder
               'guard_name' => 'web'
             ],
             [
+                'label'=>'User',
+                'name'=>'users-profile',
+                'display_name'=>'Profile',
+                'guard_name'=> 'web'
+            ],
+            [
               'label' =>  'User',
               'name' => 'users-create',
               'display_name' => 'Create',
@@ -60,7 +66,7 @@ class PermissionSeeder extends Seeder
                 'name' => 'users-direct-permission',
                 'display_name' => 'Delete',
                 'guard_name' => 'web'
-              ],
+            ],
       
             [
               'label' =>  'Permission',
@@ -185,18 +191,19 @@ class PermissionSeeder extends Seeder
                 'display_name'=>'List',
                 'guard_name'=> 'web'
             ],
-            [
-                'label'=>'Users',
-                'name'=>'users-profile',
-                'display_name'=>'Profile',
-                'guard_name'=> 'web'
-            ],
+           
             [
                 'label'=>'Settings',
                 'name'=>'settings-create',
                 'display_name'=>'Create',
                 'guard_name'=> 'web'
             ],
+            [
+                'label'=>'Employees',
+                'name'=>'employees-terminated',
+                'display_name'=>'terminated',
+                'guard_name'=>'web'
+            ]
          
 
         ];
