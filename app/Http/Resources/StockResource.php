@@ -16,6 +16,7 @@ class StockResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'estimate' => isset($this->hasEstimate) && !empty($this->hasEstimate) ? $this->hasEstimate->title : null,
             'user' => isset($this->hasUser) && !empty($this->hasUser) ? new UserResource($this->hasUser) : null,
             'company' => isset($this->hasCompany) && !empty($this->hasCompany) ? new CompanyResource($this->hasCompany) : null,
             'title' => $this->title,

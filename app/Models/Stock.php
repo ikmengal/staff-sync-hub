@@ -28,4 +28,9 @@ class Stock extends Model
     {
         return $this->hasOne(Company::class, 'id', 'company_id');
     }
+
+    public function hasEstimate()
+    {
+        return $this->hasOne(Estimate::class, 'id', 'estimate_id');
+    }
 }

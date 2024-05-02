@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\PurchaseRequestController;
 use App\Http\Controllers\Api\ReceiptController;
 use App\Http\Controllers\Api\UserPlayerIdController;
-
+use App\Http\Controllers\Api\EstimateController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -59,3 +59,7 @@ Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
 
 // for other portals
 Route::post("store-purchase-request", [PurchaseRequestController::class, 'store']);
+
+// Estimate Route
+Route::get("get-estimates", [EstimateController::class, 'index']);
+

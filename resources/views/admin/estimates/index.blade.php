@@ -27,6 +27,11 @@
                         <label class="form-label" for="creator">Creator</label>
                         <select name="creator" id="creator" data-control="select2" class="select2 form-select creator unselectValue">
                             <option value="">All</option>
+                            @if(isset($users) && !empty($users))
+                                @foreach($users as $index => $user)
+                                    <option value="{{$user->id}}">{{$user->first_name ?? ''}} {{$user->last_name ?? ''}}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">
