@@ -673,14 +673,18 @@ function getCurrentWeekAttendance()
 
 
 
-function apiResponse($success = null, $data = null, $message = null, $code = null)
+function apiResponse($success = null, $data = null, $message = null, $code = null, $pagination = null)
 {
-    return (object)[
+    $response = (object)[
         "success" => $success,
         "data" => $data,
         "message" => $message,
         "code" => $code,
     ];
+    if ($pagination !== null) {
+        $response->pagination = $pagination;
+    }
+    return $response;
 }
 
 
