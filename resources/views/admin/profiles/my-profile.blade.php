@@ -23,7 +23,7 @@
                 <div class="card mb-4">
                     <div class="user-profile-header-banner">
                         <img src="{{ asset('public/admin') }}/assets/img/pages/profile-banner.png" alt="Banner image"
-                            class="rounded-top" />
+                            class="rounded-top" width="100%" />
                     </div>
                     <div class="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center mb-4">
                         <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
@@ -38,15 +38,15 @@
                             <div
                                 class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-4 flex-md-row flex-column gap-4">
                                 <div class="user-profile-info">
-                                    <h4>{{ getUserData($model)->name }}</h4>
+                                    <h4>{{ !empty($model) ? getUserData($model)->name : "" }}</h4>
                                     <ul
                                         class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-2">
                                         <li class="list-inline-item"><i
-                                                class="ti ti-color-swatch"></i>{{ getUserData($model)->role }}</li>
+                                                class="ti ti-color-swatch"></i>{{ !empty($model) ? getUserData($model)->role  : "" }}</li>
                                         <li class="list-inline-item"><i
-                                                class="ti ti-map-pin"></i>{{ getUserData($model)->designation }}</li>
+                                                class="ti ti-map-pin"></i>{{ !empty($model) ? getUserData($model)->designation : "" }}</li>
                                         <li class="list-inline-item"><i class="ti ti-calendar"></i>
-                                            {{ getUserData($model)->email }}</li>
+                                            {{ !empty($model) ? getUserData($model)->email : ""}}</li>
                                     </ul>
                                 </div>
 
@@ -77,9 +77,9 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-8">
                                         <!--begin::Image input-->
-                                        <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')">
+                                        <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')" >
                                             <!--begin::Preview existing avatar-->
-                                            @if(!empty(getUserData($model)->profile))
+                                            @if(isset($model) && !empty(getUserData($model)->profile))
                                                 <div class="image-input-wrapper w-125px h-125px" style="background-image: url('{{ asset('public/admin/assets/img/avatars') }}/{{ getUserData($model)->profile }}')"></div>
                                             @else
                                                 <div class="image-input-wrapper w-125px h-125px" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')"></div>
@@ -129,13 +129,13 @@
                                         <div class="row">
                                             <!--begin::Col-->
                                             <div class="col-lg-6 fv-row">
-                                                <input type="text" name="first_name" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="First name" value="{{ $model->first_name }}" />
+                                                <input type="text" name="first_name" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="First name" value="{{ !empty($model) ? $model->first_name : '' }}" />
                                                 <span id="first_name_error" class="text-danger error">{{ $errors->first('first_name') }}</span>
                                             </div>
                                             <!--end::Col-->
                                             <!--begin::Col-->
                                             <div class="col-lg-6 fv-row">
-                                                <input type="text" name="last_name" class="form-control form-control-lg form-control-solid" placeholder="Last name" value="{{ $model->last_name }}" />
+                                                <input type="text" name="last_name" class="form-control form-control-lg form-control-solid" placeholder="Last name" value="{{ !empty($model) ? $model->last_name : '' }}" />
                                             </div>
                                             <!--end::Col-->
                                         </div>
@@ -176,7 +176,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="text" class="form-control form-control-lg form-control-solid mobileNumber" id="phone_number" placeholder="Enter your phone number" value="{{ $model->profile->phone_number ?? '' }}" name="phone_number" />
+                                        <input type="text" class="form-control form-control-lg form-control-solid mobileNumber" id="phone_number" placeholder="Enter your phone number" value="{{ !empty($model->profile) ? $model->profile->phone_number : '' }}" name="phone_number" />
                                         <span id="phone_number_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
