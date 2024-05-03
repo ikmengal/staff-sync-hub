@@ -16,22 +16,21 @@ class PurchaseRequestController extends Controller
 
     public function index(Request $request)
     {
-        if($request->bearerToken() == "")
-        {
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter Token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken))
-        {
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $purchaseRequest = PurchaseRequest::get();
-            if(isset($purchaseRequest) && !blank($purchaseRequest)){
-                return PurchaseResource::collection($purchaseRequest);
-            }else{
+            if (isset($purchaseRequest) && !blank($purchaseRequest)) {
+                $data =  PurchaseResource::collection($purchaseRequest);
+                return apiResponse(true, $data, "All Purchase Requests", 200);
+            } else {
                 return apiResponse(false, null, "No purchase request record found");
             }
         }

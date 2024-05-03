@@ -18,22 +18,22 @@ class EstimateController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->bearerToken() == ""){
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken)){
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimates = Estimate::groupBy('request_id')->select("*", DB::raw("count(*) as count"))->get();
             // return $estimates;
-            if(isset($estimates) && !blank($estimates)){
+            if (isset($estimates) && !blank($estimates)) {
                 $data = EstimateResource::collection($estimates);
                 return apiResponse(true, $data, "All estimates", 200);
-            }else{
+            } else {
                 return apiResponse(false, null, "No Estimate record found...!", 500);
             }
         }
@@ -41,18 +41,18 @@ class EstimateController extends Controller
 
     public function store(Request $request)
     {
-        ini_set('upload_max_filesize' , '50M' );
-        ini_set('post_max_size' , '256M' );
+        ini_set('upload_max_filesize', '50M');
+        ini_set('post_max_size', '256M');
 
-        if($request->bearerToken() == ""){
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken)){
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $validator = Validator::make($request->all(), [
                 "request_id" => "required|integer",
                 "title" => "required|max:255",
@@ -66,7 +66,7 @@ class EstimateController extends Controller
 
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $purchaseRequest = PurchaseRequest::where('id', $request->request_id)->first();
-            if(isset($purchaseRequest) && !empty($purchaseRequest)){
+            if (isset($purchaseRequest) && !empty($purchaseRequest)) {
                 DB::beginTransaction();
                 try {
                     $create = Estimate::create([
@@ -98,7 +98,7 @@ class EstimateController extends Controller
                     DB::rollback();
                     return apiResponse(false, null, $e->getMessage(), 500);
                 }
-            }else{
+            } else {
                 return apiResponse(false, null, "No purchase request record found", 500);
             }
         }
@@ -106,31 +106,31 @@ class EstimateController extends Controller
 
     public function estimatesDetail(Request $request)
     {
-        if($request->bearerToken() == ""){
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken)){
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $purchaseRequest = null;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimates = Estimate::where('request_id', $request->id)->get();
             $purchaseRequest = PurchaseRequest::where('id', $request->id)->first();
-            
-            if(isset($purchaseRequest) && !empty($purchaseRequest)){
+
+            if (isset($purchaseRequest) && !empty($purchaseRequest)) {
                 $purchaseRequest = [
                     'id' => $purchaseRequest->id ?? null,
                     'creator' => $purchaseRequest->creator ?? null,
                     'company' => $purchaseRequest->company->name ?? null,
                     'subject' => $purchaseRequest->subject ?? null,
                     'description' => $purchaseRequest->description ?? null,
-                    'status' => isset($purchaseRequest->status) ? ($purchaseRequest->status == 1 ? 'Pending' : ($purchaseRequest->status == 2 ? 'Approved' : ($purchaseRequest->status == 3 ? 'Rejected' : null))) : null,
+                    'status' => isset($purchaseRequest->getStatus)  && !empty($purchaseRequest->getStatus) ? $purchaseRequest->getStatus : null,
                 ];
             }
-            if(isset($estimates) && !blank($estimates)){
+            if (isset($estimates) && !blank($estimates)) {
                 foreach ($estimates as $key => $value) {
                     $data['estimates'][] = [
                         'id' => $value->id ?? null,
@@ -138,13 +138,13 @@ class EstimateController extends Controller
                         'title' => $value->title ?? null,
                         'description' => $value->description ?? null,
                         'price' => $value->price ?? null,
-                        'status' => $value->getStatus->name ?? null,
+                        'status' => isset($value->getStatus)  && !empty($value->getStatus) ? $value->getStatus : null,
                         'images' => isset($value->attachments) && !blank($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
                     ];
                 }
-                $data['request_purchase']=$purchaseRequest;
+                $data['request_purchase'] = $purchaseRequest;
                 return apiResponse(true, $data, "All estimates", 200);
-            }else{
+            } else {
                 return apiResponse(false, null, "No Estimate record found...!", 500);
             }
         }
@@ -152,19 +152,19 @@ class EstimateController extends Controller
 
     public function estimateApprove(Request $request)
     {
-        if($request->bearerToken() == ""){
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken)){
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimate = Estimate::where("id", $request->id)->first();
             if (!empty($estimate)) {
-                if(isset($estimate) && $estimate->status == 1){
+                if (isset($estimate) && $estimate->status == 1) {
                     $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
                     if (!empty($otherEstimates)) {
                         $otherEstimates->toQuery()->update([
@@ -185,15 +185,15 @@ class EstimateController extends Controller
                             "modified_at" => now() ?? NULL,
                         ]);  // 2 approved
                     }
-                    if($update == 1) {
+                    if ($update == 1) {
                         return apiResponse(true, null, "Approved successfuly!", 200);
-                    }else{
+                    } else {
                         return apiResponse(false, null, "Failed to approve!", 500);
                     }
-                }else{
-                    return apiResponse(false, null, "Estimate status already ". $estimate->getStatus->name, 500);                    
+                } else {
+                    return apiResponse(false, null, "Estimate status already " . $estimate->getStatus->name, 500);
                 }
-            }else{
+            } else {
                 return apiResponse(false, null, "No estimate record found", 500);
             }
         }
@@ -201,22 +201,22 @@ class EstimateController extends Controller
 
     public function getApproveEstimate(Request $request)
     {
-        if($request->bearerToken() == ""){
+        if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
 
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
-        if(empty($bearerToken)){
+        if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
-        }else{
+        } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimates = Estimate::where('status', 2)->get();
-            if(isset($estimates) && !blank($estimates)){
+            if (isset($estimates) && !blank($estimates)) {
                 foreach ($estimates as $key => $estimate) {
-                    $data[]=[
+                    $data[] = [
                         'id' => $estimate->id ?? null,
-                        'creator' => $estimate->creator->first_name.' '.$estimate->creator->last_name ?? null,
+                        'creator' => $estimate->creator->first_name . ' ' . $estimate->creator->last_name ?? null,
                         'company' => $estimate->company->name ?? null,
                         'title' => $estimate->title ?? null,
                         'description' => $estimate->description ?? null,
@@ -226,7 +226,7 @@ class EstimateController extends Controller
                     ];
                 }
                 return apiResponse(true, $data, "All Approved Estimates", 200);
-            }else{
+            } else {
                 return apiResponse(false, null, "No Approved Estimate Record Found...!", 500);
             }
         }

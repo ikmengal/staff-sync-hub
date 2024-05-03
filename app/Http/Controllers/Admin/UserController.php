@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
@@ -86,7 +87,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
-            'user_type' => 'required'
+            'user_type' => 'required',
+            "password"=>'required|confirmed'
 
 
         ];
@@ -125,10 +127,10 @@ class UserController extends Controller
             'first_name' => $first_name,
             'last_name' => $last_name,
             'email' => $request->email ?? null,
-            'password' => Hash::make('12345678'),
             'slug' => getSlug(),
             'user_for_portal' => $user_portal,
-            'user_for_api' => $user_api
+            'user_for_api' => $user_api,
+            'password' =>  Hash::make($request->password) ?? null
 
         ]);
 
@@ -149,7 +151,14 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $title = "User Detail";
+        $user = User::where('id',$id)->first();
+        if(!empty($user)){
+
+            return view('admin.users.show',compact('user','title'));
+
+        }
+        
     }
 
     /**
@@ -180,12 +189,14 @@ class UserController extends Controller
             'email' => "required|email|unique:users,email,$id,id,deleted_at,NULL",
             'role_id' => 'array|min:1|required',
             'role_id.*' => 'required',
+            'password' => 'confirmed'
+          
 
 
         ];
 
 
-
+      
 
 
         $message = [
@@ -200,11 +211,29 @@ class UserController extends Controller
 
         $first_name = $request->first_name ?? null;
         $last_name = $request->last_name ?? null;
+        $user_portal = null;
+        $user_api = null;
+        if ($request->user_type == 1) {
+            $user_portal = 1;
+            $user_api = null;
+        }
+        if ($request->user_type == 2) {
+            $user_portal = null;
+            $user_api = 1;
+        }
+        if ($request->user_type == 3) {
+
+            $user_portal = 1;
+            $user_api = 1;
+        }
+        
         $result = $update->update([
             'first_name' => $request->first_name ?? null,
             'last_name' => $request->last_name ?? null,
             'email' => $request->email ?? null,
-            'password' => Hash::make('12345678'),
+            'user_for_portal' => $user_portal,
+            'user_for_api' => $user_api,
+            'password' =>  Hash::make($request->password) ?? $update->password
 
 
         ]);
@@ -276,7 +305,7 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), $roles, $message);
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+            return response()->json(['success' => false, 'message' => $validator->errors(), 'validation' => false]);
         }
         $user = $this->model::find($request->user_id);
         if (!empty($user) && !empty($user)) {
@@ -302,4 +331,45 @@ class UserController extends Controller
             return ['success' => false, 'message', 'User not found', 'status' => 404];
         }
     }
+
+    public function updatePasswordForm(Request $request)
+    {
+        $this->authorize('users-edit-password');
+        $title = "Edit Password";
+        $edit = $this->model::where('id', $request->id)->first();
+        if (isset($edit) && !empty($edit)) {
+            $view = view('admin.users.partials.update_password_modal', compact('edit','title'))->render();
+            return ['success' => true, 'view' => $view, 'title' => $title];
+        } else {
+            return ['success' => false, 'message' => 'User not found'];
+        }
+    }
+
+    public function updatePassword(Request $request){
+
+        $roles = [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ];
+
+      
+
+        $validator = Validator::make($request->all(), $roles);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first(), 'validation' => false]);
+        }
+
+        $user = $this->model::where('id',$request->user_id)->first();
+        if (!Hash::check($request->current_password, $user->password)) {
+
+            return  ['success' => true, 'message' =>  'Current password is incorrect.', 'status' => 500];
+        }
+
+        $user->password = Hash::make($request->new_password);
+        if($user->save()){
+            return  ['success' => true, 'message' =>  'Password updated successfully.', 'status' => 200];
+        }
+
+    }
+
 }

@@ -23,6 +23,7 @@ class ReceiptController extends Controller
     public function index(Request $request)
 {
         // $this->authorize('stock-list');
+        $this->authorize('receipts-list');
         $title = 'All Receipts';
 
         // $model = Stock::orderby('id', 'desc')->get();

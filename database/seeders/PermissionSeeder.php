@@ -203,7 +203,13 @@ class PermissionSeeder extends Seeder
                 'name'=>'employees-terminated',
                 'display_name'=>'terminated',
                 'guard_name'=>'web'
-            ]
+            ],
+            [
+              'label'=>'users',
+              'name'=>'users-edit-password',
+              'display_name'=>'edit',
+              'guard_name'=>'web'
+          ]
          
 
         ];

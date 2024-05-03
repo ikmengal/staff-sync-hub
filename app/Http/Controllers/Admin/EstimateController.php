@@ -22,7 +22,7 @@ class EstimateController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize("estimates-list");
+        $this->authorize('estimates-list');
         $data['title'] = 'Estimates';
         $data['companies'] = Company::get();
         $data['users'] = User::get();
@@ -106,6 +106,7 @@ class EstimateController extends Controller
      */
     public function create()
     {
+        $this->authorize('estimates-create');
         $data['title'] = "Add Estimate";
         $data['companies'] = Company::all();
         $data['requests'] = PurchaseRequest::all();
