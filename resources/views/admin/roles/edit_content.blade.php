@@ -40,18 +40,18 @@
                                             <div class="form-check me-3 me-lg-5">
                                                 <input class="form-check-input childCheckBox" type="checkbox"
                                                     value="{{ $sub_permission->name ?? null }}"
-                                                    @if (isset($role_permissions) && !empty($role_permissions)) @foreach ($role_permissions as $val)
-                                                                        @if ($val == $sub_permission->name)
-                                                                            {{ 'checked' }} @endif
+                                                    @if (isset($role_permissions) && !empty($role_permissions)) 
+                                                    @foreach ($role_permissions as $val)
+                                                        @if ($val == $sub_permission->name){{ 'checked' }} @endif
                                                     @endforeach
-                                        @endif
+                                                    @endif
                                         name="permissions[]" />
                                         <label class="form-check-label"
                                             for="userManagementRead-{{ $sub_permission->id }}">
                                             {{ Str::ucfirst($label[1]) }}</label>
+                                            </div>
+                                        @endforeach
                                     </div>
-                        @endforeach
-            </div>
             </td>
             </tr>
             @endforeach

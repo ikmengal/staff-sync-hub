@@ -205,8 +205,11 @@ class RoleController extends Controller
         $role = Role::where('id', $id)->first();
         $role_permissions = $role->permissions->pluck('name')->toArray();
         $models = Permission::orderby('id', 'DESC')->groupBy('label')->get();
+        $permissions = Permission::groupBy('label')
+        ->select('label')
+        ->get();
         $roles = Role::orderby('id', 'desc')->get();
-        $view = view('admin.roles.edit_content', compact('role', 'models', 'roles', 'role_permissions'))->render();
+        $view = view('admin.roles.edit_content', compact('role', 'models', 'roles', 'role_permissions','permissions'))->render();
         return ['success' => true, 'view' => $view];
     }
 

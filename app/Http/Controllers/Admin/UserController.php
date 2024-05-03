@@ -57,6 +57,18 @@ class UserController extends Controller
                 ->addColumn('action', function ($model) {
                     return view('admin.users.action', ['user' => $model])->render();
                 })
+                ->filter(function ($query) use ($request) {
+                
+                    if ($request->has('role')) {
+                        $role = $request->role;
+                        $query->collection = $query->collection->filter(function ($record) use ($role) {
+                            return str_contains(strtolower($record['role']), strtolower($role));
+                        });
+                    }
+                    
+                  
+                })
+               
                 ->rawColumns(['name', 'role', 'created_at', 'action'])
                 ->make(true);
         }
@@ -370,6 +382,11 @@ class UserController extends Controller
             return  ['success' => true, 'message' =>  'Password updated successfully.', 'status' => 200];
         }
 
+    }
+
+    public function getSearchData(){
+        $data['roles'] = Role::get();
+        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }
 
 }
