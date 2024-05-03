@@ -36,7 +36,8 @@
                         @if(loginUser(Auth::user()) && !empty(loginUser(Auth::user())->profile))
                             <img src="{{ asset('public/admin/assets/img/avatars').'/'.loginUser(Auth::user())->profile }}" style="width:40px !important; height:40px !important;  object-fit:cover;" alt class="h-auto rounded-circle" />
                         @else
-                            <img src="{{ asset('public/admin') }}/default.png" style="width:40px !important; height:40px !important" alt class="h-auto rounded-circle" />
+                   
+                            <img src="{{ asset('public/admin') }}/theme/demo51/assets/media/avatars/blank.png" style="width:40px !important; height:40px !important" alt class="h-auto rounded-circle" />
                         @endif
                     </div>
                 </a>
