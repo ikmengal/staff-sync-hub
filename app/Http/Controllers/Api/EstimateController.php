@@ -58,7 +58,7 @@ class EstimateController extends Controller
                 "title" => "required|max:255",
                 "description" => "required",
                 "price" => "required|integer",
-                'attachments.*' => 'nullable|image|mimes:png,jpg,jpeg',
+                'attachments.*' => 'required|image|mimes:png,jpg,jpeg',
             ]);
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 500);
@@ -78,19 +78,56 @@ class EstimateController extends Controller
                         "price" => $request->price ?? null,
                     ]);
                     if (!empty($create->id)) {
-                        if (isset($request->attachments) && !empty($request->attachments)) {
-                            foreach ($request->attachments as $attachment) {
-                                $fileName = uploadSingleFile($attachment, config("project.upload_path.estimates"), "ESTIMATE-");
-                                if (isset($fileName) && !empty($fileName)) {
+                        if(isset($request->type) && $request->type == 2){
+                            if($request->hasFile('attachments')){
+                                $attachments = $request->file('attachments');
+                                foreach ($attachments as $attachment) {
+                                    $fileName = uploadSingleFile($attachment, config("project.upload_path.estimates"), "ESTIMATE-");
+                                    if (isset($fileName) && !empty($fileName)) {
+                                        $attachment = Attachment::create([
+                                            "model_id" => $create->id,
+                                            "model_name" => "\App\Models\Estimate",
+                                            "attached_by" => $user->id,
+                                            "file" => $fileName ?? null,
+                                        ]);
+                                    }
+                                }
+                            }
+                        }else if(isset($request->type) && $request->type == 1){
+                            if ($request->has('attachments')) {
+                                $image = $request->attachments;
+                                $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
+                                switch ($mime) {
+                                    case 'image/jpeg':
+                                        $extension = 'jpeg';
+                                        break;
+                                    case 'image/png':
+                                        $extension = 'png';
+                                        break;
+                                    case 'image/gif':
+                                        $extension = 'gif';
+                                        break;
+                                    default:
+                                        $extension = 'jpg';
+                                }
+                    
+                                $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
+                                $image = str_replace(' ', '+', $image);
+                                $index = 1;
+                                $imageName = "ESTIMATE-" . time() . '.' . $extension;
+                                $directory = public_path('attachments/estimates/');
+                                $filePath = $directory . $imageName;
+                                \File::put($filePath, base64_decode($image));
+                                if (isset($imageName) && !empty($imageName)) {
                                     $attachment = Attachment::create([
                                         "model_id" => $create->id,
                                         "model_name" => "\App\Models\Estimate",
                                         "attached_by" => $user->id,
-                                        "file" => $fileName ?? null,
+                                        "file" => $imageName ?? null,
                                     ]);
                                 }
                             }
-                        }
+                        }   
                     }
                     DB::commit();
                     return apiResponse(true, null, "Estimate has been added successfully", 200);
