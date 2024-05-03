@@ -10,7 +10,7 @@
                 authentication.</p>
             <a href="{{ route('dashboard') }}" class="btn btn-primary mb-4">Back to home</a>
             <div class="mt-4">
-                <img src="{{ asset('public/admin') }}/assets/img/illustrations/page-misc-error.png" alt="page-misc-error"
+                <img src="{{ asset('public/admin') }}/assets/img/error/page-misc-error.png" alt="page-misc-error"
                     width="225" class="img-fluid" />
             </div>
         </div>

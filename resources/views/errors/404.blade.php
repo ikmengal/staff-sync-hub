@@ -10,9 +10,9 @@
         <a href="{{ route('dashboard') }}" class="btn btn-primary mb-4">Back to home</a>
         <div class="mt-4">
           <img
-            src="{{ asset('public/admin') }}/assets/img/illustrations/page-misc-error.png"
+            src="{{ asset('public/admin') }}/assets/img/error/error-dark.svg"
             alt="page-misc-error"
-            width="225"
+            width="400"
             class="img-fluid"
           />
         </div>

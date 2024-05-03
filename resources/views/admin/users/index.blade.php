@@ -51,6 +51,9 @@
                                     <th>S.No#</th>
                                     <th>Name</th>
                                     <th>Roles</th>
+                                    <th>User Type</th>
+                                    <th>Phone Number</th>
+                                    <th>Joining Date</th>
                                     <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
@@ -127,20 +130,40 @@
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex',
                     orderable: false,
-                    searchable: false
+                    searchable: false,
+                    width:'25'
                 },
                 {
                     data: 'name',
-                    name: 'name'
+                    name: 'name',
+                    width:'50'
                 },
                 {
                     data: 'role',
-                    name: 'role'
+                    name: 'role',
+                    width:25
+                },
+                {
+                    data:'user_type',
+                    name:'user_type',
+                    width:'50'
+                },
+                {
+                  data:'phone_number',
+                  name:'phone_number',
+                  width:50
+                  
+                },{
+                    data:'joining_date',
+                    name:'joining_date',
+                    width:50
                 },
 
                 {
                     data: 'created_at',
-                    name: 'created_at'
+                    name: 'created_at',
+                    width:'50'
+                    
                 },
                 {
                     data: 'action',
