@@ -135,10 +135,11 @@ class EstimateController extends Controller
                     $data['estimates'][] = [
                         'id' => $value->id ?? null,
                         'creator' => $value->company->name ?? null,
-                        'price' => $value->price ?? null,
+                        'title' => $value->title ?? null,
                         'description' => $value->description ?? null,
+                        'price' => $value->price ?? null,
                         'status' => $value->getStatus->name ?? null,
-                        'images' => isset($value->attachments) && !empty($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
+                        'images' => isset($value->attachments) && !blank($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
                     ];
                 }
                 $data['request_purchase']=$purchaseRequest;
@@ -221,6 +222,7 @@ class EstimateController extends Controller
                         'description' => $estimate->description ?? null,
                         'price' => $estimate->price ?? null,
                         'status' => $estimate->getStatus->name ?? null,
+                        'images' => isset($estimate->attachments) && !blank($estimate->attachments) ? AttachmentResource::collection($estimate->attachments) : null,
                     ];
                 }
                 return apiResponse(true, $data, "All Approved Estimates", 200);
