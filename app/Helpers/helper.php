@@ -843,3 +843,20 @@ function getShifts()
 function getCountOfEstiamte($estimate) {
     
 }
+
+
+function formatPermissionLabel($permission)
+{
+    if (!empty($permission)) {
+        $permission = explode('-', $permission);
+        $name = "";
+        foreach ($permission as $index =>  $value) {
+            if ($index != 0) {
+                $name .= $value . " ";
+            }
+        }
+        return Str::ucfirst($name);
+    } else {
+        return "-";
+    }
+}

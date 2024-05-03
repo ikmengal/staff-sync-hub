@@ -17,8 +17,9 @@ class PurchaseResource extends JsonResource
         return  [
             "id" => $this->id,
             "subject" => $this->subject ?? null,
-            "company_id" => $this->company_id ?? null,
+            "company" => isset($this->company) && !empty($this->company) ? new CompanyResource($this->company) : null,
             "description" => $this->description ?? null,
+            "status" => isset($this->getStatus) && !empty($this->getStatus) ? $this->getStatus : null,
             "created_at" => $this->created_at->format("M d,Y"),
         ];
     }

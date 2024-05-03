@@ -116,6 +116,8 @@ Route::middleware('auth')->group(function () {
     Route::post('users-update-password',[UserController::class,'updatePassword'])->name('users.updatePassword');
     Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
 
+    Route::get('users-search-data',[UserController::class,'getSearchData'])->name('users.search.data');
+
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);
     Route::resource('/permissions', PermissionController::class);
@@ -139,6 +141,8 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
+
+
 
 
 
