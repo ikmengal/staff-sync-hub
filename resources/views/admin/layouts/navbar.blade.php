@@ -34,10 +34,11 @@
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
                         @if(loginUser(Auth::user()) && !empty(loginUser(Auth::user())->profile))
+                     
                             <img src="{{ asset('public/admin/assets/img/avatars').'/'.loginUser(Auth::user())->profile }}" style="width:40px !important; height:40px !important;  object-fit:cover;" alt class="h-auto rounded-circle" />
                         @else
-                   
-                            <img src="{{ asset('public/admin') }}/theme/demo51/assets/media/avatars/blank.png" style="width:40px !important; height:40px !important" alt class="h-auto rounded-circle" />
+                      
+                            <img src="{{ asset('public/admin') }}/default.png" style="width:40px !important; height:40px !important" alt class="h-auto rounded-circle" />
                         @endif
                     </div>
                 </a>
@@ -48,11 +49,12 @@
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
                                         @if(loginUser(Auth::user()) && !empty(loginUser(Auth::user())->profile))
-                                      
-                                            <img src="{{ asset('public/admin/assets/img/avatars').'/'.loginUser(Auth::user())->profile }}" style="width:40px !important; height:40px !important;  object-fit:cover;" alt class="h-auto rounded-circle" />
-                                        @else
-                                            <img src="{{ asset('public/admin') }}/assets/media/svg/avatars/1706719786.png" style="width:40px !important; height:40px !important;" alt class="h-auto rounded-circle" />
-                                        @endif
+                     
+                                        <img src="{{ asset('public/admin/assets/img/avatars').'/'.loginUser(Auth::user())->profile }}" style="width:40px !important; height:40px !important;  object-fit:cover;" alt class="h-auto rounded-circle" />
+                                    @else
+                                  
+                                        <img src="{{ asset('public/admin') }}/default.png" style="width:40px !important; height:40px !important" alt class="h-auto rounded-circle" />
+                                    @endif
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">

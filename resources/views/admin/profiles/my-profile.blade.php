@@ -27,12 +27,11 @@
                     </div>
                     <div class="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center mb-4">
                         <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
-                            @if (!empty(getUserData($model)->profile))
-                                <img src="{{ asset('public/admin/assets/img/avatars') . '/' . getUserData($model)->profile }}"
-                                    alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img" />
+                            @if(loginUser(Auth::user()) && !empty(loginUser(Auth::user())->profile))
+                                <img src="{{ asset('public/admin/assets/img/avatars').'/'.loginUser(Auth::user())->profile }}"
+                                    alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img" width="150px" />
                             @else
-                                <img src="{{ asset('public/admin') }}/assets/media/svg/avatars/1706719786.png"
-                                    alt="User Avatar" />
+                            <img src="{{ asset('public/admin') }}/default.png"  alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img"  width="150px" />
                             @endif
                         </div>
                         <div class="flex-grow-1 mt-3 mt-sm-5">
@@ -96,7 +95,7 @@
                                             </label> --}}
                                             <div class="mb-3">
                                             
-                                                <input class="form-control" type="file" id="profile">
+                                                <input class="form-control" type="file" id="profile" name="profile">
                                                 <input type="hidden" name="avatar_remove" />
                                               </div>
                                             <!--end::Label-->
@@ -190,7 +189,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="date" class="form-control form-control-lg form-control-solid" value="{{ $model->profile->date_of_birth ?? '' }}" name="date_of_birth" />
+                                        <input type="date" class="form-control form-control-lg form-control-solid" value="{{ !empty($model->profile) ? $model->profile->date_of_birth : '' }}" name="date_of_birth" />
                                         <span id="date_of_birth_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
@@ -222,7 +221,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="text" class="form-control form-control-lg form-control-solid cnic_number" value="{{ $model->profile->cnic }}" id="cnic_number" placeholder="Enter cnic number" name="cnic" />
+                                        <input type="text" class="form-control form-control-lg form-control-solid cnic_number" value="{{!empty($model->profile) ? $model->profile->cnic : "" }}" id="cnic_number" placeholder="Enter cnic number" name="cnic" />
                                         <span id="cnic_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
@@ -235,7 +234,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <textarea name="about_me" id="about_me" cols="30" rows="5" class="form-control form-control-lg form-control-solid" placeholder="Enter about you.">{{ $model->profile->about_me ?? '' }}</textarea>
+                                        <textarea name="about_me" id="about_me" cols="30" rows="5" class="form-control form-control-lg form-control-solid" placeholder="Enter about you.">{{ !empty($model->profile) ? $model->profile->about_me : '' }}</textarea>
                                         <span id="about_me_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->

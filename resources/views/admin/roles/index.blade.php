@@ -40,9 +40,8 @@
                                                         src="{{ asset('public/admin/assets/img/avatars') . '/' . $role_user->profile->profile }}"
                                                         alt="Avatar" />
                                                 @else
-                                                    <img class="rounded-circle"
-                                                        src="{{ asset('public/admin/assets/img/avatars/default.png') }}"
-                                                        alt="Avatar" />
+                                           
+                                                <img src="{{ asset('public/admin') }}/default.png" style="width:40px !important; height:40px !important;" alt class="h-auto rounded-circle" />
                                                 @endif
                                             </li>
                                         @endif
