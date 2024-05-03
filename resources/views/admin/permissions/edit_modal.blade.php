@@ -5,7 +5,7 @@
                 aria-label="Close"></button>
             <div class="modal-body">
                 <div class="text-center mb-4">
-                    <h3 class="role-title mb-2" id="modal-label">Edit Permission</h3>
+                    <h3 class="role-title mb-2" id="modal-label">Add Permission</h3>
                     
                 </div>
                 <div class="modal_body_content">

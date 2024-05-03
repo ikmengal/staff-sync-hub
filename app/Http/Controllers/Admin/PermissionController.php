@@ -41,7 +41,9 @@ class PermissionController extends Controller
                     return '<span class="text-primary">' . Str::upper($permission->label) . '</span>';
                 })
                 ->addColumn('permissions', function ($permission) {
-                    return view('admin.permissions.permissions', ['permission' => $permission])->render();
+                    $display_names = SubPermissions($permission->label) ?? null;
+                    $display_name = "";
+                    return view('admin.permissions.permissions', ['permission' =>$display_names])->render();
                 })
 
                 ->addColumn('action', function ($permission) {

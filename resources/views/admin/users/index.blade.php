@@ -3,6 +3,7 @@
 
 @section('content')
     <input type="hidden" id="page_url" value="{{ route('users.index') }}">
+    <input type="hidden" id="search_url" value="{{route('users.search.data')}}">
     <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card mb-4">
@@ -31,6 +32,21 @@
             </div>
             <!-- Users List Table -->
             <div class="card">
+                <div class="row p-3">
+                    <div class="col-md-3 mb-3">
+                        <label for="">Role</label>
+                        <select name="role" id="role" data-control="select2" class="select2 form-select role unselectValue">
+                           
+                        </select>
+                    </div>
+                 
+                    <div class="col-md-2 mt-3 py-1">
+                        <button type="button" class="btn btn-primary searchBtn me-2"><i
+                            class="fa-solid fa-filter"></i></button>
+                        <button type="button" class="btn btn-danger refreshBtn">Reset <i
+                            class="fa-solid fa-filter"></i></button>
+                    </div>
+                </div>
                 <div class="card-datatable table-responsive">
                     <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                         <div class="container">
@@ -63,17 +79,56 @@
 @endsection
 @push('js')
     <script>
+           $(document).ready(function() {
+            setTimeout(() => {
+                getFilterDate()
+            }, 1000);
+        
+        });
         //datatable
         var table = $('.data_table').DataTable();
         if ($.fn.DataTable.isDataTable('.data_table')) {
             table.destroy();
+        }
+        function getFilterDate() {
+            var route = $("#search_url").val();
+            $.ajax({
+                type: "get",
+                url: route,
+                success: function (res) {
+                    var role = $("#role");
+               
+                     role.empty();
+                    if (res.success) {
+                          console.log(res.data)
+                        if (res.data.roles.length !== 0) {
+                            role.append('<option value="">Select Role</option>');
+                         
+                            $.each(res.data.roles, function (ind, val) {
+                                role.append('<option value="' +val.name+ '">' + val.name + '</option>');
+                            });
+                        }
+                       
+                    
+                       
+                    }
+                }
+            });
         }
         $(document).ready(function() {
             var page_url = $('#page_url').val();
             var table = $('.data_table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: page_url + "?loaddata=yes",
+                ajax: {
+                    url: page_url + "?loaddata=yes",
+                    type: "GET",
+                    data: function (d) {
+                        d.role = $('#role').val();
+                
+                    },
+                },
+              
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -431,5 +486,16 @@
                 }
             });
         }
+        $(".refreshBtn").click(function (e) {
+            e.preventDefault();
+            $(".unselectValue").val(null).trigger('change');
+            $(".emptyValue").val('');
+            var table = $('.data_table').DataTable();
+            table.ajax.reload(null, false)
+        });
+        $(".searchBtn").click(function () {
+          var table = $('.data_table').DataTable();
+          table.ajax.reload(null, false)
+      });
     </script>
 @endpush
