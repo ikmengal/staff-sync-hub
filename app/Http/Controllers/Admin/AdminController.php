@@ -18,7 +18,7 @@ class AdminController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $this->authorize('dashboards->list');
+        $this->authorize('dashboards-list');
         $data = [];
         $data['title'] = 'Dashboard';
         return view('admin.dashboards.dashboard', compact('data'));
