@@ -154,7 +154,10 @@ class EstimateController extends Controller
         } else {
             $purchaseRequest = null;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
-            $estimates = Estimate::where('request_id', $request->id)->get();
+            $estimates = Estimate::where('request_id', $request->id)
+                                   ->orderByRaw("FIELD(status, 2) DESC")
+                                   ->orderBy('status')
+                                   ->get();
             $purchaseRequest = PurchaseRequest::where('id', $request->id)->first();
 
             if (isset($purchaseRequest) && !empty($purchaseRequest)) {
