@@ -29,47 +29,32 @@
                                 </div>
                             </td>
                         </tr>
-                        @if (isset($permissions) && !empty($permissions))
-                        @foreach ($permissions as $permission)
-                        <tr>
-                            <!--begin::Label-->
-                            <td class="text-gray-800">{{ isset($permission->label) && !empty($permission->label) ? ucfirst($permission->label) : '-' }}  </td>
-                            <!--end::Label-->
-                            <!--begin::Options-->
-                            <td>
-                                <!--begin::Wrapper-->
-                                <div class="d-flex">
-                                    <div class="row">
-                                    @foreach (SubPermissions($permission->label) as $sub_permission)
-                                    <!--begin::Checkbox-->
-                                        <div class="col-md-4 mb-5">
-                                            <label class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-                                                <input class="form-check-input" type="checkbox" value="{{ $sub_permission->name ?? null }}"
-                                                @if (isset($permissions_name) && !empty($permissions_name))
-                                                    @foreach ($permissions_name as $val)
-                                                        @if ($val == $sub_permission->name)
-                                                            {{"checked"}}
-                                                        @endif
+                        @foreach ($models as $permission)
+                            <tr>
+                                <td class="text-nowrap fw-semibold">
+                                    {{ ucfirst($permission->label) }} Management</td>
+                                <td>
+                                    <div class="d-flex">
+                                        @foreach (SubPermissions($permission->label) as $sub_permission)
+                                            @php $label = explode('-', $sub_permission->name) @endphp
+                                            <div class="form-check me-3 me-lg-5">
+                                                <input class="form-check-input childCheckBox" type="checkbox"
+                                                    value="{{ $sub_permission->name ?? null }}"
+                                                    @if (isset($role_permissions) && !empty($role_permissions)) 
+                                                    @foreach ($role_permissions as $val)
+                                                        @if ($val == $sub_permission->name){{ 'checked' }} @endif
                                                     @endforeach
-                                                @endif
-                                                name="permissions[]" />
-                                                <span class="form-check-label  custom_pointer "  > {{ formatPermissionLabel($sub_permission->name) }}  </span>
-                                            </label>
-                                        </div>
-                                        <!--end::Checkbox-->
+                                                    @endif
+                                        name="permissions[]" />
+                                        <label class="form-check-label"
+                                            for="userManagementRead-{{ $sub_permission->id }}">
+                                            {{ Str::ucfirst($label[1]) }}</label>
+                                            </div>
                                         @endforeach
                                     </div>
-                                </div>
-                                <!--end::Wrapper-->
-                            </td>
-                            <!--end::Options-->
-                        </tr>
-                        @endforeach
-                    @endif
-                   
-   
-            
-  
+            </td>
+            </tr>
+            @endforeach
             </tbody>
             </table>
         </div>
