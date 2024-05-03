@@ -29,7 +29,7 @@ class PurchaseRequestController extends Controller
             $purchaseRequest = PurchaseRequest::get();
             if (isset($purchaseRequest) && !blank($purchaseRequest)) {
                 $data =  PurchaseResource::collection($purchaseRequest);
-                return apiResponse(false, $data, "All Purchase Requests", 200);
+                return apiResponse(true, $data, "All Purchase Requests", 200);
             } else {
                 return apiResponse(false, null, "No purchase request record found");
             }
