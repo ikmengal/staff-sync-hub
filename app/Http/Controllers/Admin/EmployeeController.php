@@ -34,9 +34,23 @@ class EmployeeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $data['title'] = 'Employee Detail';
+
+        $records = collect(getAllCompaniesEmployees()['total_employees']);
+        $model = $records->first(function ($model) use ($id) {
+            return $model->slug === $id;
+        });
+        if(isset($model) && !empty($model)){
+            if(view()->exists('admin.companies.employees.employee-show')){
+                return view('admin.companies.employees.employee-show', compact('model', 'data'));
+            }else{
+                abort(404);
+            }
+        }else{
+            abort(404);
+        }
     }
 
     /**
