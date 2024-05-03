@@ -29,7 +29,7 @@ class EstimateController extends Controller
         } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimates = Estimate::groupBy('request_id')->select("*", DB::raw("count(*) as count"))->get();
-            // return $estimates;
+            
             if (isset($estimates) && !blank($estimates)) {
                 $data = EstimateResource::collection($estimates);
                 return apiResponse(true, $data, "All estimates", 200);
