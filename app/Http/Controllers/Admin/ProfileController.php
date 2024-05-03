@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use Exception;
-use App\Helpers\LogActivity;
 use Carbon\Carbon;
 use App\Models\Profile;
 use App\Models\Document;
 use App\Models\AssetUser;
+use App\Helpers\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
@@ -37,9 +38,16 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
-        $request->validate([
+        
+        $rules = [
             'first_name' => 'required',
-        ]);
+       
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return back()->withErrors($validator);
+        }
 
         DB::beginTransaction();
 
@@ -54,6 +62,7 @@ class ProfileController extends Controller
 
                 $profile_image = '';
                 if ($request->hasFile('profile')) {
+                   
                     $image = $request->file('profile');
                     $imageName = time() . '.' . $image->getClientOriginalExtension();
                     $image->move(public_path('admin/assets/img/avatars'), $imageName);

@@ -39,7 +39,7 @@ class UserController extends Controller
             return DataTables::of($model)
                 ->addIndexColumn()
                 ->addColumn('name', function ($model) {
-                    return $model->first_name . ' ' . $model->last_name;
+                    return view('admin.users.partials.user_profile', ['user' => $model])->render();
                 })
                 ->addColumn('role', function ($model) {
                     $role_name = "";
