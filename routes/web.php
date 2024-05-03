@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\EstimateController;
 use App\Http\Controllers\Admin\MasterLoginController;
 use App\Http\Controllers\Admin\PurchaseRequestController;
 use App\Http\Controllers\Admin\ReceiptController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 
@@ -95,6 +96,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/companies/vehicles', [AdminController::class, 'getCompaniesVehicles'])->name('admin.companies.vehicles');
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
     Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
+    Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
@@ -141,13 +143,6 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
-
-
-
-
-
-
-
 
 
 
