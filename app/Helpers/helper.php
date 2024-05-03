@@ -4,8 +4,10 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Setting;
 use App\Models\WorkShift;
+use App\Models\UserContact;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
+use App\Models\SalaryHistory;
 use App\Models\AttendanceSummary;
 use App\Models\Department;
 use Illuminate\Support\Facades\DB;
@@ -858,5 +860,28 @@ function formatPermissionLabel($permission)
         return Str::ucfirst($name);
     } else {
         return "-";
+    }
+}
+
+function getEmployeeDetails($companyName, $employeeSlug){
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $data=[];
+            $user = User::on($portalDb)->where('slug', $employeeSlug)->first();
+            $histories = SalaryHistory::on($portalDb)->orderby('id','desc')->where('user_id', $user->id)->get();
+            $user_permanent_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'permanent_address')->first();
+            $user_current_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'current_address')->first();
+            $user_emergency_contacts = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'emergency_contact')->get();
+            $data['user'] = $user ?? '';
+            $data['histories'] = $histories ?? '';
+            $data['user_permanent_address'] = $user_permanent_address ?? '';
+            $data['user_current_address'] = $user_current_address ?? '';
+            $data['user_emergency_contacts'] = $user_emergency_contacts ?? '';
+            if(isset($data) && !blank($data)){
+                return $data;
+            }else{
+                return 'No Record Found...!';
+            }
+        }
     }
 }
