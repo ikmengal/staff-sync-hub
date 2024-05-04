@@ -114,9 +114,12 @@
     }
     $(document).ready(function() {
         var page_url = $('#page_url').val();
+   
         var table = $('.data_table').DataTable({
             processing: true,
-            serverSide: true,
+            // serverSide: true,
+            searching: true,
+        smart: true,
             ajax: {
                 url: page_url + "?loaddata=yes",
                 type: "GET",
@@ -514,5 +517,10 @@
         var table = $('.data_table').DataTable();
         table.ajax.reload(null, false)
     });
+
+    $('input[type="search"]').on('keyup', function () {
+    var table = $('.data_table').DataTable();
+    table.search($(this).val()).draw();
+});
 </script>
 @endpush

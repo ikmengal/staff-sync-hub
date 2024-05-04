@@ -88,7 +88,7 @@
             var page_url = $('#page_url').val();
             var table = $('.data_table').DataTable({
                 processing: true,
-                serverSide: true,
+                // serverSide: true,
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",
@@ -159,6 +159,8 @@
             var table = $('.data_table').DataTable();
             table.ajax.reload(null, false)
         });
+
+          $.fn.dataTable.ext.errMode = 'throw';
         
 
         $(".searchBtn").click(function () {

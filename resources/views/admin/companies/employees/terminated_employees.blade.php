@@ -102,7 +102,7 @@
             var page_url = $('#page_url').val();
             var table = $('.data_table').DataTable({
                 processing: true,
-                serverSide: true,
+                // serverSide: true,
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",
@@ -204,7 +204,10 @@
         });
 
 
-
+        if ($.fn.DataTable.isDataTable('.data_table')) {
+                table.destroy();
+            }
+            $.fn.dataTable.ext.errMode = 'throw';
 
         $(".searchBtn").click(function () {
           

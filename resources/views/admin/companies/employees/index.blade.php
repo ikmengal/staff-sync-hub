@@ -158,8 +158,10 @@
             var page_url = $('#page_url').val();
             var table = $('.data_table').DataTable({
                 processing: true,
-                serverSide: true,
-          
+                // serverSide: true,
+                searching:true,
+               
+       
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",
