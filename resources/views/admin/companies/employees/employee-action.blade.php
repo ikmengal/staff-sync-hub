@@ -4,8 +4,7 @@
         data-toggle="tooltip"
         data-placement="top"
         title="Show Detail"
-        target="_blank"
-        >
+    >
         <i class="ti ti-eye ti-xs"></i>
     </a>
 </div>

@@ -27,12 +27,21 @@ class EstimateController extends Controller
         if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
         } else {
+            $pageSize = 10;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
-            $estimates = Estimate::groupBy('request_id')->select("*", DB::raw("count(*) as count"))->get();
+            $estimates = Estimate::groupBy('request_id')->select("*", DB::raw("count(*) as count"))->paginate($pageSize);
             
             if (isset($estimates) && !blank($estimates)) {
                 $data = EstimateResource::collection($estimates);
-                return apiResponse(true, $data, "All estimates", 200);
+                return apiResponse(true, $data, 'All estimates', 200,
+                    [
+                        'total' => $estimates->total(),
+                        'per_page' => $estimates->perPage(),
+                        'current_page' => $estimates->currentPage(),
+                        'last_page' => $estimates->lastPage(),
+                        'from' => $estimates->firstItem(),
+                        'to' => $estimates->lastItem(),
+                    ]);
             } else {
                 return apiResponse(false, null, "No Estimate record found...!", 500);
             }

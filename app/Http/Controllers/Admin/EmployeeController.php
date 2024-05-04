@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Str;
 
 class EmployeeController extends Controller
 {
@@ -43,7 +44,10 @@ class EmployeeController extends Controller
             return $model->slug === $id;
         });
         if(isset($model) && !empty($model)){
-            if(view()->exists('admin.companies.employees.employee-show')){
+            if(view()->exists('admin.companies.employees.employee-show')){ 
+                $companyName = explode(' ',$model->company);
+                $companyName = strtolower($companyName[0]) ?? '';
+                $model = getEmployeeDetails($companyName, $model->slug);
                 return view('admin.companies.employees.employee-show', compact('model', 'data'));
             }else{
                 abort(404);
