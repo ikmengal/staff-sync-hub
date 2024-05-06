@@ -173,7 +173,7 @@ class EstimateController extends Controller
                 $purchaseRequest = [
                     'id' => $purchaseRequest->id ?? null,
                     'creator' => $purchaseRequest->creator ?? null,
-                    'company' => $purchaseRequest->company->name ?? null,
+                    'company' => $purchaseRequest->company ?? null,
                     'subject' => $purchaseRequest->subject ?? null,
                     'description' => $purchaseRequest->description ?? null,
                     'status' => isset($purchaseRequest->getStatus)  && !empty($purchaseRequest->getStatus) ? $purchaseRequest->getStatus : null,
