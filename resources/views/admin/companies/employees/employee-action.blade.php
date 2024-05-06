@@ -1,5 +1,5 @@
 <div class="d-flex align-items-center">
-    <a href="{{ route('employees.show',$employee->slug) }}"
+    <a href="{{ route('employees.show',$employee->slug . '?company=' . $employee->company) }}"
         class="btn btn-icon btn-label-info waves-effect"
         data-toggle="tooltip"
         data-placement="top"

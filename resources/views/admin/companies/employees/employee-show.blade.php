@@ -116,6 +116,14 @@
                                                 @endif
                                             @endif
                                         </li>
+                                        <li class="list-inline-item d-flex gap-1" data-toggle="tooltip" data-placement="top" title="Employment Status">
+                                            <i class="ti ti-building"></i>
+                                            @if(isset($company) && !empty($company))
+                                                {{ $company }}
+                                            @else
+                                            -
+                                            @endif
+                                        </li>
                                     </ul>
                                 </div>
                                 <a href="{{ URL::previous() }}" class="btn btn-primary">

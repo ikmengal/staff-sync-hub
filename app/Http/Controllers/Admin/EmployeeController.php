@@ -38,17 +38,18 @@ class EmployeeController extends Controller
     public function show(Request $request, string $slug)
     {
         $data['title'] = 'Employee Detail';
-
+        
         $records = collect(getAllCompaniesEmployees()['total_employees']);
         $model = $records->first(function ($model) use ($slug) {
             return $model->slug === $slug;
         });
         if(isset($model) && !empty($model)){
             if(view()->exists('admin.companies.employees.employee-show')){ 
+                $company = $model->company;
                 $companyName = explode(' ',$model->company);
                 $companyName = strtolower($companyName[0]) ?? '';
                 $model = getEmployeeDetails($companyName, $model->slug);
-                return view('admin.companies.employees.employee-show', compact('model', 'data'));
+                return view('admin.companies.employees.employee-show', compact('model', 'data', 'company'));
             }else{
                 abort(404);
             }
