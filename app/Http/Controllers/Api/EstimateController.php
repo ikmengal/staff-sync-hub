@@ -12,7 +12,8 @@ use App\Models\Estimate;
 use App\Models\User;
 use App\Http\Resources\EstimateResource;
 use App\Http\Resources\AttachmentResource;
-
+use Exception;
+use Illuminate\Support\Facades\File;
 
 class EstimateController extends Controller
 {
@@ -126,7 +127,7 @@ class EstimateController extends Controller
                                 $imageName = "ESTIMATE-" . time() . '.' . $extension;
                                 $directory = public_path('attachments/estimates/');
                                 $filePath = $directory . $imageName;
-                                \File::put($filePath, base64_decode($image));
+                                File::put($filePath, base64_decode($image));
                                 if (isset($imageName) && !empty($imageName)) {
                                     $attachment = Attachment::create([
                                         "model_id" => $create->id,

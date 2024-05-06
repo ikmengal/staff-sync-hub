@@ -13,6 +13,7 @@ use App\Models\Company;
 use App\Models\StockImage;
 use App\Http\Resources\StockResource;
 use App\Http\Resources\CompanyResource;
+use Illuminate\Support\Facades\File;
 use Str;
 use Storage;
 
@@ -191,7 +192,7 @@ class ReceiptController extends Controller
                         $imageName = "STOCK-IMAGE-" . $index . "-" . time() . '.' . $extension;
                         $directory = public_path('admin/assets/img/stock/');
                         $filePath = $directory . $imageName;
-                        \File::put($filePath, base64_decode($image));
+                        File::put($filePath, base64_decode($image));
                         StockImage::create([
                             'stock_id' => $stock->id,
                             'image' => $imageName,
@@ -202,9 +203,9 @@ class ReceiptController extends Controller
                 }
                 $data = Stock::where("id" , $stock->id)->with("hasImages")->first();
                 $data = new StockResource($data);
-                return apiResponse(true, $data, "Stock added successfully.", 200); 
+                return apiResponse(true, $data, "Receipt added successfully.", 200); 
             }else{
-                return apiResponse(false, null, "Stock not added...!", 500); 
+                return apiResponse(false, null, "Receipt not added...!", 500); 
             }
         }
     }
