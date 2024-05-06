@@ -20,7 +20,7 @@ class PurchaseRequestController extends Controller
         $this->authorize('purchases-request');
         $data['title'] = 'Purchase Requests';
         $data['companies'] = Company::get();
-        $records = PurchaseRequest::select("*");
+        $records = PurchaseRequest::orderby("id", "desc")->select("*");
         if ($request->ajax() && $request->loaddata == "yes") {
             return DataTables::of($records)
                 ->addIndexColumn()
