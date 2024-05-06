@@ -25,13 +25,13 @@
                 <div class="col-md-4">
                   <h5 class="card-title">Subject</h5>
                   <div>
-                    <p class="my-2">{{ $record->subject ?? '' }}</p>
+                    <p class="my-2">{{ $record->subject ?? '-' }}</p>
                   </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-12">
                   <h5 class="card-title">Description</h5>
                   <div>
-                    <p class="my-2">{{ $record->description ?? '' }}</p>
+                    <p class="my-2">{!! $record->description ?? '-' !!}</p>
                   </div>
                 </div>
               </div>
@@ -40,7 +40,7 @@
                   <div class="d-flex align-items-center">
                     <div class="card-info">
                       <h6 class="mb-2">Creator Email</h6>
-                      <small>{{ $record->creator ?? '' }}</small>
+                      <small>{{ $record->creator ?? '-' }}</small>
                     </div>
                   </div>
                 </div>
@@ -48,7 +48,7 @@
                   <div class="d-flex align-items-center">
                     <div class="card-info">
                       <h6 class="mb-2">Company Name</h6>
-                      <small>{{ $record->company->name ?? '' }}</small>
+                      <small>{{ $record->company->name ?? '-' }}</small>
                     </div>
                   </div>
                 </div>
@@ -72,7 +72,7 @@
                   <div class="d-flex align-items-center">
                     <div class="card-info">
                       <h6 class="mb-2">Modified By</h6>
-                      <small>{{ $record->modifiedBy->first_name ?? '' }} {{ $record->modifiedBy->last_name ?? '' }}</small>
+                      <small>{{ $record->modifiedBy->first_name ?? '-' }} {{ $record->modifiedBy->last_name ?? '-' }}</small>
                     </div>
                   </div>
                 </div>
@@ -80,7 +80,7 @@
                   <div class="d-flex align-items-center">
                     <div class="card-info">
                       <h6 class="mb-2">Modified At</h6>
-                      <small>{{ isset($record->modified_at) && !empty($record->modified_at) ? date('d M Y, h:i A',strtotime($record->modified_at)) : '' }}</small>
+                      <small>{{ isset($record->modified_at) && !empty($record->modified_at) ? date('d M Y, h:i A',strtotime($record->modified_at)) : '-' }}</small>
                     </div>
                   </div>
                 </div>
@@ -88,7 +88,7 @@
                   <div class="d-flex align-items-center">
                     <div class="card-info">
                       <h6 class="mb-2">Remark</h6>
-                      <small>{{ $record->remarks ?? '' }}</small>
+                      <small>{{ $record->remarks ?? '-' }}</small>
                     </div>
                   </div>
                 </div>

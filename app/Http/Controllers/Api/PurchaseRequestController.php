@@ -52,7 +52,6 @@ class PurchaseRequestController extends Controller
             "subject" => "required|max:255",
             "description" => "required",
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
@@ -71,7 +70,7 @@ class PurchaseRequestController extends Controller
                 return response()->json([
                     "success" => true,
                     "message" => "Request has been created",
-                    "data" => new PurchaseResource($create),
+                    "data" => $create,
                 ], 200);
             }
         } catch (Exception $e) {
