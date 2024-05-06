@@ -129,6 +129,7 @@ class EstimateController extends Controller
         }
 
         $purchaseRequest = PurchaseRequest::where('id', $request->request_id)->first();
+        
         if(isset($purchaseRequest) && !empty($purchaseRequest)){
             try {
                 $create = Estimate::create([
