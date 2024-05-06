@@ -79,7 +79,14 @@ class ReceiptController extends Controller
             $stock = $stock->orderBy("id", $sorting)->paginate($pageSize);
             if (isset($stock) && !blank($stock)) {
                 $data = StockResource::collection($stock);
-                return apiResponse(true, $data, "All Receipts", 200);
+                return apiResponse(true, $data, "All Receipts", 200, [
+                    'total' => $stock->total(),
+                    'per_page' => $stock->perPage(),
+                    'current_page' => $stock->currentPage(),
+                    'last_page' => $stock->lastPage(),
+                    'from' => $stock->firstItem(),
+                    'to' => $stock->lastItem(),
+                ]);
             }else{
                 return apiResponse(false, null, "No Receipt found...!", 500);
             }

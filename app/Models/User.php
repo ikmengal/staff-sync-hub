@@ -73,4 +73,14 @@ class User extends Authenticatable
     public function hasResignation(){
         return $this->hasOne(Resignation::class, 'employee_id', 'id')->orderby('id', 'desc');
     }
+
+    public function employeeStatus()
+    {
+        return $this->hasOne(UserEmploymentStatus::class, 'user_id', 'id')->where('end_date', NULL)->orderby('id', 'desc');
+    }
+
+    public function hasBankDetails()
+    {
+        return $this->hasOne(BankAccount::class, 'user_id', 'id');
+    }
 }
