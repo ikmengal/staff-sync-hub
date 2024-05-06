@@ -109,7 +109,7 @@ function getAllCompanies()
 {
     $companies = [];
 
-    
+
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;
@@ -128,12 +128,12 @@ function getAllCompanies()
                 ->select(['id', 'slug', 'first_name', 'last_name', 'email'])
                 ->get();
 
-            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
-                $q->where('employment_status_id',3);
+            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull', function ($q) {
+                $q->where('employment_status_id', 3);
             })->where('is_employee', 0)->get();
 
-            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
-                $q->where('employment_status_id',3);
+            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull', function ($q) {
+                $q->where('employment_status_id', 3);
             })->where('is_employee', 0)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
                 $query->whereMonth('last_working_date', $currentMonth)
                     ->whereYear('last_working_date', $currentYear);
@@ -196,7 +196,7 @@ function getCompanyEmployees($companyName = null)
 
 function getEmployees($companyName = null)
 {
-    
+
     $data = [];
     $allEmployees = [];
     $total_employees_count = 0;
@@ -209,7 +209,7 @@ function getEmployees($companyName = null)
             break;
         } elseif ($companyName == NULL) {
             $total_employees_count += count($company->total_employees);
-       
+
             foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
             }
@@ -257,7 +257,7 @@ function getVehicles($companyName = null)
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
             $setting['company'] = $portalDb->name;
-     
+
             $allCompaniesVehicles[$portalName] = $setting;
 
             break;
@@ -274,12 +274,12 @@ function getVehicles($companyName = null)
                 ->where('status', 1)
                 ->select(['vehicle_id', 'user_id', 'deliver_date'])
                 ->get();
-              
+
             $setting['vehicles'] = $vehicleUsers;
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
-            $setting['company'] = $portalDb->name; 
-       
+            $setting['company'] = $portalDb->name;
+
             $allCompaniesVehicles[$portalName] = $setting;
         }
     }
@@ -310,9 +310,8 @@ function getVehicles($companyName = null)
             }
 
             $department = "";
-            if(isset($companyVehicle->hasUser) && !empty($companyVehicle->hasUser)){
-                 $department =  !empty($companyVehicle->hasUser->departmentBridge->department) ? $companyVehicle->hasUser->departmentBridge->department->name : "";
-
+            if (isset($companyVehicle->hasUser) && !empty($companyVehicle->hasUser)) {
+                $department =  !empty($companyVehicle->hasUser->departmentBridge->department) ? $companyVehicle->hasUser->departmentBridge->department->name : "";
             }
             $shift = '-';
             if (isset($companyVehicle->hasUser->userWorkingShift->workShift) && !empty($companyVehicle->hasUser->userWorkingShift->workShift->name)) {
@@ -344,14 +343,14 @@ function getVehicles($companyName = null)
                 'vehicleModelYear' => $vehicleModelYear,
                 'vehicleCc' => $vehicleCc,
                 'department' => $department,
-                'shift'=>$shift,
-                'employment_status'=>$employment_status
+                'shift' => $shift,
+                'employment_status' => $employment_status
             ];
         }
     }
     $data['vehicles'] = $vehicles;
     $data['totalEmployees'] = $totalEmployees;
-  
+
     return $data;
 }
 //Get Vehicles & Employees
@@ -444,13 +443,13 @@ function getEmployeesAttendanceCount($portalDb, $employees, $current_date, $next
 }
 function getAllTerminatedEmployees()
 {
- 
+
     $data = [];
     $terminated_employees = 0;
     $all_terminated_employees = [];
     foreach (getAllCompanies() as $company) {
         $terminated_employees += count($company->total_terminated_employees);
-    
+
         foreach ($company->total_terminated_employees as $employee) {
             $all_terminated_employees[] = (object) employeeDetails($company, $employee);
         }
@@ -501,7 +500,7 @@ function employeeDetails($company, $employee)
     $profile = '';
     $employment_id = '-';
     if (!empty($employee->profile->profile)) {
-  
+
         $profile = $employee->profile->profile;
         $employment_id = $employee->profile->employment_id;
     }
@@ -795,14 +794,14 @@ function findBaseUrl($company_id)
     }
 }
 
-function getUserName($id){
+function getUserName($id)
+{
 
-    $user = User::where('id',$id)->first();
-    if(!empty($user)){
-        $user_name = $user->first_name." ".$user->last_name;
+    $user = User::where('id', $id)->first();
+    if (!empty($user)) {
+        $user_name = $user->first_name . " " . $user->last_name;
         return $user_name;
     }
-
 }
 
 
@@ -843,11 +842,11 @@ function getShifts()
 
     return $uniqueShifts;
 }
- 
 
 
-function getCountOfEstiamte($estimate) {
-    
+
+function getCountOfEstiamte($estimate)
+{
 }
 
 
@@ -867,12 +866,13 @@ function formatPermissionLabel($permission)
     }
 }
 
-function getEmployeeDetails($companyName, $employeeSlug){
+function getEmployeeDetails($companyName, $employeeSlug)
+{
     foreach (companies() as $portalName => $portalDb) {
         if ($companyName != null && $companyName == $portalName) {
-            $data=[];
+            $data = [];
             $user = User::on($portalDb)->where('slug', $employeeSlug)->first();
-            $histories = SalaryHistory::on($portalDb)->orderby('id','desc')->where('user_id', $user->id)->get();
+            $histories = SalaryHistory::on($portalDb)->orderby('id', 'desc')->where('user_id', $user->id)->get();
             $user_permanent_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'permanent_address')->first();
             $user_current_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'current_address')->first();
             $user_emergency_contacts = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'emergency_contact')->get();
@@ -881,11 +881,44 @@ function getEmployeeDetails($companyName, $employeeSlug){
             $data['user_permanent_address'] = $user_permanent_address ?? '';
             $data['user_current_address'] = $user_current_address ?? '';
             $data['user_emergency_contacts'] = $user_emergency_contacts ?? '';
-            if(isset($data) && !blank($data)){
+            if (isset($data) && !blank($data)) {
                 return $data;
-            }else{
+            } else {
                 return 'No Record Found...!';
             }
         }
+    }
+}
+function getEmpImage($base_url, $path, $image)
+{
+    $image = $base_url . $path . $image;
+    return resize($image);
+}
+
+function resize($image = null, $array = null)
+{
+
+    if (!isset($array) || empty($array)) {
+        $array = ['w' => 256, 'h' => 256];
+    }
+
+    $basePath = "://cbnslgndba.cloudimg.io/";
+    $make_path = "";
+    if (isset($image) && !empty($image)) {
+        $image = explode("://", $image);
+        $first = reset($image);
+        $last = end($image);
+        $make_path = $first . $basePath . $last;
+
+        if (isset($array) && !empty($array)) {
+            $make_path = $first . $basePath . $last . "?" . http_build_query($array);
+        }
+    }
+    return $make_path;
+
+
+    if (config("app.mode") == "live") {
+    } else {
+        return $image;
     }
 }

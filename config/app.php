@@ -17,7 +17,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-
+    'mode' => env('APP_MODE', 'live'),
     /*
     |--------------------------------------------------------------------------
     | Application Environment
