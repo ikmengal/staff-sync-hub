@@ -123,15 +123,15 @@ class ReceiptController extends Controller
                 return response()->json($validator->errors(), 500);
             }
             $estimate = Estimate::where("id", $request->estimate_id)->first();
-            if (empty($estimate) || !isset($estimate)) {
+            if (!isset($estimate) || empty($estimate)) {
                 return apiResponse(false, null, "Invalid Estimate", 500);
             }
             $user = User::where('id', $userToken->tokenable_id)->first();
             $company = Company::where('company_id', $request->company_id)->first();
             $stock = Stock::create([
                 'user_id' => $user->id,
-                'company_id' => $company->company_id,
-                'estimate_id' => $request->estimate_id,
+                'company_id' => $estimate->company_id,
+                'estimate_id' => $estimate->id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'quantity' => $request->quantity,
