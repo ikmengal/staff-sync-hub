@@ -902,22 +902,23 @@ function resize($image = null, $array = null)
         $array = ['w' => 256, 'h' => 256];
     }
 
-    $basePath = "://cbnslgndba.cloudimg.io/";
-    $make_path = "";
-    if (isset($image) && !empty($image)) {
-        $image = explode("://", $image);
-        $first = reset($image);
-        $last = end($image);
-        $make_path = $first . $basePath . $last;
 
-        if (isset($array) && !empty($array)) {
-            $make_path = $first . $basePath . $last . "?" . http_build_query($array);
-        }
-    }
-    return $make_path;
 
 
     if (config("app.mode") == "live") {
+        $basePath = "://cbnslgndba.cloudimg.io/";
+        $make_path = "";
+        if (isset($image) && !empty($image)) {
+            $image = explode("://", $image);
+            $first = reset($image);
+            $last = end($image);
+            $make_path = $first . $basePath . $last;
+
+            if (isset($array) && !empty($array)) {
+                $make_path = $first . $basePath . $last . "?" . http_build_query($array);
+            }
+        }
+        return $make_path;
     } else {
         return $image;
     }
