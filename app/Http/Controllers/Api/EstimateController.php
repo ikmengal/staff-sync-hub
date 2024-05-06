@@ -30,11 +30,17 @@ class EstimateController extends Controller
         } else {
             $pageSize = 10;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
-            $estimates = Estimate::groupBy('request_id')->select("*", DB::raw("count(*) as count"))->paginate($pageSize);
-            
+            $estimates = Estimate::whereHas('requestData', function ($query) {
+                $query->where('status', 1); // get only those estimates whose requests are in pending
+            })->groupBy('request_id')->select("*", DB::raw("count(*) as count"))->paginate($pageSize);
+
             if (isset($estimates) && !blank($estimates)) {
                 $data = EstimateResource::collection($estimates);
-                return apiResponse(true, $data, 'All estimates', 200,
+                return apiResponse(
+                    true,
+                    $data,
+                    'All estimates',
+                    200,
                     [
                         'total' => $estimates->total(),
                         'per_page' => $estimates->perPage(),
@@ -42,7 +48,8 @@ class EstimateController extends Controller
                         'last_page' => $estimates->lastPage(),
                         'from' => $estimates->firstItem(),
                         'to' => $estimates->lastItem(),
-                    ]);
+                    ]
+                );
             } else {
                 return apiResponse(false, null, "No Estimate record found...!", 500);
             }
@@ -88,8 +95,8 @@ class EstimateController extends Controller
                         "price" => $request->price ?? null,
                     ]);
                     if (!empty($create->id)) {
-                        if(isset($request->type) && $request->type == 2){
-                            if($request->hasFile('attachments')){
+                        if (isset($request->type) && $request->type == 2) {
+                            if ($request->hasFile('attachments')) {
                                 $attachments = $request->file('attachments');
                                 foreach ($attachments as $attachment) {
                                     $fileName = uploadSingleFile($attachment, config("project.upload_path.estimates"), "ESTIMATE-");
@@ -103,7 +110,7 @@ class EstimateController extends Controller
                                     }
                                 }
                             }
-                        }else if(isset($request->type) && $request->type == 1){
+                        } else if (isset($request->type) && $request->type == 1) {
                             if ($request->has('attachments')) {
                                 $image = $request->attachments;
                                 $mime = explode(':', substr($image, 0, strpos($image, ';')))[1];
@@ -120,7 +127,7 @@ class EstimateController extends Controller
                                     default:
                                         $extension = 'jpg';
                                 }
-                    
+
                                 $image = str_replace('data:image/' . $extension . ';base64,', '', $image);
                                 $image = str_replace(' ', '+', $image);
                                 $index = 1;
@@ -137,7 +144,7 @@ class EstimateController extends Controller
                                     ]);
                                 }
                             }
-                        }   
+                        }
                     }
                     DB::commit();
                     return apiResponse(true, null, "Estimate has been added successfully", 200);
@@ -165,9 +172,9 @@ class EstimateController extends Controller
             $purchaseRequest = null;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimates = Estimate::where('request_id', $request->id)
-                                   ->orderByRaw("FIELD(status, 2) DESC")
-                                   ->orderBy('status')
-                                   ->get();
+                ->orderByRaw("FIELD(status, 2) DESC")
+                ->orderBy('status')
+                ->get();
             $purchaseRequest = PurchaseRequest::where('id', $request->id)->first();
 
             if (isset($purchaseRequest) && !empty($purchaseRequest)) {
