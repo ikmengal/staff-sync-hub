@@ -75,6 +75,7 @@
                                     <th>Company</th>
                                     <th style="width:200px">Shift</th>
                                     <th>Employment</th>
+                                    <th>Detail</th>
                                 </tr>
                             </thead>
                             <tbody id="body" style="vertical-align:top"></tbody>
@@ -197,6 +198,10 @@
                 {
                     data: 'emp_status',
                     name: 'emp_status'
+                },
+                {
+                    data: 'action',
+                    name: 'action'
                 },
             ]
             });

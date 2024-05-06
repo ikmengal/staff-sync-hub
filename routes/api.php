@@ -26,6 +26,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('password/resetlink',  [AuthController::class, 'sendResetLinkEmail']);
+Route::post('verify-otp',  [AuthController::class, 'verifyOtp']);
 Route::post('password/reset',  [AuthController::class, 'resetPassword']);
 
 
@@ -50,11 +51,6 @@ Route::post('receipt-add-image', [ReceiptController::class, 'receiptAddImage']);
 // User Player-Id Route
 Route::get('get-player-id', [UserPlayerIdController::class, 'index']);
 Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
-
-
-
-
-
 
 
 // for other portals

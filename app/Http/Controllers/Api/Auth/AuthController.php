@@ -135,6 +135,29 @@ class AuthController extends Controller
     {
         return Password::broker('users');
     }
+
+    public function verifyOtp(Request $request){
+        $validator = Validator::make($request->all(), [
+            'otp' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 500);
+        }
+        
+        $otp = Otp::where('otp', $request->otp)->first();
+        
+        if (isset($otp) && !empty($otp)){
+            if(!$otp->otp_expires > now()){
+                return apiResponse(true, null, "Your otp verificated successfully now changed the password", 200);
+            }else{
+                return apiResponse(false, null, "OTP has expired", 500);
+            }
+        } else {
+            return apiResponse(false, null, "Otp is invalid", 500);
+        }
+    }
+
     public function resetPassword(Request $request)
     {
         // Validate the request data
