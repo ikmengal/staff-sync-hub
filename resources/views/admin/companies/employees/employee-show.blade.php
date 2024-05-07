@@ -26,10 +26,11 @@
                             <img src="{{ asset('public/admin/assets/img/pages/profile-banner.png') }}" alt="Banner image" style="width:100%" class="rounded-top img-fluid">
                         @endif
                     </div>
+                    {{-- {{dd(getEmpImage($company->base_url, '/public/admin/assets/img/avatars/', $model['user']->profile->profile)) }} --}}
                     <div class="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center mb-4 mt-n4">
                         <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
                             @if(isset($model['user']->profile) && !empty($model['user']->profile->profile))
-                                <img src="{{ asset('public/admin/assets/img/avatars') }}/{{ $model['user']->profile->profile }}" 
+                                <img src="{{getEmpImage($company->base_url, '/public/admin/assets/img/avatars/', $model['user']->profile->profile) }}" 
                                     onerror="this.onerror=null; this.src='{{ asset('public/admin') }}/default.png';" 
                                     style="width: 100px !important; height:100px !important" 
                                     alt="user image" 
@@ -118,8 +119,8 @@
                                         </li>
                                         <li class="list-inline-item d-flex gap-1" data-toggle="tooltip" data-placement="top" title="Employment Status">
                                             <i class="ti ti-building"></i>
-                                            @if(isset($company) && !empty($company))
-                                                {{ $company }}
+                                            @if(isset($company) && !empty($company->company))
+                                                {{ $company->company }}
                                             @else
                                             -
                                             @endif
