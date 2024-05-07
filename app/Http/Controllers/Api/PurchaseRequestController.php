@@ -25,11 +25,19 @@ class PurchaseRequestController extends Controller
         if (empty($bearerToken)) {
             return apiResponse(false, null, "Unauthorized", 500);
         } else {
+            $pageSize = 10;
             $user = User::where('id', $bearerToken->tokenable_id)->first();
-            $purchaseRequest = PurchaseRequest::get();
+            $purchaseRequest = PurchaseRequest::paginate($pageSize);
             if (isset($purchaseRequest) && !blank($purchaseRequest)) {
                 $data =  PurchaseResource::collection($purchaseRequest);
-                return apiResponse(true, $data, "All Purchase Requests", 200);
+                return apiResponse(true, $data, "All Purchase Requests", 200, [
+                    'total' => $purchaseRequest->total(),
+                    'per_page' => $purchaseRequest->perPage(),
+                    'current_page' => $purchaseRequest->currentPage(),
+                    'last_page' => $purchaseRequest->lastPage(),
+                    'from' => $purchaseRequest->firstItem(),
+                    'to' => $purchaseRequest->lastItem(),
+                ]);
             } else {
                 return apiResponse(false, null, "No purchase request record found");
             }
@@ -44,7 +52,6 @@ class PurchaseRequestController extends Controller
             "subject" => "required|max:255",
             "description" => "required",
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
@@ -63,7 +70,7 @@ class PurchaseRequestController extends Controller
                 return response()->json([
                     "success" => true,
                     "message" => "Request has been created",
-                    "data" => new PurchaseResource($create),
+                    "data" => $create,
                 ], 200);
             }
         } catch (Exception $e) {

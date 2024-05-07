@@ -98,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
     Route::get('admin/company/attendance/{company}',[AdminController::class,'companyAttendance'])->name('admin.companies.attendance');
+    // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);
@@ -135,6 +136,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/work_shifts', WorkShiftController::class);
     Route::resource('/receipts', ReceiptController::class);
     Route::resource('users', UserController::class);
+    Route::resource('employees', EmployeeController::class);
 
 
 
@@ -144,11 +146,3 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
-
-
-
-
-
-
-
-

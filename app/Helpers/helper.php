@@ -6,8 +6,10 @@ use App\Models\Setting;
 use App\Models\WorkShift;
 use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\UserContact;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
+use App\Models\SalaryHistory;
 use App\Models\AttendanceSummary;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -737,14 +739,18 @@ function getCurrentWeekAttendance()
 
 
 
-function apiResponse($success = null, $data = null, $message = null, $code = null)
+function apiResponse($success = null, $data = null, $message = null, $code = null, $pagination = null)
 {
-    return (object)[
+    $response = (object)[
         "success" => $success,
         "data" => $data,
         "message" => $message,
         "code" => $code,
     ];
+    if ($pagination !== null) {
+        $response->pagination = $pagination;
+    }
+    return $response;
 }
 
 
@@ -938,5 +944,63 @@ function formatPermissionLabel($permission)
         return Str::ucfirst($name);
     } else {
         return "-";
+    }
+}
+
+function getEmployeeDetails($companyName, $employeeSlug)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $data = [];
+            $user = User::on($portalDb)->where('slug', $employeeSlug)->first();
+            $histories = SalaryHistory::on($portalDb)->orderby('id', 'desc')->where('user_id', $user->id)->get();
+            $user_permanent_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'permanent_address')->first();
+            $user_current_address = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'current_address')->first();
+            $user_emergency_contacts = UserContact::on($portalDb)->where('user_id', $user->id)->where('key', 'emergency_contact')->get();
+            $data['user'] = $user ?? '';
+            $data['histories'] = $histories ?? '';
+            $data['user_permanent_address'] = $user_permanent_address ?? '';
+            $data['user_current_address'] = $user_current_address ?? '';
+            $data['user_emergency_contacts'] = $user_emergency_contacts ?? '';
+            if (isset($data) && !blank($data)) {
+                return $data;
+            } else {
+                return 'No Record Found...!';
+            }
+        }
+    }
+}
+function getEmpImage($base_url, $path, $image)
+{
+    $image = $base_url . $path . $image;
+    return resize($image);
+}
+
+function resize($image = null, $array = null)
+{
+
+    if (!isset($array) || empty($array)) {
+        $array = ['w' => 256, 'h' => 256];
+    }
+
+
+
+
+    if (config("app.mode") == "live") {
+        $basePath = "://cbnslgndba.cloudimg.io/";
+        $make_path = "";
+        if (isset($image) && !empty($image)) {
+            $image = explode("://", $image);
+            $first = reset($image);
+            $last = end($image);
+            $make_path = $first . $basePath . $last;
+
+            if (isset($array) && !empty($array)) {
+                $make_path = $first . $basePath . $last . "?" . http_build_query($array);
+            }
+        }
+        return $make_path;
+    } else {
+        return $image;
     }
 }
