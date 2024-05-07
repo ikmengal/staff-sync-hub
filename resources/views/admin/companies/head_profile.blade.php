@@ -2,7 +2,7 @@
     <div class="avatar-wrapper">
         <div class="avatar avatar-sm me-3">
             @if(!empty($model->head->profile))
-                <img src="{{ $model->base_url }}/public/admin/assets/img/avatars/{{ $model->head->profile }}" alt="Avatar" class="rounded-circle img-avatar">
+                <img src="{{ getEmpImage($model->base_url, '/public/admin/assets/img/avatars/', $model->head->profile) }}" alt="Avatar" class="rounded-circle img-avatar">
             @else
                 <img src="{{ asset('public/admin/default.png') }}" alt="Avatar" class="rounded-circle img-avatar">
             @endif
