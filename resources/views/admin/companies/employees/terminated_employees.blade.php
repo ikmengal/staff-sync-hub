@@ -119,6 +119,7 @@
                     }
                 },
                 columns: [
+             
                 {
                     data: 'name',
                     name: 'name'

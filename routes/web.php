@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
     Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
+    Route::get('admin/company/attendance/{company}',[AdminController::class,'companyAttendance'])->name('admin.companies.attendance');
 
     //inject search urls data to json file
     Route::get('/get-menu-data', [DeveloperController::class, 'generateMenuData']);

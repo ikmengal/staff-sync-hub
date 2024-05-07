@@ -82,8 +82,8 @@ class AdminController extends Controller
     }
     public function login(Request $request)
     {
-        $user = User::where('email',$request->email)->first();
-        if($user->user_for_portal != null){
+        $user = User::where('email', $request->email)->first();
+        if ($user->user_for_portal != null) {
             $credentials = $request->only('email', 'password');
             if (Auth::attempt($credentials, $request->has('remember'))) {
                 $user = Auth::user();
@@ -104,12 +104,9 @@ class AdminController extends Controller
             } else {
                 return response()->json(['error' => 'Invalid credentials']);
             }
-
-        }
-        else {
+        } else {
             return response()->json(['error' => 'Your Are Not Allowed To Login']);
         }
-       
     }
 
     public function logOut()
@@ -256,7 +253,7 @@ class AdminController extends Controller
                     }
                     if ($request->has('status')  && !empty($request->status)) {
                         $status = $request->status;
-                        $query->collection = $query->collection->filter(function ($record) use ($status) {   
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
                             return str_contains(strtolower($record['employment_status']), strtolower($status));
                         });
                     }
@@ -297,7 +294,7 @@ class AdminController extends Controller
                     return $model->company ?? '-';
                 })
                 ->filter(function ($query) use ($request) {
-                 
+
                     if ($request->has('department')  && !empty($request->department)) {
                         $department = $request->department;
                         $query->collection = $query->collection->filter(function ($record) use ($department) {
@@ -319,6 +316,7 @@ class AdminController extends Controller
 
     public function getCompanyEmployees(Request $request, $company)
     {
+
         $data = [];
         $data['title'] = 'Company Employees';
         if ($request->ajax() && $request->loaddata == "yes") {
@@ -350,9 +348,11 @@ class AdminController extends Controller
     }
     public function getCompanyVehicles(Request $request, $company)
     {
+
         $data = [];
         $data['title'] = 'Company Vehicles';
         if ($request->ajax() && $request->loaddata == "yes") {
+
             $records = getCompanyVehicles($company)['vehicles'];
             return DataTables::of($records)
                 ->addIndexColumn()
@@ -406,9 +406,9 @@ class AdminController extends Controller
                     }
                     if ($request->has('status')  && !empty($request->status)) {
                         $status = $request->status;
-                     
+
                         $query->collection = $query->collection->filter(function ($record) use ($status) {
-                          
+
                             return str_contains(strtolower($record['employment_status']), strtolower($status));
                         });
                     }
@@ -490,16 +490,60 @@ class AdminController extends Controller
         return view('admin.companies.employees.index', compact('data'));
     }
 
-    public function getSearchDataOnLoad(Request $request)
+
+    public function companyAttendance(Request $request, $company)
     {
-        $data['departments'] = getDepartments();
-        $data['companies'] = Company::get();
-        $data['shifts'] = getShifts();
-        $data['statuses'] = EmploymentStatus::get();
-        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
+        $data = [];
+        $data['status'] = '';
+        $data['title'] = 'Company Attendance';
+
+        $date = $request->date;
+        if ($request->ajax() && $request->loaddata == "yes") {
+            $records = collect(getCompanyAttendance($company, $date))['attendance_detail'];
+            return DataTables::of($records)
+                ->addIndexColumn()
+                ->addColumn('date', function ($model) {
+                    $date = formatDate($model->in_date);
+                    return $date;
+                })
+                ->addColumn('shift_time', function ($model) {
+                    return $model->shift;
+                })
+                ->addColumn('punch_in', function ($model) {
+
+                    return date('H:i:s', strtotime($model->in_date));
+                })
+                ->addColumn('punch_out', function ($model) {
+
+                    return date('H:i:s', strtotime($model->out_date));
+                })
+                ->addColumn('status', function ($model) {
+
+                    if ($model->status == 'lateIn') {
+                        return 'Late In';
+                    } else if ($model->status == 'earlyout') {
+                        return 'Early Out';
+                    } else if ($model->status == 'regular') {
+                        return 'Regular';
+                    }
+                })
+                ->rawColumns(['date', 'shift_time', 'punch_id', 'punch_out', 'status'])
+                ->make(true);
+        }
+
+
+        return view('admin.companies.attendance.index', compact('data', 'company'));
     }
 
 
 
+    public function getSearchDataOnLoad(Request $request)
+    {
 
+        $data['departments'] = getDepartments();
+        $data['companies'] = getAllCompanies();
+        $data['shifts'] = getShifts();
+        $data['statuses'] = EmploymentStatus::get();
+        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
+    }
 }

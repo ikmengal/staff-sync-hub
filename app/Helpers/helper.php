@@ -4,10 +4,11 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Setting;
 use App\Models\WorkShift;
+use App\Models\Attendance;
+use App\Models\Department;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
 use App\Models\AttendanceSummary;
-use App\Models\Department;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
@@ -85,20 +86,20 @@ function getUserData($user)
 function companies()
 {
     $companies = [
-        'cyberonix' => env('CYBERONIX_DB_DATABASE'),
-        // 'vertical' => env('VERTICAL_DB_DATABASE'),
-        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
-        // 'clevel' => env('CLEVEL_DB_DATABASE'),
-        // 'delve' => env('DELVE12_DB_DATABASE'),
-        // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
-        // 'mercury' => env('MERCURY_DB_DATABASE'),
-        // 'momyom' => env('MOMYOM_DB_DATABASE'),
-        // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
-        // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
-        // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
+        'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
+        'vertical' => env('VERTICAL_DB_DATABASE'),
+        'braincell' => env('BRAINCELL_DB_DATABASE'),
+        'clevel' => env('CLEVEL_DB_DATABASE'),
+        'delve' => env('DELVE12_DB_DATABASE'),
+        'horizontal' => env('HORIZONTAL_DB_DATABASE'),
+        'mercury' => env('MERCURY_DB_DATABASE'),
+        'momyom' => env('MOMYOM_DB_DATABASE'),
+        'softnova' => env('SOFTNOVA_DB_DATABASE'),
+        'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
+        'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
         // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
-        // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
-        // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
+        'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
+        'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
 
     return $companies;
@@ -107,7 +108,7 @@ function getAllCompanies()
 {
     $companies = [];
 
-    
+
     // Get the current month and year
     $currentMonth = Carbon::now()->month;
     $currentYear = Carbon::now()->year;
@@ -126,12 +127,12 @@ function getAllCompanies()
                 ->select(['id', 'slug', 'first_name', 'last_name', 'email'])
                 ->get();
 
-            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
-                $q->where('employment_status_id',3);
+            $total_terminated_employees = User::on($portalDb)->wherehas('employeeStatusEndDateNull', function ($q) {
+                $q->where('employment_status_id', 3);
             })->where('is_employee', 0)->get();
 
-            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull',function($q){
-                $q->where('employment_status_id',3);
+            $terminatedUsersOfCurrentMonth = User::on($portalDb)->wherehas('employeeStatusEndDateNull', function ($q) {
+                $q->where('employment_status_id', 3);
             })->where('is_employee', 0)->whereHas('hasResignation', function ($query) use ($currentMonth, $currentYear) {
                 $query->whereMonth('last_working_date', $currentMonth)
                     ->whereYear('last_working_date', $currentYear);
@@ -194,7 +195,7 @@ function getCompanyEmployees($companyName = null)
 
 function getEmployees($companyName = null)
 {
-    
+
     $data = [];
     $allEmployees = [];
     $total_employees_count = 0;
@@ -207,7 +208,7 @@ function getEmployees($companyName = null)
             break;
         } elseif ($companyName == NULL) {
             $total_employees_count += count($company->total_employees);
-       
+
             foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
             }
@@ -234,6 +235,7 @@ function getCompanyVehicles($companyName = null)
 
 function getVehicles($companyName = null)
 {
+
     $data = [];
     $allCompaniesVehicles = [];
 
@@ -255,7 +257,7 @@ function getVehicles($companyName = null)
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
             $setting['company'] = $portalDb->name;
-     
+
             $allCompaniesVehicles[$portalName] = $setting;
 
             break;
@@ -272,12 +274,12 @@ function getVehicles($companyName = null)
                 ->where('status', 1)
                 ->select(['vehicle_id', 'user_id', 'deliver_date'])
                 ->get();
-              
+
             $setting['vehicles'] = $vehicleUsers;
             $setting['total_employees'] = count($portalDb->total_employees);
             $setting['base_url'] = $portalDb->base_url;
-            $setting['company'] = $portalDb->name; 
-       
+            $setting['company'] = $portalDb->name;
+
             $allCompaniesVehicles[$portalName] = $setting;
         }
     }
@@ -308,9 +310,8 @@ function getVehicles($companyName = null)
             }
 
             $department = "";
-            if(isset($companyVehicle->hasUser) && !empty($companyVehicle->hasUser)){
-                 $department =  !empty($companyVehicle->hasUser->departmentBridge->department) ? $companyVehicle->hasUser->departmentBridge->department->name : "";
-
+            if (isset($companyVehicle->hasUser) && !empty($companyVehicle->hasUser)) {
+                $department =  !empty($companyVehicle->hasUser->departmentBridge->department) ? $companyVehicle->hasUser->departmentBridge->department->name : "";
             }
             $shift = '-';
             if (isset($companyVehicle->hasUser->userWorkingShift->workShift) && !empty($companyVehicle->hasUser->userWorkingShift->workShift->name)) {
@@ -342,18 +343,83 @@ function getVehicles($companyName = null)
                 'vehicleModelYear' => $vehicleModelYear,
                 'vehicleCc' => $vehicleCc,
                 'department' => $department,
-                'shift'=>$shift,
-                'employment_status'=>$employment_status
+                'shift' => $shift,
+                'employment_status' => $employment_status
             ];
         }
     }
     $data['vehicles'] = $vehicles;
     $data['totalEmployees'] = $totalEmployees;
-  
+
+    return $data;
+}
+
+function getCompanyAttendance($companyName = null, $date = null)
+{
+    $data = [];
+    $attendance_detail = [];
+
+    if ($date == null) {
+        $month = Carbon::now()->month;
+        $year = Carbon::now()->year;
+    } else {
+
+        $dateParts = explode('/', $date);
+        $month = $dateParts[0]; // Start date
+        $year = $dateParts[1]; // End date
+
+    }
+
+    foreach (getAllCompanies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalDb->company_key) {
+
+            $attendances = AttendanceSummary::on($portalDb->portalDb)->with([
+                'attendance' => function ($query) {
+                    $query->select('id', 'behavior');
+                },
+                'userShift'
+
+            ])
+                ->whereRaw('MONTH(in_date) = ?', [$month])->whereRaw('YEAR(in_date) = ?', [$year])
+                ->get();
+            $company = $portalDb->name;
+        }
+    }
+
+    if (isset($attendances) && !empty($attendances)) {
+        foreach ($attendances as $attendance) {
+            $attendance_detail[] = (object)[
+                'user_id' => $attendance->user_id,
+                'behavior' => !empty($attendance->attendance) ? $attendance->attendance->behavior : "",
+                'shift' => !empty($attendance->userShift) ? $attendance->userShift->name : "",
+                'in_date' => $attendance->in_date,
+                'out_date' => $attendance->out_date,
+                'status' =>   $attendance->attendance_type,
+                'company' => $company
+
+            ];
+        }
+    }
+    $data['attendance_detail'] = $attendance_detail;
     return $data;
 }
 //Get Vehicles & Employees
 
+function getTotalWorkingDays($company)
+{
+
+    $start_of_month = Carbon::now()->startOfMonth()->toDateString();
+    $current_date = Carbon::now()->toDateString();
+    $companies = getAllCompanies();
+    $attendance = '';
+    foreach ($companies as $portalName => $portalDb) {
+        if (!empty($company) && $company == $portalDb->company_key) {
+            $attendance = Attendance::on($portalDb->portalDb)->where('in_date', '>=', $start_of_month)->where('in_date', '<=', $current_date)->count();
+        }
+    }
+
+    return $attendance;
+}
 function getDailyAttendanceReport()
 {
     if (date('d') > 25) {
@@ -442,13 +508,13 @@ function getEmployeesAttendanceCount($portalDb, $employees, $current_date, $next
 }
 function getAllTerminatedEmployees()
 {
- 
+
     $data = [];
     $terminated_employees = 0;
     $all_terminated_employees = [];
     foreach (getAllCompanies() as $company) {
         $terminated_employees += count($company->total_terminated_employees);
-    
+
         foreach ($company->total_terminated_employees as $employee) {
             $all_terminated_employees[] = (object) employeeDetails($company, $employee);
         }
@@ -499,7 +565,7 @@ function employeeDetails($company, $employee)
     $profile = '';
     $employment_id = '-';
     if (!empty($employee->profile->profile)) {
-  
+
         $profile = $employee->profile->profile;
         $employment_id = $employee->profile->employment_id;
     }
@@ -757,6 +823,12 @@ function formatDate($date)
     $format = $format->format('M d,Y');
     return $format;
 }
+function formatTime($date)
+{
+    $format = Carbon::parse($date);
+    $formattedTime = Carbon::parse($date)->format('H:i:s');
+    return $formattedTime;
+}
 function companyData()
 {
     $array  = [
@@ -789,14 +861,14 @@ function findBaseUrl($company_id)
     }
 }
 
-function getUserName($id){
+function getUserName($id)
+{
 
-    $user = User::where('id',$id)->first();
-    if(!empty($user)){
-        $user_name = $user->first_name." ".$user->last_name;
+    $user = User::where('id', $id)->first();
+    if (!empty($user)) {
+        $user_name = $user->first_name . " " . $user->last_name;
         return $user_name;
     }
-
 }
 
 
@@ -837,11 +909,19 @@ function getShifts()
 
     return $uniqueShifts;
 }
- 
+
+function getShift($shift)
+{
+
+    $working_shift = WorkShift::where('id', $shift)->first();
+    if (!empty($working_shift)) {
+        return $working_shift->name;
+    }
+}
 
 
-function getCountOfEstiamte($estimate) {
-    
+function getCountOfEstiamte($estimate)
+{
 }
 
 

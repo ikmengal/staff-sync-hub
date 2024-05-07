@@ -15,4 +15,12 @@
         >
         <i class="ti ti-car ti-xs"></i>
     </a>
+    <a href="{{ route('admin.companies.attendance', $model->company_key) }}"
+        class="btn btn-icon btn-label-warning waves-effect mx-2"
+        data-toggle="tooltip"
+        data-placement="top"
+        title="Company Attendance"
+        >
+        <i class="ti ti-car ti-xs"></i>
+    </a>
 </div>
