@@ -41,7 +41,7 @@
                                                         alt="Avatar" />
                                                 @else
                                                     <img class="rounded-circle"
-                                                        src="{{ asset('public/admin/assets/img/avatars/default.png') }}"
+                                                        src="{{ asset('public/admin/default.png') }}"
                                                         alt="Avatar" />
                                                 @endif
                                             </li>
@@ -316,6 +316,7 @@
         </div>
         <div class="showUserModal"></div>
         @include('admin.roles.edit')
+    </div>
     @endsection
     @push('js')
         <script>
