@@ -45,11 +45,6 @@ class PurchaseRequestController extends Controller
                     return $model->creator ?? '';
                 })
                 ->addColumn('status', function ($model) {
-                    // $data = '';
-                    // $class = $model->getStatus->class  ?? "primary";
-                    // $name = $model->getStatus->name  ?? "-";
-                    // $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
-                    // return $data;
                     $data = '';
                     $class = $model->getStatus->class  ?? "primary";
                     $name = $model->getStatus->name  ?? "-";
