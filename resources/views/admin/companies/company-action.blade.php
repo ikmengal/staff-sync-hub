@@ -21,6 +21,6 @@
         data-placement="top"
         title="Company Attendance"
         >
-        <i class="ti ti-car ti-xs"></i>
+        <i class="ti ti-file ti-xs"></i>
     </a>
 </div>

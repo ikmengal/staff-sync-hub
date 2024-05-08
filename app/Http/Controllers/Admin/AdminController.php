@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Auth;
+use DateTime;
 use App\Models\User;
 use App\Models\Company;
+use App\Models\LeaveType;
+use App\Models\UserLeave;
 use App\Models\WorkShift;
+use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\Discrepancy;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\EmploymentStatus;
+use App\Models\WorkingShiftUser;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 
 class AdminController extends Controller
@@ -491,7 +498,7 @@ class AdminController extends Controller
     }
 
 
-    public function companyAttendance(Request $request, $company)
+    public function companyAttendanceOld(Request $request, $company)
     {
         $data = [];
         $data['status'] = '';
@@ -534,6 +541,1106 @@ class AdminController extends Controller
 
         return view('admin.companies.attendance.index', compact('data', 'company'));
     }
+
+
+    public function companyAttendance(Request $request, $company = null, $getMonth = null, $getYear = null, $user_slug = null)
+    {
+
+        $title = 'Attendance Summary';
+
+        $employees = [];
+
+
+        $user = Auth::user()->load('profile', 'employeeStatus', 'userWorkingShift');
+
+        // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
+        $employees = getEmployees($company);
+
+
+        $currentMonth = date('m/Y');
+        if (date('d') > 25) {
+            $currentMonth = date('m/Y', strtotime('first day of +1 month'));
+        }
+        if (!empty($getMonth) || !empty($user_slug)) {
+            $year = $getYear;
+            $month = $getMonth;
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $user = User::on($portalDb)->where('slug', $user_slug)->first();
+                }
+            }
+        } else {
+            $year = date('Y');
+            if (date('d') > 26 || (date('d') == 26 && date('H') > 11)) {
+                $month = date('m', strtotime('first day of +1 month'));
+            } else {
+                $month = date('m');
+            }
+            if ($month == 01) {
+                $year = date('Y', strtotime('first day of +1 month'));
+            }
+
+            $user = getUser();
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $shift = WorkingShiftUser::on($portalDb)->where('user_id', $user->id)->where('end_date', NULL)->first();
+            }
+        }
+        if (empty($shift)) {
+            $shift = defaultShift();
+        } else {
+            $shift = $shift->workShift;
+        }
+
+        //User Leave & Discrepancies Reprt
+        $leave_report = hasExceededLeaveLimit($user, $company);
+        if ($leave_report) {
+            $leave_in_balance = $leave_report['leaves_in_balance'];
+        } else {
+            $leave_in_balance = 0;
+        }
+
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $user_have_used_discrepancies = Discrepancy::on($portalDb)->where('user_id', $user->id)->where('status', '!=', 2)->whereMonth('date', Carbon::now()->month)
+                    ->whereYear('date', Carbon::now()->year)
+                    ->count();
+            }
+        }
+
+        $user_joining_date = date('d-m-Y');
+
+        if (isset($user->profile) && !empty($user->profile->joining_date)) {
+            $user_joining_date = date('m/Y', strtotime($user->profile->joining_date));
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $leave_types = LeaveType::on($portalDb)->where('status', 1)->get(['id', 'name']);
+            }
+        }
+
+        $user_leave_report = hasExceededLeaveLimit($user, $company);
+        $remaining_filable_leaves = $user_leave_report['total_remaining_leaves'];
+
+        // Get the current date
+        $currentDate = Carbon::now();
+
+        // Set the current date to the 26th of the previous month
+        $startDate = $currentDate->subMonth()->setDay(26)->toDateString();
+
+        // Set the current date to the 25th of the current month
+        $endDate = $currentDate->startOfMonth()->addDay(24)->toDateString();
+        // $monthDays = getMonthDaysForSalary($getYear ?? null , $getMonth ?? null);
+        $monthDays = getMonthDaysForSalary($year ?? null, $month ?? null);
+        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'leave_types', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company'));
+    }
+
+    public static function getAttandanceCount($userID, $start_date, $end_date, $status, $shiftID, $company)
+    {
+        $begin = new DateTime($start_date);
+        $end   = new DateTime($end_date);
+        $totalDays = 0;
+        $workDays = 0;
+        $lateIn = 0;
+        $lateInDates = [];
+        $earlyOut = 0;
+        $earlyOutDates = [];
+        $halfDay = 0;
+        $halfDayDates = [];
+        $absent = 0;
+        $absent_dates = [];
+        $discrepancy_late = 0;
+        $discrepancy_early = 0;
+        $leave_first_half = 0;
+        $leave_last_half = 0;
+        $leave_single = 0;
+        $check_in_out_time = '';
+        $user = User::where('id', $userID)->first();
+        $start_date = '';
+        if (getUserJoiningDate($user)) {
+            $start_date = getUserJoiningDate($user);
+        }
+        for ($i = $begin; $i <= $end; $i->modify('+1 day')) {
+            $shiftID = getUserShift($user, $i->format("Y-m-d"), $company);
+            $attendance_adjustment = '';
+            $end_time = date("Y-m-d", strtotime($i->format("Y-m-d"))) . ' ' . $shiftID->end_time;
+
+            $shiftEndTime = $shiftID->end_time;
+            $shiftEndTime = date('H:i', strtotime($shiftEndTime));
+            $carbonEndTime = Carbon::createFromFormat('H:i', $shiftEndTime);
+
+            if ($carbonEndTime->hour < 12) {
+                $next = date("Y-m-d", strtotime('+1 day ' . $i->format("Y-m-d")));
+            } else {
+                $next = date('Y-m-d', strtotime($end_time));
+            }
+            $beginDate = Carbon::parse($begin);
+            $start_time = date('Y-m-d', strtotime($beginDate)) . ' ' . $shiftID->start_time;
+            $end_time = date("Y-m-d", strtotime($next)) . ' ' . $shiftID->end_time;
+            $shiftStartTime = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+            $shiftEndTime = date("Y-m-d H:i:s", strtotime('+6 hours ' . $end_time));
+
+
+            $day = date("D", strtotime($i->format("Y-m-d")));
+            $dateArray = [];
+
+            $checkHoliday = checkHoliday($userID, $i->format("Y-m-d"), $company); //check it is holiday or company off
+
+            if (empty($checkHoliday)) {
+
+                if ($day != 'Sat' && $day != 'Sun') {
+                    $reponse = self::getAttandanceSingleRecord($userID, $i->format("Y-m-d"), $next, 'all', $shiftID, $company);
+                    if ($reponse != null) {
+                        $attendance_date = $reponse['attendance_date'];
+
+                        if (isset($reponse['attendance_id']) && !empty($reponse['attendance_id'])) {
+                            $check_att = checkAttendanceByID($reponse['attendance_id'], $company);  // object of Attendance
+                            if (!empty($check_att)) {
+                                $attendance_date = $check_att;
+                            }
+                        }
+
+                        $attendance_adjustment = attendanceAdjustment($userID, $reponse['attendance_id'], $i->format("Y-m-d"), $company);
+
+                        if (
+                            $reponse['type'] == 'absent' &&
+                            $i->format("Y-m-d") < date('Y-m-d') &&
+                            empty($attendance_adjustment) ||
+                            isset($attendance_adjustment) &&
+                            !empty($attendance_adjustment) &&
+                            $attendance_adjustment->mark_type == 'absent' &&
+                            $i->format("Y-m-d") <= date('Y-m-d')
+                        ) {
+                            $absent++;
+
+                            $applied_date = $reponse['applied_leaves'];
+                            $marked_label = '';
+                            if (!empty($applied_date)) {
+                                if ($applied_date->status == 1) {
+                                    $absent--;
+                                }
+                                $absent_dates[] = [
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'status' => $applied_date->status,
+                                    'type' => $applied_date->behavior_type,
+                                    'applied_at' => $applied_date->created_at,
+                                    'label' => $marked_label,
+                                ];
+                            } else {
+                                $type = $reponse['type'];
+                                $marked_label = '';
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as Absent';
+                                }
+                                $absent_dates[] = [
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'status' => '',
+                                    'type' => $type,
+                                    'label' => $marked_label,
+                                ];
+                            }
+                        }
+
+
+                        if (
+                            isset($attendance_adjustment) &&
+                            !empty($attendance_adjustment->mark_type) &&
+                            $attendance_adjustment->mark_type == 'lateIn'
+                        ) {
+                            $lateIn++;
+
+                            $applied_date = $reponse['applied_discrepancy'];
+                            $marked_label = '';
+                            $check_in_out_time = '-';
+                            if ($if_found = checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $company)) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            } elseif ($if_found = Attendance::where('behavior', 'I')->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->orderBy('in_date', 'asc')->first()) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            }
+
+                            if (!empty($applied_date)) {
+                                if ($applied_date->status == 1) {
+                                    $lateIn--;
+                                }
+
+                                $lateInDates[] = [
+                                    'attendance_id' => $applied_date->attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'type' => $applied_date->type,
+                                    'status' => $applied_date->status,
+                                    'applied_at' => $applied_date->created_at,
+                                    'label' => $marked_label,
+                                ];
+                            } else {
+                                $type = $reponse['type'];
+
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as Late In';
+                                }
+                                if (!empty($attendance_date) && !empty($reponse['attendance_id'])) {
+                                    $attendance_id = $attendance_date->id;
+                                    $behavior = $attendance_date->behavior;
+                                } else {
+                                    $attendance_id = $i->format("Y-m-d");
+                                    $behavior = $attendance_adjustment->mark_type;
+                                }
+                                $lateInDates[] = [
+                                    'attendance_id' => $attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'behavior' => $behavior,
+                                    'status' => '',
+                                    'type' => $type,
+                                    'label' => $marked_label,
+                                ];
+                            }
+                        } elseif (
+                            $reponse['type'] == 'lateIn' &&
+                            empty($attendance_adjustment)
+                        ) {
+                            $lateIn++;
+
+                            $applied_date = $reponse['applied_discrepancy'];
+
+                            $marked_label = '';
+                            $check_in_out_time = '-';
+
+
+                            if ($if_found = checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $company)) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            } elseif ($if_found = Attendance::where('behavior', 'I')->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->orderBy('in_date', 'asc')->first()) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            }
+
+                            if (!empty($applied_date)) {
+                                if ($applied_date->status == 1) {
+                                    $lateIn--;
+                                }
+
+                                $lateInDates[] = [
+                                    'applied_discrepency' => $reponse['applied_discrepancy'] ?? null,
+                                    'attendance_id' => $applied_date->attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'type' => $applied_date->type,
+                                    'status' => $applied_date->status,
+                                    'applied_at' => $applied_date->created_at,
+                                    'label' => $marked_label,
+
+                                ];
+                            } else {
+                                $type = $reponse['type'];
+
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as ' . $type;
+                                }
+                                if (!empty($attendance_date) && !empty($reponse['attendance_id'])) {
+                                    $attendance_id = $attendance_date->id;
+                                    $behavior = $attendance_date->behavior;
+                                } else {
+                                    $attendance_id = $i->format("Y-m-d");
+                                    $behavior = $attendance_adjustment->mark_type;
+                                }
+                                $lateInDates[] = [
+                                    'applied_discrepency' => $reponse['applied_discrepancy'] ?? null,
+                                    'attendance_id' => $attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'behavior' => $behavior,
+                                    'status' => '',
+                                    'type' => $type,
+                                    'label' => $marked_label,
+                                    'response_type' => $reponse['type'] ?? 0,
+                                ];
+                            }
+                        }
+
+
+
+
+                        if (isset($attendance_adjustment) && !empty($attendance_adjustment->mark_type) && $attendance_adjustment->mark_type == 'earlyout') {
+                            $earlyOut++;
+
+                            $applied_date = $reponse['applied_discrepancy'];
+                            $check_in_out_time = '';
+
+
+
+                            if ($if_found = checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $company)) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            } elseif ($if_found = Attendance::where('behavior', 'O')->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->orderBy('in_date', 'desc')->first()) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            }
+                            if (!empty($applied_date)) {
+                                if ($applied_date->status == 1) {
+                                    $earlyOut--;
+                                }
+
+                                $earlyOutDates[] = [
+                                    'attendance_id' => $applied_date->attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'type' => $applied_date->type,
+                                    'status' => $applied_date->status,
+                                    'applied_at' => $applied_date->created_at,
+                                ];
+                            } else {
+                                $type = $reponse['type'];
+
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as ' . $type;
+                                }
+                                if (!empty($attendance_date) && !empty($reponse['attendance_id'])) {
+                                    $attendance_id = $attendance_date->id;
+                                    $behavior = $attendance_date->behavior;
+                                } else {
+                                    $attendance_id = $i->format("Y-m-d");
+                                    $behavior = $attendance_adjustment->mark_type;
+                                }
+                                if (!empty($attendance_date)) {
+                                    $earlyOutDates[] = [
+                                        'attendance_id' => $attendance_id,
+                                        'time' => $check_in_out_time,
+                                        'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                        'unformatted_date' =>  $i->format("Y-m-d"),
+                                        'behavior' => $behavior,
+                                        'status' => '',
+                                        'type' => $type,
+                                    ];
+                                }
+                            }
+                        } elseif ($reponse['type'] == 'earlyout' && empty($attendance_adjustment)) {
+                            $earlyOut++;
+
+                            $applied_date = $reponse['applied_discrepancy'];
+                            $check_in_out_time = '';
+
+
+                            if ($if_found = checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $company)) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            } elseif ($if_found = Attendance::where('behavior', 'O')->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->orderBy('in_date', 'desc')->first()) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            }
+                            if (!empty($applied_date)) {
+                                if ($applied_date->status == 1) {
+                                    $earlyOut--;
+                                }
+
+                                $earlyOutDates[] = [
+                                    'attendance_id' => $applied_date->attendance_id,
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'type' => $applied_date->type,
+                                    'status' => $applied_date->status,
+                                    'applied_at' => $applied_date->created_at,
+                                ];
+                            } else {
+                                $type = $reponse['type'];
+
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as ' . $type;
+                                }
+                                if (!empty($attendance_date) && !empty($reponse['attendance_id'])) {
+                                    $attendance_id = $attendance_date->id;
+                                    $behavior = $attendance_date->behavior;
+                                } else {
+                                    $attendance_id = $i->format("Y-m-d");
+                                    $behavior = $attendance_adjustment->mark_type;
+                                }
+                                if (!empty($attendance_date)) {
+                                    $earlyOutDates[] = [
+                                        'attendance_id' => $attendance_id,
+                                        'time' => $check_in_out_time,
+                                        'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                        'unformatted_date' =>  $i->format("Y-m-d"),
+                                        'behavior' => $behavior,
+                                        'status' => '',
+                                        'type' => $type,
+                                    ];
+                                }
+                            }
+                        }
+
+                        if ((isset($attendance_adjustment) && !empty($attendance_adjustment->mark_type) &&  ($attendance_adjustment->mark_type == 'halfday'))) {
+
+                            $halfDay++;
+
+                            $halfDayDate = $reponse['applied_leaves'];
+                            $marked_label = '';
+                            if (!empty($halfDayDate)) {
+                                if ($halfDayDate->status == 1) {
+                                    $halfDay--;
+                                }
+                                $halfDayDates[] = [
+                                    'date' => date('d M, Y', strtotime($halfDayDate->start_at)),
+                                    'unformatted_date' => $halfDayDate->start_at,
+                                    'status' => $halfDayDate->status,
+                                    'type' => $halfDayDate->behavior_type,
+                                    'applied_at' => $halfDayDate->created_at,
+                                    'label' => $marked_label,
+                                ];
+                            } else {
+                                $in_date = '';
+                                $behavior = '';
+                                $time = '';
+
+                                $type = $reponse['type'];
+
+                                if (!empty($attendance_adjustment->mark_type)) {
+                                    $type = $attendance_adjustment->mark_type;
+                                    $marked_label = ' - Marked as Half Day';
+                                }
+
+                                if (!empty($attendance_date) && !empty($reponse['attendance_id'])) {
+                                    $in_date = date('d M, Y', strtotime($attendance_date->in_date));
+                                    $behavior = $attendance_date->behavior;
+                                } else {
+                                    $in_date = date('d M, Y', strtotime($attendance_date));
+                                    $behavior = $attendance_adjustment->mark_type;
+                                }
+                                $halfDayDates[] = [
+                                    'date' => $in_date,
+                                    'time' => '-',
+                                    'behavior' => $behavior,
+                                    'status' => '',
+                                    'type' => $type,
+                                    'label' => $marked_label,
+                                ];
+                            }
+                        } elseif (($reponse['type'] == 'firsthalf' || $reponse['type'] == 'lasthalf') && empty($attendance_adjustment)) {
+                            $halfDay++;
+
+                            $halfDayDate = $reponse['applied_leaves'];
+                            $marked_label = '';
+
+                            if ($if_found = checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $company)) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            } elseif ($if_found = Attendance::on($company)->where('behavior', 'I')->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->orderBy('in_date', 'asc')->first()) {
+                                $check_in_out_time = date('h:i A', strtotime($if_found->in_date));
+                            }
+
+                            if (!empty($halfDayDate)) {
+                                if ($halfDayDate->status == 1) {
+                                    $halfDay--;
+                                }
+                                $halfDayDates[] = [
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'status' => $halfDayDate->status,
+                                    'type' => $halfDayDate->behavior_type,
+                                    'applied_at' => $halfDayDate->created_at,
+                                    'label' => $marked_label,
+                                ];
+                            } else {
+                                $in_date = '';
+                                $behavior = '';
+                                $time = '';
+
+                                $type = $reponse['type'];
+
+                                $halfDayDates[] = [
+                                    'time' => $check_in_out_time,
+                                    'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                    'unformatted_date' =>  $i->format("Y-m-d"),
+                                    'behavior' => $type,
+                                    'status' => '',
+                                    'type' => $type,
+                                    'label' => $marked_label,
+                                ];
+                            }
+                        }
+                        if ($reponse['punchIn'] != '-') {
+                            $workDays++;
+                        }
+                    }
+                    $totalDays++;
+                } elseif ($i->format("Y-m-d") <= date('Y-m-d') && isset($user->employeeStatus->employmentStatus) && ($user->employeeStatus->employmentStatus->name == 'Permanent' || $user->employeeStatus->employmentStatus->name == 'Terminated') && $beginDate->greaterThanOrEqualTo($start_date)) {
+                    if ($day == 'Sat') {
+                        $date = Carbon::createFromFormat('Y-m-d', $i->format("Y-m-d"));
+                        $nextDate = $date->copy()->addDays(2);
+                        $secondNextDate = $nextDate->copy()->addDay();
+                        $previousDate = $date->copy()->subDay();
+                    } elseif ($day == 'Sun') {
+                        $date = Carbon::createFromFormat('Y-m-d', $i->format("Y-m-d"));
+                        $nextDate = $date->copy()->addDay();
+                        $secondNextDate = $nextDate->copy()->addDay();
+
+                        $previousDate = $date->copy()->subDays(2);
+                    }
+                    if ((checkAdjustedAttendance($userID, date('Y-m-d', strtotime($nextDate)), $company) && checkAdjustedAttendance($userID, date('Y-m-d', strtotime($previousDate)), $company)) && checkAttendance($userID, date('Y-m-d', strtotime($nextDate)), date('Y-m-d', strtotime($secondNextDate)), $shiftID, $company) && checkAttendance($userID, date('Y-m-d', strtotime($previousDate)), $i->format("Y-m-d"), $shiftID, $company)) {
+                        $absent++;
+                        $applied_date = userAppliedLeaveOrDiscrepency($userID, 'absent', date('Y-m-d', strtotime($date)), $company);
+
+                        $marked_label = '';
+                        if (!empty($applied_date)) {
+                            if ($applied_date->status == 1) {
+                                $absent--;
+                            }
+                            $absent_dates[] = [
+                                'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                'unformatted_date' =>  $i->format("Y-m-d"),
+                                'status' => $applied_date->status,
+                                'type' => $applied_date->behavior_type,
+                                'applied_at' => $applied_date->created_at,
+                                'label' => $marked_label,
+                            ];
+                        } else {
+                            $type = 'absent';
+                            $absent_dates[] = [
+                                'unformatted_date' =>  $i->format("Y-m-d"),
+                                'date' => date('d M, Y', strtotime($i->format("Y-m-d"))),
+                                'status' => '',
+                                'type' => $type,
+                                'label' => $marked_label,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $data = array(
+            'totalDays' => $totalDays,
+            'workDays' => $workDays,
+            'lateIn' => $lateIn,
+            'lateInDates' => $lateInDates,
+            'earlyOut' => $earlyOut,
+            'earlyOutDates' => $earlyOutDates,
+            'halfDay' => $halfDay,
+            'halfDayDates' => $halfDayDates,
+            'absent' => $absent,
+            'absent_dates' => $absent_dates,
+            'discrepancy_late' => $discrepancy_late,
+            'discrepancy_early' => $discrepancy_early,
+            'leave_first_half' => $leave_first_half,
+            'leave_last_half' => $leave_last_half,
+            'leave_single' => $leave_single,
+            'date_array' =>  $dateArray ?? null,
+        );
+
+        return $data;
+    }
+
+
+
+
+    public static function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, $shift, $company)
+    {
+
+
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+
+                $user = User::on($portalDb)->where('id', $userID)->first();
+            }
+        }
+        $beginDate = Carbon::parse($current_date);
+
+        $start_date = '';
+
+        if (getUserJoiningDate($user)) {
+            $start_date = getUserJoiningDate($user);
+        }
+
+        if ($shift->type == 'scheduled') {
+            $scheduled = '(Flexible)';
+
+            $shiftTiming = date("h:i A", strtotime($shift->start_time)) . ' - ' . date("h:i A", strtotime($shift->end_time)) . $scheduled;
+
+            // $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift->start_time));
+            $shift_start_time = $shift->start_time;
+            if ($shift->start_time == "00:00:00") {
+                $shift_start_time = str_replace($shift->start_time, '24:00:00', $shift->start_time);
+            }
+            $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift_start_time));
+            $end_time = date("Y-m-d H:i:s", strtotime($next_date . ' ' . $shift->end_time));
+
+            $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+            $end = date("Y-m-d H:i:s", strtotime('+10 hours ' . $end_time));
+
+
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first();
+                }
+            }
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first();
+                }
+            }
+
+
+            $label = '-';
+            $type = '';
+            $workingHours = '-';
+            $workingMinutes = 0;
+            $checkSecond = true;
+            $attendance_id = '';
+            $checkOut = '';
+
+            if ($punchIn != null) {
+                $attendance_id = $punchIn->id;
+                $punchInRecord = new DateTime($punchIn->in_date);
+                $checkIn = $punchInRecord->format('h:i A');
+                $label = '<span class="badge bg-label-success">Regular</span>';
+                $type = 'regular';
+            } else {
+                $checkIn = '-';
+            }
+
+            if ($punchIn != null && $punchOut != null) {
+                $h1 = new DateTime($punchIn->in_date);
+                $h2 = new DateTime($punchOut->in_date);
+                $diff = $h2->diff($h1);
+                $workingHours = $diff->format('%H:%I');
+                $workingMinutes = $diff->h * 60 + $diff->i;
+            }
+            // dd($workingMinutes);
+            $requiredMinutes = 8 * 60 + 30;
+            $seven_hours = 7 * 60;
+
+            if ($punchOut != null) {
+                if ($punchIn == null) {
+                    $attendance_id = $punchOut->id;
+                }
+                $punchOutRecord = new DateTime($punchOut->in_date);
+                $checkOut = $punchOutRecord->format('h:i A');
+                if ($workingMinutes < $seven_hours) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'lasthalf';
+                } elseif ($workingMinutes > $seven_hours && $workingMinutes < $requiredMinutes) {
+                    $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Early Out</span>';
+                    $type = 'earlyout';
+                }
+            } else {
+                $checkOut = '-';
+            }
+
+            if (($punchIn != null && $punchOut == null)) {
+                if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'lasthalf';
+                } else {
+                    $checkOut = 'Not Yet';
+                }
+            } elseif (($punchIn == null && $punchOut != null)) {
+                if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'firsthalf';
+                }
+            }
+
+            $currentDatecheck = date('Y-m-d'); // Current date in 'Y-m-d' format
+            $midnightTimestamp = strtotime($currentDatecheck . ' 00:00:00'); // Midnight timestamp
+
+            if (($punchIn == null && $punchOut == null) && $beginDate->greaterThanOrEqualTo($start_date) && strtotime($current_date) < $midnightTimestamp) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Absent</span>';
+                $type = 'absent';
+                $attendance_date = $current_date;
+                $checkIn = '-';
+                $checkOut = '-';
+            }
+
+            $discrepancy = '';
+            $discrepancyStatus = '';
+            $applied_discrepancy = '';
+            $attendance_date = '';
+
+            if ($type == 'earlyout' && !empty($punchIn)) {
+                foreach (companies() as $portalName => $portalDb) {
+                    if ($company != null && $company == $portalDb) {
+                        $discrepancy_record = Discrepancy::on($portalDb)->where('attendance_id', $punchIn->log_id)->orWhereDate('date', date('Y-m-d', strtotime($punchIn->in_date)))->where('user_id', $userID)->first();
+                    }
+                }
+                if (!empty($discrepancy_record)) {
+                    $discrepancy = $discrepancy_record->type;
+                    $discrepancyStatus = $discrepancy_record->status;
+                    $applied_discrepancy = $discrepancy_record;
+                } else {
+                    $attendance_date = $punchIn;
+                    $attendance_id = $attendance_date->id;
+                }
+            }
+
+            $leave = '';
+            $applied_leaves = '';
+            $leaveStatus = '';
+            $punch_date = '';
+
+            if ($type == 'absent') {
+                $punch_date = date('Y-m-d', strtotime($current_date));
+            } elseif ($type == 'lasthalf') {
+                $punch_date = date('Y-m-d', strtotime($current_date));
+            }
+
+            if (isset($punch_date) && $punch_date != '') {
+                if (userLeaveApplied($userID, $punch_date, $company)) {
+                    $leaves = userLeaveApplied($userID, $punch_date, $company);
+                } else {
+                    foreach (companies() as $portalName => $portalDb) {
+                        if ($company != null && $company == $portalDb) {
+                            $leaves = UserLeave::on($portalDb)->where('behavior_type', $type)->whereDate('start_at', $punch_date)->where('user_id', $userID)->first();
+                        }
+                    }
+                }
+                if (!empty($leaves)) {
+                    $leave = $leaves->behavior_type;
+                    $leaveStatus = $leaves->status;
+                    $applied_leaves = $leaves;
+                } else {
+                    if ($type == 'absent') {
+                        $attendance_date = $current_date;
+                    } elseif ($type == "lasthalf" && $punchIn == '') {
+                        $attendance_date = $current_date;
+                    }
+                }
+            }
+        } else {
+            $scheduled = '';
+
+            $shiftTiming = date("h:i A", strtotime($shift->start_time)) . ' - ' . date("h:i A", strtotime($shift->end_time)) . $scheduled;
+
+            $shift_start_time = $shift->start_time;
+            if ($shift->start_time == "00:00:00") {
+                $shift_start_time = str_replace($shift->start_time, '24:00:00', $shift->start_time);
+            }
+            $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift_start_time));
+
+            $end_time = date("Y-m-d H:i:s", strtotime($next_date . ' ' . $shift->end_time));
+            $shift_start_time = date("Y-m-d h:i A", strtotime('+16 minutes ' . $start_time));
+
+            $shift_end_time = date("Y-m-d h:i A", strtotime('-16 minutes ' . $end_time));
+
+            $shift_start_halfday = date("Y-m-d h:i A", strtotime('+121 minutes ' . $start_time));
+            $shift_end_halfday = date("Y-m-d h:i A", strtotime('-121 minutes ' . $end_time));
+            $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+            $end = date("Y-m-d H:i:s", strtotime('+6 hours ' . $end_time));
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date',  [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first(); // 2023-12-27 00:28:42
+                }
+            }
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first(); // 2023-12-27 09:24:15
+                }
+            }
+           
+
+            $label = '-';
+            $type = '';
+            $workingHours = '-';
+            $workingMinutes = 0;
+            $checkSecondDiscrepancy = true;
+            $checkSecond = true;
+            $attendance_id = '';
+
+            if ($punchIn != null) {
+                $attendance_id = $punchIn->id;
+                $punchInRecord = new DateTime($punchIn->in_date);
+                $checkIn = $punchInRecord->format('h:i A');
+
+                if (strtotime($punchIn->in_date) < strtotime($shift_start_time)) {
+                    $label = '<span class="badge bg-label-success">Regular</span>';
+                    $type = 'regular';
+                } elseif (strtotime($punchIn->in_date) >= strtotime($shift_start_time) && strtotime($punchIn->in_date) <= strtotime($shift_start_halfday)) {
+                    $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Late In</span>';
+                    $type = 'lateIn';
+                    $checkSecondDiscrepancy = false;
+                } else {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'firsthalf';
+                    $checkSecond = false;
+                    $checkSecondDiscrepancy = false;
+                }
+            } else {
+                $checkIn = '-';
+            }
+
+            if ($punchOut != null) {
+
+                if ($punchIn == null) {
+                    $attendance_id = $punchOut->id;
+                }
+                $punchOutRecord = new DateTime($punchOut->in_date);
+                $checkOut = $punchOutRecord->format('h:i A');
+
+                if ($checkSecondDiscrepancy && (strtotime($punchOut->in_date) < strtotime($shift_end_time) && strtotime($punchOut->in_date) > strtotime($shift_end_halfday))) {
+                    $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Early Out</span>';
+                    $type = 'earlyout';
+                } else if ($checkSecond && strtotime($punchOut->in_date) < strtotime($shift_end_halfday)) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'lasthalf';
+                }
+            } else {
+                $checkOut = '-';
+            }
+
+            if ($punchIn != null && $punchOut != null) {
+
+                $h1 = new DateTime($punchIn->in_date);
+                $h2 = new DateTime($punchOut->in_date);
+                $diff = $h2->diff($h1);
+                $workingHours = $diff->format('%H:%I');
+                $workingMinutes = $diff->h * 60 + $diff->i;
+            }
+
+            if (($punchIn != null && $punchOut == null)) {
+                if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'lasthalf';
+                } else {
+                    $checkOut = 'Not Yet';
+                }
+            } elseif (($punchIn == null && $punchOut != null)) {
+                if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                    $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                    $type = 'firsthalf';
+                }
+            }
+
+            $current_time = date("H:i:s");
+            $date_comparsion = '';
+            if (strtotime($current_time) > strtotime("00:00:00") && strtotime($current_time) <= strtotime("01:00:00")) {
+                $date_comparsion = $current_date < date('Y-m-d');
+            } else {
+                $date_comparsion = $current_date <= date('Y-m-d');
+            }
+
+            $currentDatecheck = date('Y-m-d'); // Current date in 'Y-m-d' format
+            $midnightTimestamp = strtotime($currentDatecheck . '00:00:01'); // Midnight timestamp
+
+            if (($punchIn == null && $punchOut == null) && date('Y-m-d h:i A') > $shift_start_time && $date_comparsion && $beginDate->greaterThanOrEqualTo($start_date) && strtotime($current_date) < $midnightTimestamp) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Absent</span>';
+                $type = 'absent';
+                $attendance_date = $current_date;
+                $checkIn = '-';
+            }
+
+            $discrepancy = '';
+            $discrepancyStatus = '';
+            $applied_discrepancy = '';
+            $attendance_date = '';
+
+            if ($type == 'lateIn' || $type == 'late' || $type == 'earlyout' && !empty($punchIn)) {
+                $originalDate = $punchIn->in_date;
+                $carbonDate = \Carbon\Carbon::parse($originalDate);
+                // Subtract 1 hour
+                $modifiedDate = $carbonDate->subHour();
+
+                // Format the result as needed
+                $result = \Carbon\Carbon::parse($start)->toDateString();
+
+                foreach (companies() as $portalName => $portalDb) {
+                    if ($company != null && $company == $portalName) {
+                        $discrepancy_record = Discrepancy::on($portalDb)->whereDate('date',  $result)->where('user_id', $userID)->first();
+                    }
+                }
+
+                if (!empty($discrepancy_record)) {
+                    $discrepancy = $discrepancy_record->type;
+                    $discrepancyStatus = $discrepancy_record->status;
+                    $applied_discrepancy = $discrepancy_record;
+                } else {
+                    $attendance_date = $punchIn;
+                    $attendance_id = $attendance_date->id;
+                }
+            }
+
+            $leave = '';
+            $applied_leaves = '';
+            $leaveStatus = '';
+            $punch_date = '';
+
+            if ($type == 'absent') {
+                $punch_date = date('Y-m-d', strtotime($current_date));
+            } else if ($type == 'firsthalf') {
+                $punch_date = date('Y-m-d', strtotime($current_date));
+            } else if ($type == 'lasthalf') {
+                $punch_date = date('Y-m-d', strtotime($current_date));
+            }
+
+            if (isset($punch_date) && $punch_date != '') {
+
+                if (userLeaveApplied($userID, $punch_date, $company)) {
+                    $leaves = userLeaveApplied($userID, $punch_date, $company);
+                } else {
+                    foreach (companies() as $portalName => $portalDb) {
+                        if ($company != null && $company == $portalName) {
+                            $leaves = UserLeave::on($portalDb)->where('behavior_type', $type)->whereDate('start_at', $punch_date)->where('user_id', $userID)->first();
+                        }
+                    }
+                }
+
+                if (!empty($leaves)) {
+                    $leave = $leaves->behavior_type;
+                    $leaveStatus = $leaves->status;
+                    $applied_leaves = $leaves;
+                } else {
+                    if ($type == 'absent') {
+                        $attendance_date = $current_date;
+                    } elseif ($type == "lasthalf" && $punchIn == '') {
+                        $attendance_date = $current_date;
+                    } elseif ($type == "lasthalf" && $punchIn != '') {
+                        $attendance_date = $punchIn;
+                        $attendance_id = $attendance_date->id;
+                    } elseif ($type == "firsthalf" && $punchIn == '') {
+                        $attendance_date = $current_date;
+                    } elseif ($type == "firsthalf" && $punchIn != '') {
+                        $attendance_date = $current_date;
+                    }
+                }
+            }
+        }
+
+        if ($type == 'regular') {
+            $attendance_date = $punchIn;
+            $attendance_id = $attendance_date->id;
+        }
+
+        $data = array(
+            'punchIn' => $checkIn,
+            'punchOut' => $checkOut,
+            'label' => $label,
+            'type' => $type,
+            'shiftTiming' => $shiftTiming,
+            'shiftType' => $shift->type,
+            'workingHours' => $workingHours,
+            'workingMinutes' => $workingMinutes,
+            'discrepancy' => $discrepancy,
+            'discrepancyStatus' => $discrepancyStatus,
+            'applied_discrepancy' => $applied_discrepancy,
+            'leave' => $leave,
+            'leaveStatus' => $leaveStatus,
+            'applied_leaves' => $applied_leaves,
+            'attendance_date' => $attendance_date,
+            'attendance_id' => $attendance_id,
+            'user' => $user,
+            'punch_in_id' => $punchIn->id ?? null,
+            'punch_out_id' => $punchOut->id ?? null,
+            'punch_in' => $punchIn ?? null,
+            'punch_out' => $punchOut ?? null,
+            'shift' => $shift,
+        );
+
+        if ($status == 'all') {
+            return $data;
+        } elseif ($status == 'regular' && $type == 'regular') {
+            return $data;
+        } elseif ($status == 'absent' && $type == 'absent') {
+            return $data;
+        } elseif ($status == 'lateIn' && $type == 'lateIn') {
+            return $data;
+        } elseif ($status == 'earlyout' && $type == 'earlyout') {
+            return $data;
+        } elseif ($status == 'halfday' && ($type == 'firsthalf' || $type == 'lasthalf')) {
+            return $data;
+        } else {
+            return null;
+        }
+    }
+
+
+    public function attendanceSummary(Request $request, $company = null, $getMonth = null, $getYear = null, $user_slug = null)
+    {
+
+
+        $title = 'Attendance Summary';
+        $logined_user = Auth::user()->load('profile', 'employeeStatus', 'userWorkingShift');
+
+        $employees = [];
+
+
+        if ($logined_user->hasRole('Department Manager')) {
+            $employees = getTeamMembers($logined_user, $company);
+        }
+
+        $currentMonth = date('m/Y');
+        if (date('d') > 25) {
+            $currentMonth = date('m/Y', strtotime('first day of +1 month'));
+        }
+        if (!empty($request->month) || !empty($request->slug)) {
+         
+            $year = $request->year;
+            $month =$request->month;
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+
+                    $user = User::on($portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->first();
+                }
+            }
+            
+        } else {
+            $year = date('Y');
+            if (date('d') > 26 || (date('d') == 26 && date('H') > 11)) {
+                $month = date('m', strtotime('first day of +1 month'));
+            } else {
+                $month = date('m');
+            }
+            if ($month == 01) {
+                $year = date('Y', strtotime('first day of +1 month'));
+            }
+
+            $user = $logined_user;
+       
+        }
+
+        $shift = !empty($user) ? $user->userWorkingShift : null;
+   
+        if (empty($shift)) {
+            $shift = defaultShift();
+        } else {
+            $shift = $shift->workShift;
+        }
+
+        //User Leave & Discrepancies Reprt
+        $leave_report = hasExceededLeaveLimit($user, $company);
+        if ($leave_report) {
+            $leave_in_balance = $leave_report['leaves_in_balance'];
+            $remaining_filable_leaves = $leave_report['total_remaining_leaves'];
+        } else {
+            $leave_in_balance = 0;
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $user_have_used_discrepancies = Discrepancy::on($portalDb)->where('user_id', $user->id)->where('status', '!=', 2)->whereMonth('date', Carbon::now()->month)
+                    ->whereYear('date', Carbon::now()->year)
+                    ->count();
+            }
+        }
+
+        $user_joining_date = date('d-m-Y');
+        if (isset($user->joiningDate->joining_date) && !empty($user->joiningDate->joining_date)) {
+            $user_joining_date = date('m/Y', strtotime($user->joiningDate->joining_date));
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $leave_types = LeaveType::on($portalDb)->where('status', 1)->select(['id', 'name'])->get();
+            }
+        }
+        // $monthDays = getMonthDaysForSalary($getYear ?? null , $getMonth ?? null);
+        $monthDays = getMonthDaysForSalary($year ?? null, $month ?? null);
+        return view('admin.companies.attendance.summary', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'leave_types', 'remaining_filable_leaves', 'monthDays', 'company'));
+    }
+
+
 
 
 

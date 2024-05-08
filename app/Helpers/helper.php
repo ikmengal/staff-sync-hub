@@ -2,17 +2,24 @@
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Holiday;
 use App\Models\Setting;
+use App\Models\UserLeave;
 use App\Models\WorkShift;
 use App\Models\Attendance;
 use App\Models\Department;
+use App\Models\Discrepancy;
 use App\Models\UserContact;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
 use App\Models\SalaryHistory;
+use App\Models\DepartmentUser;
+use App\Models\WorkingShiftUser;
 use App\Models\AttendanceSummary;
 use Illuminate\Support\Facades\DB;
+use App\Models\AttendanceAdjustment;
 use Illuminate\Support\Facades\Auth;
+use App\Models\HolidayCustomizeEmployee;
 use Spatie\Permission\Models\Permission;
 
 function settings()
@@ -241,9 +248,9 @@ function getVehicles($companyName = null)
     $data = [];
     $allCompaniesVehicles = [];
 
-    foreach (getAllCompanies() as $portalName => $portalDb) {
-        if ($companyName != null && $companyName == $portalDb->company_key) {
-            $vehicleUsers = VehicleUser::on($portalDb->portalDb)
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $vehicleUsers = VehicleUser::on($portalDb)
                 ->with([
                     'hasVehicle' => function ($query) {
                         $query->select('id', 'owner_id', 'name', 'thumbnail', 'model_year', 'engine_capacity');
@@ -360,22 +367,25 @@ function getCompanyAttendance($companyName = null, $date = null)
 {
     $data = [];
     $attendance_detail = [];
-
+    $current_date = Carbon::now();
+    // Set the current date to the 26th of the previous month
+    $startDate = $current_date->subMonth()->setDay(26)->toDateString();
+    // Set the current date to the 25th of the current month
+    $endDate = $current_date->startOfMonth()->addDay(24)->toDateString();
     if ($date == null) {
         $month = Carbon::now()->month;
         $year = Carbon::now()->year;
     } else {
-
         $dateParts = explode('/', $date);
         $month = $dateParts[0]; // Start date
         $year = $dateParts[1]; // End date
 
     }
 
-    foreach (getAllCompanies() as $portalName => $portalDb) {
-        if ($companyName != null && $companyName == $portalDb->company_key) {
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalDb) {
 
-            $attendances = AttendanceSummary::on($portalDb->portalDb)->with([
+            $attendances = AttendanceSummary::on($companyName)->with([
                 'attendance' => function ($query) {
                     $query->select('id', 'behavior');
                 },
@@ -1003,4 +1013,485 @@ function resize($image = null, $array = null)
     } else {
         return $image;
     }
+}
+
+function getUser($user_id = null, $company = null)
+{
+    if (isset($user_id) && !empty($user_id)) {
+        $user_id = $user_id;
+    } else {
+        $user_id = Auth::user()->id;
+    }
+  
+            $user = User::with("profile")->where('id', $user_id)->where('status', 1)->with('roles')->first();
+    
+    if (!empty($user)) {
+        return $user;
+    }
+}
+
+function hasExceededLeaveLimit($user, $company)
+{
+    // $probation = UserEmploymentStatus::where('user_id', $user->id)->first();
+
+
+    $probation = !empty($user) ? $user->employeeStatus : null;
+
+    if (!empty($probation) && $probation->employment_status_id == 1) {
+        $leave_report = [
+            'total_leaves' => 0,
+            'total_remaining_leaves' => 0,
+            'total_leaves_in_account' => 0,
+            'total_used_leaves' => 0,
+            'leaves_in_balance' => 0,
+        ];
+
+        return $leave_report;
+    } else {
+        // Calculate the start and end dates of the current leave year
+        // $currentYear = Carbon::now()->year;
+        // $leaveYearStart = Carbon::createFromDate($currentYear, 6, 26); // June 26th of the current year
+        // $leaveYearEnd = Carbon::createFromDate($currentYear + 1, 7, 25); // June 25th of the next year
+
+        // Calculate the total used leaves within the leave year
+
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+              
+                 
+                $total_used_leaves = UserLeave::on($portalDb)->where('user_id', $user->id)
+                    ->where('status', 1)
+                    ->whereBetween('start_at', [yearPeriod()['yearStart'], yearPeriod()['yearEnd']])
+                    ->sum('duration');
+                  
+            }
+        }
+
+
+        // Calculate the number of months from the start date to the current date
+        $currentDate = Carbon::now();
+        if (!empty($user->employeeStatus->end_date)) {
+            if (date('Y-m-d', strtotime($user->employeeStatus->end_date)) <= date('Y-m-d', strtotime($currentDate))) {
+                $currentDate = $user->employeeStatus->end_date;
+            }
+        }
+        $leaveYearStart = Carbon::createFromDate(yearPeriod()['yearStart']); // June 26th of the current year
+        $monthsElapsed = $leaveYearStart->diffInMonths($currentDate) + 1;
+        $leaveYearDate = Carbon::createFromDate(yearPeriod()['yearEnd']); // June 26th of the current year
+
+        // Check if the user joined after the leave year started
+        // $joiningDate = Carbon::createFromDate($user->employeeStatus->start_date); // Replace with the actual joining date
+        $joiningDate = getUserJoiningDate($user); // Replace with the actual joining date
+       
+        if ($joiningDate > $leaveYearStart) {
+            $monthsElapsed = max(0, $joiningDate->diffInMonths($currentDate)) + 1;
+            $interval = $joiningDate->diff($leaveYearDate);
+            $monthsDifference = ($interval->y * 12) + $interval->m;
+            $total_leaves = $monthsDifference * 2;
+        } else {
+            $interval = $leaveYearStart->diff($leaveYearDate);
+            $monthsDifference = ($interval->y * 12) + $interval->m;
+            $total_leaves = $monthsDifference * 2;
+        }
+       
+
+        $total_leaves_in_account = $monthsElapsed * 2;
+
+        // Calculate the leave balance
+        $leaves_in_balance = $total_leaves - $total_used_leaves;
+        if ((float) $total_used_leaves >= (float) $total_leaves) {
+            $leaves_in_balance = 0;
+            $total_used_leaves = $total_leaves;
+        }
+        // if ((float) $total_used_leaves >=  (float) $total_leaves) {
+        //     $total_used_leaves =  $total_leaves;
+        // }
+       
+        $leave_report = [
+            'total_leaves' => $total_leaves,
+            'total_remaining_leaves' => $total_leaves - $total_used_leaves,
+            'total_leaves_in_account' => $total_leaves_in_account,
+            'total_used_leaves' => $total_used_leaves,
+            'leaves_in_balance' => $leaves_in_balance,
+        ];
+
+        return $leave_report;
+    }
+}
+
+function yearPeriod()
+{
+    $currentDate = Carbon::now();
+
+    // Determine the leave start date based on the current date
+    if ($currentDate->gte(Carbon::createFromDate($currentDate->year, 6, 26))) {
+        // Leave tenure starts from June 26 of the current year
+        $leaveStartDate = Carbon::createFromDate($currentDate->year, 6, 26);
+    } else {
+        // Leave tenure starts from June 26 of the previous year
+        $leaveStartDate = Carbon::createFromDate($currentDate->year - 1, 6, 26);
+    }
+
+    $yearPeriod = [];
+    // Add one year to get the end date
+    $leaveEndDate = $leaveStartDate->copy()->addYear()->subDay()->addMonth(); // Adjusted for July 25
+    $leaveYearStart = $leaveStartDate->toDateString();
+    $leaveYearEnd = $leaveEndDate->toDateString();
+
+    $yearPeriod['yearStart'] = $leaveYearStart;
+    $yearPeriod['yearEnd'] = $leaveYearEnd;
+
+    return $yearPeriod;
+}
+
+function getUserJoiningDate($user)
+{
+
+    if (isset($user->profile) && !empty($user->profile->joining_date)) {
+        $start_date = $user->profile->joining_date;
+        return $start_date = Carbon::parse($start_date);
+    } else {
+        return null;
+    }
+}
+
+
+function getMonthDaysForSalary($year = null, $month = null)
+{
+    if (empty($year)) {
+        $year = Carbon::now()->year;
+    }
+    if (empty($month)) {
+        $month = Carbon::now()->month - 1;
+    } else {
+        $month  = $month - 1;
+    }
+    $firstDayOfMonth = Carbon::createFromDate($year, $month, 26); //26 to till 25 of next month in between days of these two dates.
+    $lastDayOfMonth = $firstDayOfMonth->copy()->addMonth()->subDay();
+
+    $totalDays = $firstDayOfMonth->diffInDays($lastDayOfMonth) + 1;
+    // Initialize an array to store the result
+    $filteredDays = [];
+    // Loop through each day between the start and end dates
+    $currentDay = $firstDayOfMonth->copy();
+    while ($currentDay <= $lastDayOfMonth) {
+        // Check if the current day is not a weekend (Saturday or Sunday)
+        if (!$currentDay->isWeekend()) {
+            // Add the current day to the result array
+            $filteredDays[] = $currentDay->toDateString();
+        }
+        // Move to the next day
+        $currentDay->addDay();
+    }
+    $totalDaysWithoutWeekends = count($filteredDays);
+    $array = (object) [
+        "first_date" => $firstDayOfMonth->toDateString(),
+        "last_date" => $lastDayOfMonth->toDateString(),
+        "fifth_date" => getFifthDateOfMonth($year, $month + 1),
+        "total_days" => $totalDays,
+        "total_days_without_weekends" => $totalDaysWithoutWeekends,
+        "month" => $month + 1,
+        "year" => $year,
+        "monthYear" => $month . "/" . $year,
+    ];
+    return $array;
+}
+
+function getFifthDateOfMonth($year, $month)
+{
+    // Set the month and day to 1 to get the first day of the month
+    $firstDayOfMonth = Carbon::create($year, $month, 1);
+
+    // Add 4 days to get the 5th day of the month
+    $fifthDate = $firstDayOfMonth->addDays(4);
+
+    return $fifthDate->toDateString();
+}
+
+function getUserShift($user, $attendanceDate, $company)
+{
+   
+    foreach (companies() as $portalName => $portalDb) {
+        if ($company != null && $company == $portalName) {
+            $shift = WorkingShiftUser::on($portalDb)->where('user_id', $user->id)->where('start_date', '<=', $attendanceDate)
+                ->where(function ($query) use ($attendanceDate) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', $attendanceDate);
+                })
+                ->orderBy('start_date', 'desc')
+                ->first();
+        }
+    }
+  
+    if (!empty($shift) && isset($shift->workShift) && !empty($shift->workShift)) {
+        return $shift->workShift;
+    } else {
+        return defaultShift();
+    }
+}
+
+
+function checkHoliday($employee_id, $holiday_date, $companyName)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalDb) {
+            $holiday = Holiday::on($companyName)->whereDate('start_at', '<=', $holiday_date)
+                ->whereDate('end_at', '>=', $holiday_date)
+                ->first();
+        }
+    }
+
+    if (!empty($holiday)) {
+        if ($holiday->type == "universal") {
+            return $holiday;
+        } elseif ($holiday->type == "customizable") {
+            foreach (companies() as $portalName => $portalDb) {
+                if ($companyName != null && $companyName == $portalDb) {
+                    $holidayCustomize = HolidayCustomizeEmployee::on($companyName)->where('holiday_id', $holiday->id)->where('employee_id', $employee_id)->first();
+                }
+            }
+            if (!empty($holidayCustomize)) {
+                return $holiday;
+            }
+        } else {
+            return '';
+        }
+    } else {
+        return '';
+    }
+}
+
+function userLeaveApplied($user_id, $punch_date, $company)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($company != null && $company == $portalName) {
+            $user_leave =  UserLeave::on($portalDb)->where('user_id', $user_id)
+                ->where('is_applied', 1)
+                ->where('status', 1)
+                ->whereDate('start_at', '<=', $punch_date)
+                ->whereDate('end_at', '>=', $punch_date)
+                ->first();
+        }
+    }
+
+    if (empty($user_leave)) {
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $user_leave =  UserLeave::on($portalDb)->where('user_id', $user_id)
+                    ->where('is_applied', 1)
+                    ->whereDate('start_at', '<=', $punch_date)
+                    ->whereDate('end_at', '>=', $punch_date)
+                    ->first();
+            }
+        }
+    }
+
+    if (!empty($user_leave)) {
+        $check_date = Carbon::parse($punch_date);
+        $start_at = Carbon::parse($user_leave->start_at);
+        $end_at = Carbon::parse($user_leave->end_at);
+
+        if ($check_date->between($start_at, $end_at)) {
+            return $user_leave;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+function checkAdjustedAttendance($userID, $current_date, $company)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($company != null && $company == $portalName) {
+            $punchIn = AttendanceAdjustment::on($portalDb)->where('employee_id', $userID)->where('attendance_id', $current_date)->first();
+        }
+    }
+    if (empty($punchIn) || $punchIn->mark_type == 'absent') {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function userAppliedLeaveOrDiscrepency($user_id, $type, $start_at, $company)
+{
+    
+    if ($type == 'absent' || $type == 'firsthalf' || $type == "lasthalf") {
+      
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $user_leave = UserLeave::on($portalDb)->where('user_id', $user_id)
+                    ->where('is_applied', 1)
+                    ->where('status', 1)
+                    ->whereDate('start_at', '<=', $start_at)
+                    ->whereDate('end_at', '>=', $start_at)
+                    ->first();
+            }
+        }
+     
+
+        if (empty($user_leave)) {
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $user_leave = UserLeave::on($portalDb)->where('user_id', $user_id)
+                        ->where('is_applied', 1)
+                        ->whereDate('start_at', '<=', $start_at)
+                        ->whereDate('end_at', '>=', $start_at)
+                        ->first();
+                }
+            }
+        }
+
+        if (!empty($user_leave)) {
+            $check_date = Carbon::parse($start_at);
+            $shift_start_at = Carbon::parse($user_leave->start_at);
+            $shift_end_at = Carbon::parse($user_leave->end_at);
+
+            if ($check_date->between($shift_start_at, $shift_end_at)) {
+                return $user_leave;
+            } else {
+
+                foreach (companies() as $portalName => $portalDb) {
+                 
+                    if ($company != null && $company == $portalName) {
+                       
+                        $userleave = UserLeave::on($portalDb)->where('user_id', $user_id)->where('behavior_type', $type)->where('start_at', $start_at)->first();
+                    }
+                }
+                return $userleave;
+            }
+        } else {
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $userleave =  UserLeave::on($portalDb)->where('user_id', $user_id)->where('behavior_type', $type)->where('start_at', $start_at)->first();
+                }
+            }
+            return $userleave;
+        }
+    } elseif ($type == 'lateIn' || $type = "earlyout") {
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $discrepancy = Discrepancy::on($portalDb)->where('user_id', $user_id)->where('type', $type)->where('date', $start_at)->first();
+            }
+        }
+        return $discrepancy;
+    }
+}
+
+
+function checkAttendance($userID, $current_date, $next_date, $shift, $company)
+{
+    // $user = User::where('id', $userID)->first();
+
+    $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift->start_time));
+    $end_time = date("Y-m-d H:i:s", strtotime($next_date . ' ' . $shift->end_time));
+
+    $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+    $end = date("Y-m-d H:i:s", strtotime('+6 hours ' . $end_time));
+    foreach (companies() as $portalName => $portalDb) {
+        if ($company != null && $company == $portalName) {
+            $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->orderBy('in_date', 'asc')->first();
+        }
+    }
+    if (empty($punchIn)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkAttendanceSummary($userID, $shiftStartTime, $shiftEndTime, $companyName)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $if_found = AttendanceSummary::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$shiftStartTime, $shiftEndTime])->first();
+        }
+    }
+    if (!empty($if_found)) {
+        return $if_found;
+    } else {
+        return null;
+    }
+}
+
+function checkAttendanceByID($attendance_id, $companyName)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $att = Attendance::on($portalDb)->where('id', $attendance_id)->first();
+        }
+    }
+    $data = '';
+    if (!empty($att)) {
+        $data = $att;
+    }
+
+    return $data;
+}
+
+function attendanceAdjustment($employee_id, $attendance_id, $date, $companyName)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $adjustment = AttendanceAdjustment::on($portalDb)->where('employee_id', $employee_id)
+                ->where(function ($query) use ($attendance_id, $date) {
+                    $query->where('attendance_id', $attendance_id)
+                        ->orWhere('attendance_id', $date);
+                })
+                ->first();
+        }
+    }
+    if (!empty($adjustment)) {
+        return $adjustment;
+    } else {
+        return NULL;
+    }
+}
+
+function checkEmployeeAllowToFillDiscrepancy($user)
+{
+    $probation = $user->employeeStatus;
+    if (!empty($probation) && $probation->employment_status_id == 1) {
+        if (settings()->allow_to_fill_discrepancies == 1) {
+            return 1; //1=> true means employee has allow to fill discrepancies
+        } else {
+            return 0; //0=> false means employee not allow to fill discrepancies
+        }
+    } else {
+        return 1; //1=> true means if employee is permanent he has allow to fill discrepancies.
+    }
+}
+function getTeamMembers($user, $companyName)
+{
+    $department_ids = [];
+    if ($user->hasRole('Admin')) {
+        foreach (companies() as $portalName => $portalDb) {
+            if ($companyName != null && $companyName == $portalName) {
+                $department_ids = Department::on($portalDb)->where('manager_id', $user->id)->where('status', 1)->pluck('id')->toArray();
+            }
+        }
+    } elseif ($user->hasRole('Department Manager')) {
+        foreach (companies() as $portalName => $portalDb) {
+            if ($companyName != null && $companyName == $portalName) {
+                $manager_dept_ids = Department::on($portalDb)->where('manager_id', $user->id)->where('status', 1)->pluck('id')->toArray();
+                $department_ids = array_unique(array_merge($department_ids, $manager_dept_ids));
+                $child_departments = Department::on($portalDb)->whereIn('parent_department_id', $manager_dept_ids)->where('status', 1)->pluck('id')->toArray();
+            }
+        }
+        if (!empty($child_departments) && count($child_departments) > 0) {
+            $department_ids = array_unique(array_merge($department_ids, $child_departments));
+        }
+    } elseif ($user->hasRole('Employee')) {
+        if (isset($user->departmentBridge->department) && !empty($user->departmentBridge->department->id)) {
+            $department_ids[] = $user->departmentBridge->department_id;
+        }
+    }
+    foreach (companies() as $portalName => $portalDb) {
+        if ($companyName != null && $companyName == $portalName) {
+            $team_members = DepartmentUser::on($portalDb)->with('employeeStatus')->whereIn('department_id', $department_ids)->where('end_date', null)->pluck('user_id')->toArray();
+        }
+    }
+    return User::whereIn('id', $team_members)->where('id', '!=', $user->id)->where('is_employee', 1)->where('status', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email', 'status'])->get();
 }
