@@ -2,15 +2,15 @@
     @if($type=='redirect')
         <div class="row">
             <div class="col-lg-12 col-md-12">
-                <select class="select2 form-select" id="redirectDropdown" onchange="redirectPage(this)">
-                    <option value="{{ $url }}" selected>Select employee</option>
+                <select class="select2 form-select" id="redirectDropdown" >
+                    <option value="" selected>Select employee</option>
                     @foreach ($employees['total_employees'] as $employee)
                         @if(isset($month) && isset($year))
-                            <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" >
+                            <option value="{{$employee->slug}}" @if($user->slug == $employee->slug) selected @endif>
                                 {{ $employee->name }}  ({{$employee->employment_id }})
                             </option>
                         @else
-                            <option data-user-slug="{{ $employee->slug }}" value="{{route('admin.companies.attendance',['company'=>$company,'slug'=>$employee->slug])}}" >
+                            <option data-user-slug="{{ $employee->slug }}" value="{{$employee->slug}}" @if($user->slug == $employee->slug) selected @endif>
                                 {{ $employee->name }} ({{$employee->employment_id }})
                             </option>
                         @endif
@@ -19,7 +19,7 @@
             </div>
         </div>
     @elseif($type=='salary-details')
-        <select class="select2 form-select form-select-lg" data-allow-clear="true" id="employee-slug" onchange="redirectPage(this)">
+        <select class="select2 form-select form-select-lg" data-allow-clear="true" id="employee-slug" >
             <option value="{{ $url }}" selected>Select employee</option>
             @foreach ($employees['total_employees'] as $employee)
                 @if(!empty($employee))
@@ -50,7 +50,7 @@
     @elseif($type=='terminated-summary')
         <div class="row">
             <div class="col-lg-12 col-md-12">
-                <select class="select2 form-select" id="redirectDropdown" onchange="redirectPage(this)">
+                <select class="select2 form-select" id="redirectDropdown" >
                     <option value="{{ $url }}" selected>Select terminated employee</option>
                     @foreach ($employees['total_employees'] as $employee)
                         @php

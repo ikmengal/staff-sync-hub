@@ -38,6 +38,7 @@ class AttendanceController extends Controller
       }
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
         $employees = getEmployees($company);
+      
 
 
 
@@ -124,7 +125,7 @@ class AttendanceController extends Controller
             if(isset($request->month) && !empty($request->year) && isset($request->month) && !empty($request->month) && isset($request->slug) && !empty($request->slug)){
                 return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company'));
             }else{
-                return view('admin.companies.attendance.company-attendance',compact('title','employees','company','month','year'));
+                return view('admin.companies.attendance.company-attendance',compact('title', 'user', 'user_joining_date','employees','company','month','year','currentDate','currentMonth'));
 
             }
            

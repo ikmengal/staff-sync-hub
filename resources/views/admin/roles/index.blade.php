@@ -61,7 +61,7 @@
                                     @can('roles-delete')
                                         <a href="javascript:;" title="Edit Record"
                                             data-edit-url="{{ route('roles.edit', $role->id) }}" data-id="{{ $role->id }}"
-                                            class=" edit-btn" type="button">
+                                            class="btn btn-sm btn-primary my-1 edit-btn" type="button">
                                             <span><i class="fa fa-edit"></i> Edit Role</span>
                                         </a>
                                     @endcan

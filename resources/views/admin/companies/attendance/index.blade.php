@@ -4,7 +4,6 @@
     use App\Http\Controllers\Admin\AdminController;
     use Carbon\Carbon;
 @endphp
-
 @section('content')
     <input type="hidden" id="current_user_slug" value="{{ $user->slug }}">
     <div class="content-wrapper">
@@ -13,7 +12,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card-header">
-                        
+
                             <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Home /</span> {{ $title }} of
                                 month: {{ date('F, Y', mktime(0, 0, 0, $month, 1, $year)) }}</h4>
                         </div>
@@ -21,14 +20,32 @@
                 </div>
             </div>
             <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center row">
 
-                <div class="card-header d-flex justify-content-between">
-                    
-                    <div class="d-flex align-items-center justify-content-end">
-                        <button class="btn btn-primary waves-effect waves-light"
-                            data-joining-date="{{ $user_joining_date }}" data-company="{{$company}}" data-current-month="{{ $currentMonth }}"
-                            id="Slipbutton">Select Month<i class="ti ti-chevron-down ms-2"></i></button>
+                    <div class="col-md-4 mt-md-0 mt-3">
+                        @php $url = URL::to('admin/company/attendance/') @endphp
+                        @include('admin.layouts.employee_dropdown', [
+                            'employees' => $employees,
+                        
+                            'url' => $url,
+                            'month' => $month,
+                            'year' => $year,
+                            'type' => 'redirect',
+                            'company' => $company,
+                        ])
+
                     </div>
+                    <div class="col-md-4 mt-md-0 mt-3">
+
+                        <input type="text" id="month-list" data-joining-date="{{ $user_joining_date }}"
+                            data-company="{{ $company }}" data-current-month="{{ $currentMonth }}"
+                            placeholder="Select Month" class="form-control flatpickr-input" readonly>
+                    </div>
+                    <div class="col-md-4 mt-md-0">
+
+                        <button class="btn btn-primary " id="filterAttendance"><i class="fa-solid fa-filter"></i></button>
+                    </div>
+
                 </div>
                 <div class="card-header d-flex justify-content-between align-items-center row">
                     <div class="col-md-8">
@@ -63,40 +80,13 @@
                             </a>
                         </span>
                     </div>
-                    <div class="col-md-4 mt-md-0 mt-3">
-                        @php $url = URL::to('admin/company/attendance/') @endphp
-                        @include('admin.layouts.employee_dropdown', [
-                            'employees' => $employees,
-                            'user' => $user,
-                            'url' => $url,
-                            'month' => $month,
-                            'year' => $year,
-                            'type' => 'redirect',
-                            'company' => $company,
-                        ])
-                    </div>
+                   
                 </div>
                 <div class="card-header border-top">
-
-
-
-
                     <div class="table-responsive">
-
                         <table class="attendance-table table table-border min-w-800 body-input-checkbox">
                             <thead>
-                                <!-- Bluck Adjustment -->
-
-                                <!-- Bluck Adjustment -->
                                 <tr>
-                                    <!-- Bluck Adjustment -->
-                                    {{-- <th>
-                                        <div class="form-check align-items-center">
-                                            <input class="form-check-input ms-0" type="checkbox" value=""
-                                                id="selectAll">
-                                        </div>
-                                    </th> --}}
-                                    <!-- Bluck Adjustment -->
                                     <th>Date</th>
                                     <th>Shift Time</th>
                                     <th>Punched In</th>
@@ -110,26 +100,9 @@
                             </thead>
                             <tbody>
                                 @php
-                            
-                                     $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
-                                     
-                                    // $adjustedMonth = (int) $month - 1;
-                                    // $adjustedYear = $year;
-
-                                    // if ($adjustedMonth == 0) {
-                                    //     // If the adjusted month is 0 (December), decrement the year
-                                    //     $adjustedMonth = 12; // Set to December
-                                    //     $adjustedYear--; // Decrement the year
-                                    // }
-
-                                    //  $begin = new DateTime($adjustedYear . '-' . $adjustedMonth . '-26');
-    
+                                    $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
                                     $beginDate = Carbon::parse($begin);
                                     $start_date = '';
-                                    // if((isset($user->employeeStatus->start_date) && !empty($user->employeeStatus->start_date))){
-                                    //     $start_date = $user->employeeStatus->start_date;
-                                    //     $start_date = Carbon::parse($start_date);
-                                    // }
                                     if (getUserJoiningDate($user)) {
                                         $start_date = getUserJoiningDate($user);
                                     }
@@ -161,21 +134,9 @@
                                             $shift,
                                             $company,
                                         );
-                                      
+
                                     @endphp
-
-
                                     @if ($reponse != null)
-                                        @php
-                                            $applied = userAppliedLeaveOrDiscrepency(
-                                                $user->id,
-                                                $reponse['type'],
-                                                $i->format('Y-m-d'),
-                                                $company,
-                                            );
-                                            $attendance_adjustment = '';
-                                        @endphp
-
                                         @php
                                             $attendance_adjustment = attendanceAdjustment(
                                                 $user->id,
@@ -184,9 +145,7 @@
                                                 $company,
                                             );
                                             $checkHoliday = checkHoliday($user->id, $i->format('Y-m-d'), $company); //check it is holiday or company off
-                                            
                                         @endphp
-
                                         @if (!empty($checkHoliday))
                                             <tr style="background: #cbf4dc;color: #28c76f;">
                                                 <td class="mb-0" style="color: black;">{{ $i->format('d-m-Y') }}</td>
@@ -198,41 +157,20 @@
                                             </tr>
                                         @else
                                             <tr class="{{ $day }}">
-                                                <!-- Bluck Adjustment -->
-                                                {{-- <td>
-                                                    @if ($day != 'Sat' && $day != 'Sun')
-                                                        @php $adjustment_date = $i->format("Y-m-d"); @endphp
-                                                        @if (isset($attendance_adjustment) && !empty($attendance_adjustment))
-                                                            <input class="form-check-input" type="checkbox" disabled
-                                                                checked>
-                                                        @else
-                                                            <input class="form-check-input body-checkbox" type="checkbox"
-                                                                value="{{ $adjustment_date }}" id="checkbox">
-                                                        @endif
-                                                    @endif
-                                                </td> --}}
-                                                <!-- Bluck Adjustment -->
                                                 <td>{{ formatDate($i->format('d-m-Y')) }}</td>
-                        
                                                 <td>{{ $reponse['shiftTiming'] }}</td>
                                                 <td>
-                                                 
-
                                                     @if ($day != 'Sat' && $day != 'Sun')
-
                                                         <span
                                                             class="punchedin d-block mb-2">{{ $reponse['punchIn'] }}</span>
-                                                      
                                                     @else
                                                         {{ '-' }}
                                                     @endif
                                                 </td>
-
                                                 <td>
                                                     @if ($day != 'Sat' && $day != 'Sun')
                                                         <span
                                                             class="punchedin d-block mb-2">{{ $reponse['punchOut'] }}</span>
-                                                    
                                                     @else
                                                         {{ '-' }}
                                                     @endif
@@ -263,8 +201,6 @@
                                                         {{ $reponse['workingHours'] }}@else{{ '-' }}
                                                     @endif
                                                 </td>
-
-                                               
                                             </tr>
                                         @endif
                                     @endif
@@ -280,7 +216,7 @@
 
 
     <!-- Apply Leave Or Discrepency Modal -->
-   
+
     <!-- Apply Leave Or Discrepency Modal -->
 @endsection
 @push('js')
@@ -290,36 +226,64 @@
         const markAttendanceStoreRoute = '{{ route('mark_attendance.store') }}';
 
 
-       
+
         $(function() {
             var currentMonth = $('#Slipbutton').data('current-month');
 
             var joiningMonthYear = $('#Slipbutton').data('joining-date');
-           
-           var selecCompany = $("#Slipbutton").data('company');
-            $('#Slipbutton').datepicker({
-                format: 'mm/yyyy',
-                startView: 'year',
-                minViewMode: 'months',
-                startDate: joiningMonthYear,
-                endDate: currentMonth,
-            }).on('changeMonth', function(e) {
-                
-                var employeeSlug = $('#employee-slug option:selected').data('user-slug');
-               
-                
-                if (employeeSlug == undefined) {
-                    employeeSlug = $('#current_user_slug').val();
-                }
-                var selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
-                var selectedYear = e.date.getFullYear();
 
-                var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany + "?month=" + selectedMonth + "&year=" +
-    selectedYear + "&slug=" + employeeSlug;
+            var selecCompany = $("#Slipbutton").data('company');
+            var currentMonth = $('#month-list').data('current-month');
+        var joiningMonthYear = $('#month-list').data('joining-date');
 
 
-                window.location.href = selectOptionUrl;
-            });
+        var selectedMonth, selectedYear, employeeSlug;
+        $('#month-list').datepicker({
+            format: 'mm/yyyy',
+            startView: 'year',
+            minViewMode: 'months',
+            startDate: joiningMonthYear,
+            endDate: currentMonth
+
+        }).on('changeMonth', function(e) {
+
+            //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
+
+
+            selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
+            selectedYear = e.date.getFullYear();
+
+
+
+        });
+
+
+        $("#filterAttendance").on('click', function(e) {
+
+            var selecCompany = $("#month-list").data('company');
+            var employeeSlug = $("#redirectDropdown").val();
+            // if (employeeSlug == undefined) {
+            //     employeeSlug = $('#current_user_slug').val();
+            // }
+       
+            if (employeeSlug == "") {
+                alert("Please select an employee.");
+                return false; // Stop further execution
+            }
+
+            if (!selectedMonth || !selectedYear) {
+                // Set current month and year if not selected
+                var currentDate = new Date();
+                selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                selectedYear = currentDate.getFullYear();
+            }
+            var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany + "?month=" +
+                selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
+
+            window.location.href = selectOptionUrl;
+        })
+
+
             const url = new URL(window.location.href);
             const pathname = url.pathname;
             const pathParts = pathname.split('/');

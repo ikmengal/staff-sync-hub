@@ -38,7 +38,7 @@
                                         @foreach (SubPermissions($permission->label) as $sub_permission)
                                             @php $label = explode('-', $sub_permission->name) @endphp
                                             <div class="form-check me-3 me-lg-5">
-                                                <input class="form-check-input childCheckBox" type="checkbox"
+                                                <input class="form-check-input childCheckBox" id="{{ $sub_permission->id }}" type="checkbox"
                                                     value="{{ $sub_permission->name ?? null }}"
                                                     @if (isset($role_permissions) && !empty($role_permissions)) 
                                                     @foreach ($role_permissions as $val)
@@ -47,8 +47,8 @@
                                                     @endif
                                         name="permissions[]" />
                                         <label class="form-check-label"
-                                            for="userManagementRead-{{ $sub_permission->id }}">
-                                            {{ Str::ucfirst($label[1]) }}</label>
+                                            for="{{ $sub_permission->id }}">
+                                            {{ $sub_permission->display_name }}</label>
                                             </div>
                                         @endforeach
                                     </div>
