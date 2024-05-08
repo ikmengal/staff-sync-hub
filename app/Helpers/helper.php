@@ -1036,6 +1036,7 @@ function hasExceededLeaveLimit($user, $company)
 
 
     $probation = !empty($user) ? $user->employeeStatus : null;
+    $total_used_leaves = 0;
 
     if (!empty($probation) && $probation->employment_status_id == 1) {
         $leave_report = [
@@ -1078,7 +1079,7 @@ function hasExceededLeaveLimit($user, $company)
         $leaveYearStart = Carbon::createFromDate(yearPeriod()['yearStart']); // June 26th of the current year
         $monthsElapsed = $leaveYearStart->diffInMonths($currentDate) + 1;
         $leaveYearDate = Carbon::createFromDate(yearPeriod()['yearEnd']); // June 26th of the current year
-
+      
         // Check if the user joined after the leave year started
         // $joiningDate = Carbon::createFromDate($user->employeeStatus->start_date); // Replace with the actual joining date
         $joiningDate = getUserJoiningDate($user); // Replace with the actual joining date

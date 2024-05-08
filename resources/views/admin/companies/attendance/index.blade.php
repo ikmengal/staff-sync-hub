@@ -4,6 +4,7 @@
     use App\Http\Controllers\Admin\AdminController;
     use Carbon\Carbon;
 @endphp
+
 @section('content')
     <input type="hidden" id="current_user_slug" value="{{ $user->slug }}">
     <div class="content-wrapper">
@@ -12,6 +13,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card-header">
+                        
                             <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Home /</span> {{ $title }} of
                                 month: {{ date('F, Y', mktime(0, 0, 0, $month, 1, $year)) }}</h4>
                         </div>
@@ -29,7 +31,7 @@
 
                     <div class="d-flex align-items-center justify-content-end">
                         <button class="btn btn-primary waves-effect waves-light"
-                            data-joining-date="{{ $user_joining_date }}" data-current-month="{{ $currentMonth }}"
+                            data-joining-date="{{ $user_joining_date }}" data-company="{{$company}}" data-current-month="{{ $currentMonth }}"
                             id="Slipbutton">Select Month<i class="ti ti-chevron-down ms-2"></i></button>
                     </div>
                 </div>
@@ -113,18 +115,19 @@
                             </thead>
                             <tbody>
                                 @php
-                                     //$begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
+                            
+                                     $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
                                      
-                                    $adjustedMonth = (int) $month - 1;
-                                    $adjustedYear = $year;
+                                    // $adjustedMonth = (int) $month - 1;
+                                    // $adjustedYear = $year;
 
-                                    if ($adjustedMonth == 0) {
-                                        // If the adjusted month is 0 (December), decrement the year
-                                        $adjustedMonth = 12; // Set to December
-                                        $adjustedYear--; // Decrement the year
-                                    }
+                                    // if ($adjustedMonth == 0) {
+                                    //     // If the adjusted month is 0 (December), decrement the year
+                                    //     $adjustedMonth = 12; // Set to December
+                                    //     $adjustedYear--; // Decrement the year
+                                    // }
 
-                                     $begin = new DateTime($adjustedYear . '-' . $adjustedMonth . '-26');
+                                    //  $begin = new DateTime($adjustedYear . '-' . $adjustedMonth . '-26');
     
                                     $beginDate = Carbon::parse($begin);
                                     $start_date = '';
@@ -282,67 +285,7 @@
 
 
     <!-- Apply Leave Or Discrepency Modal -->
-    <div class="modal fade" id="discrepency-or-leave-modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered1 modal-simple modal-add-new-cc">
-            <div class="modal-content p-3 p-md-5">
-                <div class="modal-body">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    <div class="text-center mb-4">
-                        <h3 class="mb-2" id="modal-label"></h3>
-                    </div>
-
-                    <form id="create-form" class="row g-3" data-method="POST"
-                        data-modal-id="discrepency-or-leave-modal">
-                        @csrf
-
-                        <input type="hidden" name="user_slug" id="user-slug">
-                        <input type="hidden" name="type" id="applied-type">
-                        <input type="hidden" name="date" id="applied-date">
-                        <div class="mb-3" id="leave_types_div">
-                            <label class="form-label" for="leave_type_id">Leave Type</label>
-                            <div class="position-relative">
-                                <select id="leave_type_id" name="leave_type_id" class="form-control">
-                                    <option value="">Select type</option>
-                                    @foreach ($leave_types as $leave_type)
-                                        <option value="{{ $leave_type->id }}">{{ $leave_type->name }}</option>
-                                    @endforeach
-                                </select>
-                                <span id="leave_type_id_error" class="text-danger error"></span>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="reason_id">Reason <span class="text-danger">*</span></label>
-                            <div class="position-relative">
-                                <textarea class="form-control" rows="5" name="reason" id="reason_id" placeholder="Enter reason"></textarea>
-                                <span id="reason_error" class="text-danger error">{{ $errors->first('reason') }}</span>
-                            </div>
-                        </div>
-
-                        <div class="col-12 mt-3 action-btn">
-                            <div class="demo-inline-spacing sub-btn">
-                                <button type="submit"
-                                    class="btn btn-primary me-sm-3 me-1 applyDiscrepancyLeaveBtn">Submit</button>
-                                <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal"
-                                    aria-label="Close">
-                                    Cancel
-                                </button>
-                            </div>
-                            <div class="demo-inline-spacing loading-btn" style="display: none;">
-                                <button class="btn btn-primary waves-effect waves-light" type="button" disabled="">
-                                    <span class="spinner-border me-1" role="status" aria-hidden="true"></span>
-                                    Loading...
-                                </button>
-                                <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal"
-                                    aria-label="Close">
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+   
     <!-- Apply Leave Or Discrepency Modal -->
 @endsection
 @push('js')
@@ -427,6 +370,8 @@
             var currentMonth = $('#Slipbutton').data('current-month');
 
             var joiningMonthYear = $('#Slipbutton').data('joining-date');
+           
+           var selecCompany = $("#Slipbutton").data('company');
             $('#Slipbutton').datepicker({
                 format: 'mm/yyyy',
                 startView: 'year',
@@ -434,15 +379,19 @@
                 startDate: joiningMonthYear,
                 endDate: currentMonth,
             }).on('changeMonth', function(e) {
+                
                 var employeeSlug = $('#employee-slug option:selected').data('user-slug');
+               
+                
                 if (employeeSlug == undefined) {
                     employeeSlug = $('#current_user_slug').val();
                 }
                 var selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
                 var selectedYear = e.date.getFullYear();
 
-                var selectOptionUrl = "{{ URL::to('user/attendance/summary') }}/" + selectedMonth + "/" +
-                    selectedYear + "/" + employeeSlug;
+                var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany + "?month=" + selectedMonth + "&year=" +
+    selectedYear + "&slug=" + employeeSlug;
+
 
                 window.location.href = selectOptionUrl;
             });
