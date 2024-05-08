@@ -40,8 +40,9 @@
                                                         src="{{ asset('public/admin/assets/img/avatars') . '/' . $role_user->profile->profile }}"
                                                         alt="Avatar" />
                                                 @else
-                                           
-                                                <img src="{{ asset('public/admin') }}/default.png" style="width:40px !important; height:40px !important;" alt class="h-auto rounded-circle" />
+                                                    <img src="{{ asset('public/admin') }}/default.png"
+                                                        style="width:40px !important; height:40px !important;" alt
+                                                        class="h-auto rounded-circle" />
                                                 @endif
                                             </li>
                                         @endif
@@ -393,7 +394,7 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        var response =xhr.responseJSON;
+                        var response = xhr.responseJSON;
                         alert(response.message)
                     }
                 });

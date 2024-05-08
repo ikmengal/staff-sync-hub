@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\EstimateController;
 use App\Http\Controllers\Admin\WorkShiftController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
@@ -98,7 +99,8 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
     Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
-    Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'companyAttendance'])->name('admin.companies.attendance');
+    Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
+    Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
