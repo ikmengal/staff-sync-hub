@@ -47,30 +47,34 @@
             @endcan
         </li>
         @canany([ 'users-list', 'roles-list', 'permissions-list', 'users-create', 'roles-create', 'permissions-create'])
-        <li class="menu-item">
+        <li class="menu-item {{ Route::is('users.*') ||
+        Route::is('permissions.*') ||
+        Route::is('roles.*') 
+                ? 'open active'
+            : '' }}"">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-user"></i>
                 <div data-i18n="Users">Users</div>
             </a>
 
 
-            <ul class="menu-sub">
+            <ul class="menu-sub ">
                 @canany(['users-list','users-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('users.*') ? 'active' : ''}}">
                     <a href="{{route('users.index')}}" class="menu-link">
                         <div data-i18n="Users">Users</div>
                     </a>
                 </li>
                 @endcanany
                 @canany(['roles-list','roles-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('roles.*') ? 'active' : ''}}">
                     <a href="{{route('roles.index')}}" class="menu-link">
                         <div data-i18n="Roles">Roles</div>
                     </a>
                 </li>
                 @endcanany
                 @canany(['permissions-list','permissions-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('permissions.*') ? 'active' : ''}}">
                     <a href="{{route('permissions.index')}}" class="menu-link">
                         <div data-i18n="Permissions">Permissions</div>
                     </a>
