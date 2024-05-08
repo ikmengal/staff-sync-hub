@@ -70,7 +70,7 @@
             <div class="row p-3">
                 <div class="col-md-4 mb-3">
                     <label for="">Department</label>
-                    <select name="department" id="department" class="select2 form-select department">
+                    <select name="department" id="department" class=" form-select department">
                         <option value="all">All</option>
                         @if(!empty(getAllDepartments()))
                         @foreach(getAllDepartments() as $department)
