@@ -63,7 +63,6 @@
             format: 'mm/yyyy',
             startView: 'year',
             minViewMode: 'months',
-            startDate: joiningMonthYear,
             endDate: currentMonth
 
         }).on('changeMonth', function(e) {
