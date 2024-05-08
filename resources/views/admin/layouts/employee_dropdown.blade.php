@@ -6,12 +6,12 @@
                     <option value="{{ $url }}" selected>Select employee</option>
                     @foreach ($employees['total_employees'] as $employee)
                         @if(isset($month) && isset($year))
-                            <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" {{ $user->slug==$employee->slug?'selected':'' }}>
-                                {{ $employee->name }} 
+                            <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" >
+                                {{ $employee->name }}  {{$employee->employment_id }}
                             </option>
                         @else
-                            <option data-user-slug="{{ $employee->slug }}" value="{{route('admin.companies.attendance',['company'=>$company,'slug'=>$employee->slug])}}" {{ $user->slug==$employee->slug?"selected":"" }}>
-                                {{ $employee->name }}
+                            <option data-user-slug="{{ $employee->slug }}" value="{{route('admin.companies.attendance',['company'=>$company,'slug'=>$employee->slug])}}" >
+                                {{ $employee->name }}  {{$employee->employment_id }}
                             </option>
                         @endif
                     @endforeach
@@ -29,11 +29,11 @@
                             $lastMonth = date('m', strtotime($employee->employeeStatus->end_date));
                             $lastYear = date('Y', strtotime($employee->employeeStatus->end_date));
                         @endphp
-                        <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}" {{ $user->slug==$employee->slug?"selected":"" }}>
+                        <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}">
                             {{ $employee->name }} 
                         </option>
                     @else
-                    <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}" {{ $user->slug==$employee->slug?"selected":"" }}>
+                    <option value="{{route('admin.companies.attendance',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}" >
                             {{ $employee->name }} 
                         </option>
                     @endif
@@ -57,7 +57,7 @@
                             $lastMonth = date('m', strtotime($employee->employeeStatus->end_date));
                             $lastYear = date('Y', strtotime($employee->employeeStatus->end_date));
                         @endphp
-                        <option value="{{route('admin.companies.attendance.summary',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}" {{ $user->id==$employee->id?'selected':'' }}>
+                        <option value="{{route('admin.companies.attendance.summary',['company'=>$company,'month'=>$month,'year'=>$year,'slug'=>$employee->slug])}}" data-user-slug="{{ $employee->slug }}" >
                             {{ $employee->name }} 
                         </option>
                     @endforeach
