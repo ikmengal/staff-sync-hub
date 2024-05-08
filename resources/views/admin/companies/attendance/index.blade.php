@@ -224,6 +224,7 @@
                                                  
 
                                                     @if ($day != 'Sat' && $day != 'Sun')
+                                                    
 
                                                         <span
                                                             class="punchedin d-block mb-2">{{ $reponse['punchIn'] }}</span>
