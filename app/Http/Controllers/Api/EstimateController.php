@@ -175,10 +175,11 @@ class EstimateController extends Controller
                 ->orderByRaw("FIELD(status, 2) DESC")
                 ->orderBy('status')
                 ->get();
+          
             $purchaseRequest = PurchaseRequest::where('id', $request->id)->first();
 
             if (isset($purchaseRequest) && !empty($purchaseRequest)) {
-                $purchaseRequest = [
+                $data['request_purchase'] = [
                     'id' => $purchaseRequest->id ?? null,
                     'creator' => $purchaseRequest->creator ?? null,
                     'company' => $purchaseRequest->company ?? null,
@@ -198,12 +199,16 @@ class EstimateController extends Controller
                         'status' => isset($value->getStatus)  && !empty($value->getStatus) ? $value->getStatus : null,
                         'images' => isset($value->attachments) && !blank($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
                     ];
-                }
-                $data['request_purchase'] = $purchaseRequest;
-                return apiResponse(true, $data, "All estimates", 200);
-            } else {
-                return apiResponse(false, null, "No Estimate record found...!", 500);
-            }
+                }  
+              
+            } 
+            
+            return apiResponse(true , $data , "Data against Request id 2" , 200);
+            
+            // else {
+            //       return apiResponse(true, $data, "All estimates", 200);
+            //     return apiResponse(false, null, "No Estimate record found...!", 500);
+            // }
         }
     }
 
