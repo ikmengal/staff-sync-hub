@@ -1,8 +1,8 @@
 <?php
 return [
     "cyberonix_base_url" => env("CYBERONIX_BASE_URL", "https://hr.cyberonix.co/"),
-    "vertical_base_url" => env("VERTICAL_BASE_URL", "https://hrms.braincelltechnology.com/"),
-    "braincell_base_url" => env("BRAINCELL_BASE_URL", "https://hrmsvertical.com/"),
+    "vertical_base_url" => env("VERTICAL_BASE_URL", "https://hrmsvertical.com/"),
+    "braincell_base_url" => env("BRAINCELL_BASE_URL", "https://hrms.braincelltechnology.com/"),
     "clevel_base_url" => env("CLEVEL_BASE_URL", "https://clevelhr.com/"),
     "delve12_base_url" => env("DELVE12_BASE_URL", "https://delve-12.com/"),
     "horizontal_base_url" => env("HORIZONTAL_BASE_URL", "https://tech-horizontal.com/"),
@@ -17,6 +17,6 @@ return [
 
 
     "upload_path" => [
-        "estimates" => "/attachments/estimates/" ,
+        "estimates" => "/attachments/estimates/",
     ],
 ];
