@@ -209,6 +209,18 @@ class PermissionSeeder extends Seeder
               'name'=>'users-edit-password',
               'display_name'=>'edit',
               'guard_name'=>'web'
+            ],
+            [
+              'label'=>'attendances',
+              'name'=>'attendances-show-companies',
+              'display_name'=>'Show companies',
+              'guard_name'=>'web'
+            ],
+            [
+              'label'=>'attendances',
+              'name'=>'attendances-list',
+              'display_name'=>'List',
+              'guard_name'=>'web'
           ]
          
 
