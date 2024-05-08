@@ -23,12 +23,7 @@
             <div class="card">
 
                 <div class="card-header d-flex justify-content-between">
-                    @php
-                        $navDate = $year . '-' . $month . '-01';
-                        $prevMonth = strtotime($navDate . ' -1 month');
-                        $nextMonth = strtotime($navDate . ' +1 month');
-                    @endphp
-
+                    
                     <div class="d-flex align-items-center justify-content-end">
                         <button class="btn btn-primary waves-effect waves-light"
                             data-joining-date="{{ $user_joining_date }}" data-company="{{$company}}" data-current-month="{{ $currentMonth }}"
@@ -69,7 +64,7 @@
                         </span>
                     </div>
                     <div class="col-md-4 mt-md-0 mt-3">
-                        @php $url = URL::to('admin/company/attendance/summary/') @endphp
+                        @php $url = URL::to('admin/company/attendance/') @endphp
                         @include('admin.layouts.employee_dropdown', [
                             'employees' => $employees,
                             'user' => $user,
@@ -217,7 +212,7 @@
                                                     @endif
                                                 </td> --}}
                                                 <!-- Bluck Adjustment -->
-                                                <td>{{ $i->format('d-m-Y') }}</td>
+                                                <td>{{ formatDate($i->format('d-m-Y')) }}</td>
                         
                                                 <td>{{ $reponse['shiftTiming'] }}</td>
                                                 <td>
@@ -294,78 +289,8 @@
     <script>
         const markAttendanceStoreRoute = '{{ route('mark_attendance.store') }}';
 
-        $(document).on('click', '#selectAll', function() {
-            // Check/uncheck all checkboxes based on the Select All checkbox
-            $(this).parents('.body-input-checkbox').find(".body-checkbox").prop("checked", $(this).prop("checked"));
 
-            var total_checked_length = $(this).parents('.body-input-checkbox').find(".body-checkbox:checked")
-            .length;
-
-            if (total_checked_length > 0) {
-                $(this).parents('.body-input-checkbox').find(".bluk-adjustment-btn").removeClass("d-none");
-            } else {
-                $(this).parents('.body-input-checkbox').find(".bluk-adjustment-btn").addClass("d-none");
-            }
-        });
-        // Individual checkbox click event
-        $(document).on('click', ".body-checkbox", function() {
-            // Check the Select All checkbox if all checkboxes are checked
-            var total_checkboxes_length = $(this).parents('.body-input-checkbox').find(".body-checkbox").length;
-            var total_checked_length = $(this).parents('.body-input-checkbox').find(".body-checkbox:checked")
-            .length;
-
-            if (total_checked_length > 0 && total_checked_length < total_checkboxes_length) {
-                $(this).parents('.body-input-checkbox').find("#selectAll").prop("checked", false);
-                $(this).parents('.body-input-checkbox').find(".bluk-adjustment-btn").removeClass("d-none");
-            } else if (total_checked_length === total_checkboxes_length) {
-                $(this).parents('.body-input-checkbox').find("#selectAll").prop("checked", true);
-                $(this).parents('.body-input-checkbox').find(".bluk-adjustment-btn").addClass("d-none");
-            } else {
-                $(this).parents('.body-input-checkbox').find("#selectAll").prop("checked", false);
-                $(this).parents('.body-input-checkbox').find(".bluk-adjustment-btn").addClass("d-none");
-            }
-        });
-        //Bluck Adjustments code
-
-        $(document).on('click', '#custom-add-btn', function() {
-            var leave_types = $(this).data('leave-types');
-            var user_slug = $(this).attr('data-user');
-            var type = $(this).attr('data-type');
-            var date = $(this).attr('data-date');
-
-            var targeted_modal = $(this).attr('data-bs-target');
-
-            var url = $(this).attr('data-url');
-            var modal_label = $(this).attr('title');
-
-            $('#user-slug').val(user_slug);
-            $('#applied-date').val(date);
-            $('#applied-type').val(type);
-
-            $(targeted_modal).find('#modal-label').html(modal_label);
-            $(targeted_modal).find("#create-form").attr("action", url);
-
-            var html = '';
-            if (type == 'lateIn' || type == 'earlyout') {
-                $('#leave_types_div').hide();
-            } else if (type == 'firsthalf' || type == 'lasthalf') {
-                $('#leave_types_div').show();
-                $.each(leave_types, function(index, val) {
-                    if (val.name == 'Half-Day') {
-                        html += '<option value="' + val.id + '" selected>' + val.name + '</option>';
-                    }
-                });
-            } else {
-                $('#leave_types_div').show();
-                $.each(leave_types, function(index, val) {
-                    if (val.name != 'Half-Day') {
-                        html += '<option value="' + val.id + '">' + val.name + '</option>';
-                    }
-                });
-            }
-            $('#leave_type_id').html(html);
-        });
-
+       
         $(function() {
             var currentMonth = $('#Slipbutton').data('current-month');
 

@@ -14,10 +14,9 @@ use Illuminate\Support\Facades\Auth;
 class AttendanceController extends Controller
 {
     public function allCompanies(Request $request){
-          
+        $this->authorize('attendances-show-companies');
         $title = 'Select Company';
         $companies = getAllCompanies();
-      
         return view('admin.companies.attendance.companies',compact('companies','title'));
 
     }
@@ -25,7 +24,7 @@ class AttendanceController extends Controller
     public function companyAttendance(Request $request, $company = null, $getMonth = null, $getYear = null, $user_slug = null)
     {
 
-     
+        $this->authorize('attendances-list');
         $title = 'Attendance Summary';
 
         $employees = [];
