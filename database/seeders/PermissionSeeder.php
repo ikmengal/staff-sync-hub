@@ -64,7 +64,7 @@ class PermissionSeeder extends Seeder
             [
                 'label' =>  'User',
                 'name' => 'users-direct-permission',
-                'display_name' => 'Delete',
+                'display_name' => 'Users Direct Permission',
                 'guard_name' => 'web'
             ],
       
