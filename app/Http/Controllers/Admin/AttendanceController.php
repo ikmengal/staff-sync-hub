@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use App\Models\WorkingShiftUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -135,4 +136,56 @@ class AttendanceController extends Controller
         }
        
     }
+
+   public function attendanceReport(Request $request){
+
+    $title = 'Monthly Attendance Report';
+    $behavior = 'all';
+    $user = Auth::user();
+
+    $data = [];
+    $employees = [];
+
+    foreach(companies() as $index => $company){
+
+        if(!empty($request->company) && $company == $request->company){
+        
+            $data['employees'] = User::on($index)->where('status', 1)->where('is_employee', 1)->get();
+            $data['users'] = User::on($index)->where('status', 1)->where('is_employee', 1)->paginate(10);
+
+        }
+
+    }
+  
+    $data['companies'] = companies();
+    $year = date('Y');
+    $month = date('m');
+    if (!empty($request->month)) {
+        $year = $request->year;
+        $month = $request->month;
+
+        // Calculate the start date (26th of the previous month)
+        $from_date = Carbon::create($year, $month, 26, 0, 0, 0)->subMonth();
+
+        // Calculate the end date (25th of the current month) year,month, date, hour, minute, second.
+        $to_date = Carbon::create($year, $month, 25, 23, 59, 59);
+    } else {
+        if (date('d') > 26 || (date('d') == 26 && date('H') > 11)) {
+            $from_date = Carbon::now()->startOfMonth()->addDays(25);
+            $to_date = Carbon::now()->startOfMonth()->addMonth()->addDays(24);
+        } else {
+            $from_date = Carbon::now()->subMonth()->startOfMonth()->addDays(25);
+            $to_date = Carbon::now()->startOfMonth()->addDays(24);
+        }
+    }
+
+    $fullMonthName = \Carbon\Carbon::create(null, $month, 1)->format('F');
+
+    $data['from_date'] = date('Y-m-d', strtotime($from_date));
+    $data['to_date'] = date('Y-m-d', strtotime($to_date));
+    $data['behavior'] = $behavior;
+
+    return view('admin.companies.attendance.attendance-report', compact('title', 'user', 'data', 'year', 'month','fullMonthName'));
+
+   }
 }

@@ -80,7 +80,13 @@
                             </a>
                         </span>
                     </div>
-                   
+
+                </div>
+                <div class="card-header row">
+                    <div class="col-md-4">
+                        <button class="btn btn-success" onclick="exportAttendance($month,$year,$company)">Export</button>
+                    </div>
+
                 </div>
                 <div class="card-header border-top">
                     <div class="table-responsive">
@@ -234,54 +240,57 @@
 
             var selecCompany = $("#Slipbutton").data('company');
             var currentMonth = $('#month-list').data('current-month');
-        var joiningMonthYear = $('#month-list').data('joining-date');
+            var joiningMonthYear = $('#month-list').data('joining-date');
 
 
-        var selectedMonth, selectedYear, employeeSlug;
-        $('#month-list').datepicker({
-            format: 'mm/yyyy',
-            startView: 'year',
-            minViewMode: 'months',
-            startDate: joiningMonthYear,
-            endDate: currentMonth
+            var selectedMonth, selectedYear, employeeSlug;
+            $('#month-list').datepicker({
+                format: 'mm/yyyy',
+                startView: 'year',
+                minViewMode: 'months',
+                startDate: joiningMonthYear,
+                endDate: currentMonth
 
-        }).on('changeMonth', function(e) {
+            }).on('changeMonth', function(e) {
 
-            //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
-
-
-            selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
-            selectedYear = e.date.getFullYear();
+                //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
 
 
+                selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
+                selectedYear = e.date.getFullYear();
 
-        });
 
 
-        $("#filterAttendance").on('click', function(e) {
+            });
 
-            var selecCompany = $("#month-list").data('company');
-            var employeeSlug = $("#redirectDropdown").val();
-            // if (employeeSlug == undefined) {
-            //     employeeSlug = $('#current_user_slug').val();
-            // }
-       
-            if (employeeSlug == "") {
-                alert("Please select an employee.");
-                return false; // Stop further execution
-            }
 
-            if (!selectedMonth || !selectedYear) {
-                // Set current month and year if not selected
-                var currentDate = new Date();
-                selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-                selectedYear = currentDate.getFullYear();
-            }
-            var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany + "?month=" +
-                selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
+            $("#filterAttendance").on('click', function(e) {
 
-            window.location.href = selectOptionUrl;
-        })
+                var selecCompany = $("#month-list").data('company');
+                var employeeSlug = $("#redirectDropdown").val();
+                // if (employeeSlug == undefined) {
+                //     employeeSlug = $('#current_user_slug').val();
+                // }
+
+                if (employeeSlug == "") {
+                    alert("Please select an employee.");
+                    return false; // Stop further execution
+                }
+
+                if (!selectedMonth || !selectedYear) {
+                    // Set current month and year if not selected
+                    var currentDate = new Date();
+                    selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    selectedYear = currentDate.getFullYear();
+                }
+                var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany +
+                    "?month=" +
+                    selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
+
+                window.location.href = selectOptionUrl;
+            })
+
+
 
 
             const url = new URL(window.location.href);
@@ -314,6 +323,42 @@
                 });
             }
         });
+
+
+        function exportAttendance(event) {
+
+                var route = event.data('route');
+                var currentDate = new Date();
+
+                var month = event.data('month');
+                var year = event.data('year');
+                var slug = event.data('slug');
+                var company = event.data('company');
+
+                var formattedDate = currentDate.getFullYear() +
+                    ('0' + (currentDate.getMonth() + 1)).slice(-2) +
+                    ('0' + currentDate.getDate()).slice(-2);
+                var formattedTime = ('0' + currentDate.getHours()).slice(-2) +
+                    ('0' + currentDate.getMinutes()).slice(-2) +
+                    ('0' + currentDate.getSeconds()).slice(-2);
+
+                // Construct the dynamic file name
+                var filename = 'attendance_report_' + formattedDate + '_' + formattedTime + '.csv';
+
+                // Create a hidden anchor element
+                var downloadLink = document.createElement('a');
+                downloadLink.style.display = 'none';
+                document.body.appendChild(downloadLink);
+                // Set the href attribute to the download URL
+                downloadLink.href = route + "?company=" + company+"?month=" + month+"?year="+ year+"?slug="+slug;
+                // Set the download attribute to force download
+                downloadLink.setAttribute('download', filename);
+                // Trigger a click event on the anchor element
+                downloadLink.click();
+                // Clean up the anchor element
+                document.body.removeChild(downloadLink);
+
+        }
 
         function redirectPage(dropdown) {
             var selectedOption = dropdown.value;

@@ -185,7 +185,7 @@
 
         
         @canany(['attendances-show-companies'])
-        <li class="menu-item" {{ Route::is('admin.companies.list.*') 
+        <li class="menu-item" {{ request()->is('admin/companies/attendance') 
                 ? 'open active'
             : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -201,6 +201,13 @@
                     </a>
                 </li>
                 @endcan
+                <li class="menu-item {{ request()->is('admin/company/attendance/report')?'active':'' }}">
+                    <a href="{{ route('admin.attendance.report') }}" class="menu-link">
+                        
+                        <div>Monthly Report</div>
+                    </a>
+                </li>
+
             </ul>
 
         </li>

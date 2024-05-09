@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/logout', [AdminController::class, 'logOut'])->name('user.logout');
 
     //
+    Route::get('admin/attendance/report',[AttendanceController::class,'attendanceReport'])->name('admin.attendance.report');
     Route::get('admin/companies', [AdminController::class, 'getCompanies'])->name('admin.companies');
     Route::get('admin/companies/employees', [AdminController::class, 'getCompaniesEmployees'])->name('admin.companies.employees');
     Route::get('admin/companies/employees/new_hiring', [AdminController::class, 'getCompaniesEmployeesNewHiring'])->name('admin.companies.employees.new_hiring');
@@ -101,7 +102,10 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
     Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
     Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
+    // Route::get('admin/company/attendance/filter',[AttendanceController::class,'monthlyAttendanceReportfgdfg'])->name('admin.company.attendance.filter');
+ 
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
+    Route::get('admin/employee/attendance/monthly/report', [AttendanceController::class, 'monthlyAttendanceReportExport'])->name('admin.employee.attendance.monthly.report.export');
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
@@ -123,7 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::get('users-edit-password',[UserController::class,'updatePasswordForm'])->name('users.update.password.form');
     Route::post('users-update-password',[UserController::class,'updatePassword'])->name('users.updatePassword');
     Route::get('show-all-roles', [RoleController::class, 'showAllUsers'])->name('roles.showAllUsers');
-
+   
     Route::get('users-search-data',[UserController::class,'getSearchData'])->name('users.search.data');
 
     Route::resource('/users', UserController::class);
