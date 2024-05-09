@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Http;
+
 class EstimateController extends Controller
 {
     /**
@@ -73,24 +74,24 @@ class EstimateController extends Controller
                     return view('admin.estimates.action', ['model' => $model])->render();
                 })
                 ->filter(function ($instance) use ($request) {
-                    if(!empty($request['search'])){
+                    if (!empty($request['search'])) {
                         $search = $request['search'];
                         $instance->where("title", "LIKE", "%$search%");
                         $instance->orWhere("description", "LIKE", "%$search%");
                         $instance->orWhere("price", "LIKE", "%$search%");
                     }
 
-                    if(!empty($request['creator'])){
+                    if (!empty($request['creator'])) {
                         $search = $request['creator'];
                         $instance->where("creator_id", $search);
                     }
 
-                    if(!empty($request['company'])){
+                    if (!empty($request['company'])) {
                         $search = $request['company'];
                         $instance->where("company_id", $search);
                     }
 
-                    if(!empty($request['filter_status'])){
+                    if (!empty($request['filter_status'])) {
                         $search = $request['filter_status'];
                         $instance->where("status", $search);
                     }
@@ -202,11 +203,12 @@ class EstimateController extends Controller
 
     public function approve(Request $request)
     {
+
         if (!empty($request->estimate_id)) {
             $estimate = Estimate::where("id", $request->estimate_id)->first();
             if (!empty($estimate)) {
                 $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
-                if (!empty($otherEstimates)) {
+                if (!empty($otherEstimates) && $otherEstimates->count() > 0) {
                     $otherEstimates->toQuery()->update([
                         "status" => 3, // 3  rejected
                         "remarks" => "Rejected",
@@ -217,7 +219,7 @@ class EstimateController extends Controller
                     "remarks" => $request->remarks ?? "Approved",
                 ]);
                 $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
-                 $request_data = $purchaseRequest  ?? null;
+                $request_data = $purchaseRequest  ?? null;
                 if (!empty($purchaseRequest)) {
                     $purchaseRequest->update([
                         'status' => 2,
@@ -226,6 +228,7 @@ class EstimateController extends Controller
                         "modified_at" => now() ?? NULL,
                     ]);  // 2 approved
                 }
+
                 if ($update == 1) {
                     $this->updateRequestOnPortal([
                         "remarks" => $request->remarks ?? null,
@@ -247,14 +250,14 @@ class EstimateController extends Controller
                 }
             }
         }
-        
     }
     public function updateRequestOnPortal($array = null)
     {
         if (isset($array['request_data']) && !empty($array['request_data'])) {
             $company = $array['request_data']->company;
             $companyBaseUrl = getCompanyBaseUrl($company->company_id);
-            $url = config("project.braincell_base_url") . 'api/update-purchase-request';
+            $url = $companyBaseUrl . 'api/update-purchase-request';
+
             $response = Http::post($url, $array);
             if ($response->successful()) {
                 $data = $response->json();

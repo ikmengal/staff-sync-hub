@@ -310,7 +310,7 @@ class EstimateController extends Controller
         if (isset($array['request_data']) && !empty($array['request_data'])) {
             $company = $array['request_data']->company;
             $companyBaseUrl = getCompanyBaseUrl($company->company_id);
-            $url = config("project.braincell_base_url") . 'api/update-purchase-request';
+            $url = $companyBaseUrl . 'api/update-purchase-request'; 
             $response = Http::post($url, $array);
             if ($response->successful()) {
                 $data = $response->json();
