@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PurchaseRequestController extends Controller
 {
@@ -91,7 +92,38 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth()->user();
+        $validator = Validator::make($request->all(), [
+            "company_id" => "required|integer",
+            "subject" => "required|max:255",
+            "description" => "required",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["success" => false, "message" => "Validation Error", "error" => $validator->errors()->all()], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            $purchase = PurchaseRequest::create([
+                'creator' => $user->email ?? null,
+                'creator_id' => $user->id ?? null,
+                'company_id' => $request->company_id ?? null,
+                'subject' => $request->subject ?? null,
+                'description' => $request->description ?? null,
+            ]);
+
+            if($purchase){
+                DB::commit();
+                return response()->json(['success' => true, "message" => 'Purchase added successfully'], 200);
+            }else{
+                DB::rollback();
+                return response()->json(['success' => false, "message" => 'Purchase request not added.'], 401);
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, "message" => $e->getMessage()], 401);
+        }
     }
 
     /**
