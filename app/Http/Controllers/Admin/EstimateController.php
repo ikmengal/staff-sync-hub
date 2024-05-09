@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
-
+use Illuminate\Support\Facades\Http;
 class EstimateController extends Controller
 {
     /**
@@ -217,6 +217,7 @@ class EstimateController extends Controller
                     "remarks" => $request->remarks ?? "Approved",
                 ]);
                 $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
+                 $request_data = $purchaseRequest  ?? null;
                 if (!empty($purchaseRequest)) {
                     $purchaseRequest->update([
                         'status' => 2,
@@ -226,6 +227,12 @@ class EstimateController extends Controller
                     ]);  // 2 approved
                 }
                 if ($update == 1) {
+                    $this->updateRequestOnPortal([
+                        "remarks" => $request->remarks ?? null,
+                        "status" => 2 ?? null,
+                        "modified_by" => getUser()->email ?? null,
+                        "request_data" => $request_data ?? null,
+                    ]);
                     return response()->json([
                         "success" => true,
                         "message" => "Approved successfuly!",
@@ -240,5 +247,25 @@ class EstimateController extends Controller
                 }
             }
         }
+        
+    }
+    public function updateRequestOnPortal($array = null)
+    {
+        if (isset($array['request_data']) && !empty($array['request_data'])) {
+            $company = $array['request_data']->company;
+            $companyBaseUrl = getCompanyBaseUrl($company->company_id);
+            $url = config("project.braincell_base_url") . 'api/update-purchase-request';
+            $response = Http::post($url, $array);
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['success']) && !empty($data['success']) && $data['success'] == true) {
+                    return $data;
+                }
+            } else {
+                return ['success' => false, 'message' => 'Api error'];
+            }
+        }
+        // $data  = $array;
+
     }
 }
