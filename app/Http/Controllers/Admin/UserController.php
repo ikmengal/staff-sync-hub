@@ -39,7 +39,7 @@ class UserController extends Controller
             return DataTables::of($model)
                 ->addIndexColumn()
                 ->addColumn('name', function ($model) {
-                    return $model->first_name . ' ' . $model->last_name;
+                    return view('admin.users.partials.user_profile', ['user' => $model])->render();
                 })
                 ->addColumn('role', function ($model) {
                     $role_name = "";
@@ -49,6 +49,37 @@ class UserController extends Controller
                         }
                     }
                     return $role_name;
+                })
+                ->addColumn('user_type',function($model){
+                    $user_type = "";
+                    if($model->user_for_portal == 1 && $model->user_for_api == null){
+                          $user_type = "Portal User";
+                    }
+                    if($model->user_for_portal == null && $model->user_for_api == 1){
+                        $user_type = "Api User";
+                    }
+                    if($model->user_for_portal == 1 && $model->user_for_api == 1){
+                        $user_type = "Both";
+
+                    }
+                    return $user_type;
+                })
+                ->addColumn('phone_number',function($model){
+
+                    if(isset($model->profile) && !empty($model->profile->phone_number)){
+
+                        return $model->profile->phone_number;
+
+                    }else{
+                        return '-';
+                    }
+                })
+                ->addColumn('joining_date',function($model){
+                    if(isset($model->profile) && !empty($model->profile->joining_date)){
+                        return formatDate($model->profile->joining_date);
+                    }else{
+                        return '-';
+                    }
                 })
                 ->addColumn('created_at', function ($model) {
                     return formatDate($model->created_at);
@@ -69,7 +100,7 @@ class UserController extends Controller
                   
                 })
                
-                ->rawColumns(['name', 'role', 'created_at', 'action'])
+                ->rawColumns(['name', 'role','user_type','phone_number','joining_date','created_at', 'action'])
                 ->make(true);
         }
 
@@ -206,10 +237,6 @@ class UserController extends Controller
 
 
         ];
-
-
-      
-
 
         $message = [
             'role_id.required' => "Please select role"

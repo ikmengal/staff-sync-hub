@@ -33,10 +33,10 @@
                   <p class="my-2">{{ $requestData->subject ?? '' }}</p>
                 </div>
               </div>
-              <div class="col-md-8">
+              <div class="col-md-12">
                 <h5 class="card-title">Description</h5>
                 <div>
-                  <p class="my-2">{{ $requestData->description ?? '' }}</p>
+                  <p class="my-2">{!! $requestData->description ?? '' !!}</p>
                 </div>
               </div>
             </div>

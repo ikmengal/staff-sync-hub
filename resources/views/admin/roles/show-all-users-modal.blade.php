@@ -14,11 +14,11 @@
                     <div class="mh-375px scroll-y me-n7 pe-7">
                         @if (isset($users) && !empty($users))
                             @foreach ($users as $record)
-                            <div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+                            <div class="d-flex flex-stack py-2 border-bottom border-gray-300 border-bottom-dashed">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-35px symbol-circle">
-                                        @if (isset($record->image) && !empty($record->image))
-                                        <img src="{{ asset(config('project.upload_path.users').$record->image ?? null) }}" alt="{{ $record->full_name ?? null }}" alt="Pic" />
+                                        @if (isset($record->profile) && !empty($record->profile->profile))
+                                        <img src="{{ asset('public/admin/assets/img/avatars').'/'.$record->profile->profile }}" style="width:40px !important; height:40px !important;  object-fit:cover;" alt class="h-auto rounded-circle" />
                                         @else
                                         {!! getWordInitial($record->first_name) !!}
                                         @endif

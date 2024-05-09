@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\DeveloperController;
@@ -7,19 +9,19 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\EstimateController;
 use App\Http\Controllers\Admin\WorkShiftController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
-use App\Http\Controllers\Admin\EmployeeRequisitionController;
-use App\Http\Controllers\Admin\EstimateController;
 use App\Http\Controllers\Admin\MasterLoginController;
 use App\Http\Controllers\Admin\PurchaseRequestController;
-use App\Http\Controllers\Admin\ReceiptController;
-use App\Http\Controllers\Admin\EmployeeController;
-use App\Models\PurchaseRequest;
-use App\Models\User;
+use App\Http\Controllers\Admin\EmployeeRequisitionController;
+use App\Http\Controllers\Admin\AttendanceAdjustmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/companies/vehicles', [AdminController::class, 'getCompaniesVehicles'])->name('admin.companies.vehicles');
     Route::get('admin/company/vehicles/{company}', [AdminController::class, 'getCompanyVehicles'])->name('admin.company.vehicles');
     Route::get('admin/company/filter', [AdminController::class, 'getSearchDataOnLoad'])->name('admin.companies.getSearchDataOnLoad');
+    Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
+    Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
+    Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
+    Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
@@ -135,6 +141,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/receipts', ReceiptController::class);
     Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class);
+    Route::resource('/mark_attendance', AttendanceAdjustmentController::class);
+    Route::resource('/user_leaves', UserLeaveController::class);
 
 
 

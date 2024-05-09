@@ -14,4 +14,13 @@ class AttendanceSummary extends Model
     function hasUser(){
         return $this->hasOne(User::class, 'id', 'user_id');
     }
+
+    function attendance(){
+        return $this->belongsTo(Attendance::class,'attendance_id','id');
+    }
+
+    public function userShift()
+    {
+        return $this->hasOne(WorkShift::class, 'id', 'user_shift_id');
+    }
 }

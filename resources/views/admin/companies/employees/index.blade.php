@@ -66,7 +66,7 @@
             <div class="card-datatable table-responsive">
                 <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                     <div class="container">
-                        <table class="datatables-users table border-top dataTable no-footer dtr-column data_table table-responsive" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info" style="width: 1227px;">
+                        <table class="datatables-users table border-top dataTable no-footer dtr-column data_table table-responsive" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info" style="width: 1227px;min-height: 360px;">
                             <thead>
                                 <tr>
                                     <th>Employee</th>
@@ -78,7 +78,7 @@
                                     <th>Detail</th>
                                 </tr>
                             </thead>
-                            <tbody id="body"></tbody>
+                            <tbody id="body" style="vertical-align:top"></tbody>
                         </table>
                     </div>
                 </div>
@@ -159,8 +159,10 @@
             var page_url = $('#page_url').val();
             var table = $('.data_table').DataTable({
                 processing: true,
-                serverSide: true,
-          
+                // serverSide: true,
+                searching:true,
+               
+       
                 ajax: {
                     url: page_url + "?loaddata=yes",
                     type: "GET",

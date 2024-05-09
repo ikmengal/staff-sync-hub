@@ -66,7 +66,7 @@
             <div class="card-datatable table-responsive">
                 <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                     <div class="container">
-                        <table class="dt-row-grouping table dataTable dtr-column data_table table-responsive">
+                        <table class="dt-row-grouping table dataTable dtr-column data_table table-responsive" style="min-height: 360px;">
                             <thead>
                                 <tr>
                                     <th>S.No#</th>
@@ -78,7 +78,7 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="body"></tbody>
+                            <tbody id="body" style="vertical-align:top"></tbody>
                         </table>
                     </div>
                 </div>

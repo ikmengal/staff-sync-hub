@@ -27,4 +27,29 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    public function render($request, Throwable $exception)
+    {
+        if ($this->isHttpException($exception)) {
+            $statusCode = $exception->getStatusCode();
+
+            if ($statusCode == 404) {
+                return response()->view('errors.404', [], 404);
+            } elseif ($statusCode == 400) {
+                return response()->view('errors.400', [], 400);
+            } elseif ($statusCode == 401) {
+                return response()->view('errors.401', [], 401);
+            } elseif ($statusCode == 403) {
+                return response()->view('errors.403', [], 403);
+            }elseif ($statusCode == 409) {
+                return response()->view('errors.409', [], 409);
+            } else if ($statusCode == 401) {
+                return response()->view('errors.401', [], 401);
+            } else {
+                return response()->view('errors.500', [], 500);
+            }
+        }
+
+        return parent::render($request, $exception);
+    }
 }

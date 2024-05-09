@@ -40,9 +40,15 @@
                                                         src="{{ asset('public/admin/assets/img/avatars') . '/' . $role_user->profile->profile }}"
                                                         alt="Avatar" />
                                                 @else
+<<<<<<< HEAD
                                                     <img class="rounded-circle"
                                                         src="{{ asset('public/admin/default.png') }}"
                                                         alt="Avatar" />
+=======
+                                                    <img src="{{ asset('public/admin') }}/default.png"
+                                                        style="width:40px !important; height:40px !important;" alt
+                                                        class="h-auto rounded-circle" />
+>>>>>>> 24a08301f2a030bf68c66b6daf726f3899163a73
                                                 @endif
                                             </li>
                                         @endif
@@ -61,7 +67,7 @@
                                     @can('roles-delete')
                                         <a href="javascript:;" title="Edit Record"
                                             data-edit-url="{{ route('roles.edit', $role->id) }}" data-id="{{ $role->id }}"
-                                            class=" edit-btn" type="button">
+                                            class="btn btn-sm btn-primary my-1 edit-btn" type="button">
                                             <span><i class="fa fa-edit"></i> Edit Role</span>
                                         </a>
                                     @endcan
@@ -395,7 +401,7 @@
                     },
                     error: function(xhr, status, error) {
                         // Handle errors
-                        var response =xhr.responseJSON;
+                        var response = xhr.responseJSON;
                         alert(response.message)
                     }
                 });

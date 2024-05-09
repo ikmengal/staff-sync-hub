@@ -14,6 +14,7 @@ use App\Http\Resources\EstimateResource;
 use App\Http\Resources\AttachmentResource;
 use Exception;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class EstimateController extends Controller
 {
@@ -175,10 +176,11 @@ class EstimateController extends Controller
                 ->orderByRaw("FIELD(status, 2) DESC")
                 ->orderBy('status')
                 ->get();
+
             $purchaseRequest = PurchaseRequest::where('id', $request->id)->first();
 
             if (isset($purchaseRequest) && !empty($purchaseRequest)) {
-                $purchaseRequest = [
+                $data['request_purchase'] = [
                     'id' => $purchaseRequest->id ?? null,
                     'creator' => $purchaseRequest->creator ?? null,
                     'company' => $purchaseRequest->company ?? null,
@@ -199,11 +201,14 @@ class EstimateController extends Controller
                         'images' => isset($value->attachments) && !blank($value->attachments) ? AttachmentResource::collection($value->attachments) : null,
                     ];
                 }
-                $data['request_purchase'] = $purchaseRequest;
-                return apiResponse(true, $data, "All estimates", 200);
-            } else {
-                return apiResponse(false, null, "No Estimate record found...!", 500);
             }
+
+            return apiResponse(true, $data, "Data against Request id 2", 200);
+
+            // else {
+            //       return apiResponse(true, $data, "All estimates", 200);
+            //     return apiResponse(false, null, "No Estimate record found...!", 500);
+            // }
         }
     }
 
@@ -212,7 +217,6 @@ class EstimateController extends Controller
         if ($request->bearerToken() == "") {
             return apiResponse(false, null, "Enter token", 500);
         }
-
         $bearerToken = DB::table('personal_access_tokens')->where('id', $request->bearerToken())->first();
 
         if (empty($bearerToken)) {
@@ -220,6 +224,7 @@ class EstimateController extends Controller
         } else {
             $user = User::where('id', $bearerToken->tokenable_id)->first();
             $estimate = Estimate::where("id", $request->id)->first();
+
             if (!empty($estimate)) {
                 if (isset($estimate) && $estimate->status == 1) {
                     $otherEstimates = Estimate::where("id", "!=", $estimate->id)->where("request_id", $estimate->request_id)->get();
@@ -233,7 +238,9 @@ class EstimateController extends Controller
                         "status" => 2, // 2 approved
                         "remarks" => $request->remarks ?? "Approved",
                     ]);
-                    $purchaseRequest = PurchaseRequest::where("id", $estimate->request_id)->first();
+                    $purchaseRequest = PurchaseRequest::with('company')->where("id", $estimate->request_id)->first();
+                    $request_data = $purchaseRequest  ?? null;
+
                     if (!empty($purchaseRequest)) {
                         $purchaseRequest->update([
                             'status' => 2,
@@ -241,6 +248,13 @@ class EstimateController extends Controller
                             "modified_by" => $user->id ?? NULL,
                             "modified_at" => now() ?? NULL,
                         ]);  // 2 approved
+
+                        $this->updateRequestOnPortal([
+                            "remarks" => $request->remarks ?? null,
+                            "status" => 2 ?? null,
+                            "modified_by" => $user->email ?? null,
+                            "request_data" => $request_data ?? null,
+                        ]);
                     }
                     if ($update == 1) {
                         return apiResponse(true, null, "Approved successfuly!", 200);
@@ -287,5 +301,27 @@ class EstimateController extends Controller
                 return apiResponse(false, null, "No Approved Estimate Record Found...!", 500);
             }
         }
+    }
+
+    public function updateRequestOnPortal($array = null)
+    {
+
+
+        if (isset($array['request_data']) && !empty($array['request_data'])) {
+            $company = $array['request_data']->company;
+            $companyBaseUrl = getCompanyBaseUrl($company->company_id);
+            $url = config("project.braincell_base_url") . 'api/update-purchase-request';
+            $response = Http::post($url, $array);
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['success']) && !empty($data['success']) && $data['success'] == true) {
+                    return $data;
+                }
+            } else {
+                return ['success' => false, 'message' => 'Api error'];
+            }
+        }
+        // $data  = $array;
+
     }
 }

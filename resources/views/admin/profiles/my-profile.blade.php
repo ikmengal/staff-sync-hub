@@ -1,4 +1,7 @@
 @extends('admin.layouts.app')
+@push('styles')
+    <link href="{{ asset('public/admin/assets/vendor/css/pages/page-profile.css') }}" rel="stylesheet" />
+@endpush
 @section('title', $data['title'] . ' | ' . appName())
 @section('content')
     <!--begin::Toolbar-->
@@ -19,44 +22,42 @@
             <!--end::Item-->
         </ul>
         <div class="row">
-            <div class="col-12">
-                <div class="card mb-4">
+                <div class="col-12">
+                  <div class="card mb-4">
                     <div class="user-profile-header-banner">
-                        <img src="{{ asset('public/admin') }}/assets/img/pages/profile-banner.png" alt="Banner image"
-                            class="rounded-top" />
+                      <img src="{{ asset('public/admin') }}/assets/img/pages/profile-banner.png" alt="Banner image" class="rounded-top">
                     </div>
                     <div class="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center mb-4">
-                        <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
-                            @if (!empty(getUserData($model)->profile))
-                                <img src="{{ asset('public/admin/assets/img/avatars') . '/' . getUserData($model)->profile }}"
-                                    alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img" />
-                            @else
-                                <img src="{{ asset('public/admin') }}/assets/media/svg/avatars/1706719786.png"
-                                    alt="User Avatar" />
-                            @endif
-                        </div>
-                        <div class="flex-grow-1 mt-3 mt-sm-5">
-                            <div
-                                class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-4 flex-md-row flex-column gap-4">
-                                <div class="user-profile-info">
-                                    <h4>{{ getUserData($model)->name }}</h4>
-                                    <ul
+                      <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
+                         @if (!empty(getUserData($model)->profile))
+                         <img src="{{ asset('public/admin/assets/img/avatars') . '/' . getUserData($model)->profile }}" alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img" />
+                         @else
+                        <img src="{{ asset('public/admin') }}/default.png" alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img">
+                        @endif
+                      </div>
+                      <div class="flex-grow-1 mt-3 mt-sm-5">
+                        <div class="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-4 flex-md-row flex-column gap-4">
+                          <div class="user-profile-info">
+                            <h4>{{ getUserData($model)->name }}</h4>
+                            <ul
                                         class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-2">
                                         <li class="list-inline-item"><i
-                                                class="ti ti-color-swatch"></i>{{ getUserData($model)->role }}</li>
+                                                class="ti ti-color-swatch"></i>{{ !empty($model) ? getUserData($model)->role  : "" }}</li>
                                         <li class="list-inline-item"><i
-                                                class="ti ti-map-pin"></i>{{ getUserData($model)->designation }}</li>
+                                                class="ti ti-map-pin"></i>{{ !empty($model) ? getUserData($model)->designation : "" }}</li>
                                         <li class="list-inline-item"><i class="ti ti-calendar"></i>
-                                            {{ getUserData($model)->email }}</li>
+                                            {{ !empty($model) ? getUserData($model)->email : ""}}</li>
                                     </ul>
-                                </div>
-
-                            </div>
+                          </div>
+                          <!--<a href="javascript:void(0)" class="btn btn-primary waves-effect waves-light">-->
+                          <!--  <i class="ti ti-user-check me-1"></i>Connected-->
+                          <!--</a>-->
                         </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
-        </div>
+              </div>
         <div class="row">
             <div class="col-xl-12 col-lg-12 col-md-12">
                 <div class="card card-action mb-4">
@@ -78,9 +79,9 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-8">
                                         <!--begin::Image input-->
-                                        <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')">
+                                        <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')" >
                                             <!--begin::Preview existing avatar-->
-                                            @if(!empty(getUserData($model)->profile))
+                                            @if(isset($model) && !empty(getUserData($model)->profile))
                                                 <div class="image-input-wrapper w-125px h-125px" style="background-image: url('{{ asset('public/admin/assets/img/avatars') }}/{{ getUserData($model)->profile }}')"></div>
                                             @else
                                                 <div class="image-input-wrapper w-125px h-125px" style="background-image: url('{{ asset('public/admin') }}/assets/media/svg/avatars/blank.svg')"></div>
@@ -96,7 +97,7 @@
                                             </label> --}}
                                             <div class="mb-3">
                                             
-                                                <input class="form-control" type="file" id="profile">
+                                                <input class="form-control" type="file" id="profile" name="profile">
                                                 <input type="hidden" name="avatar_remove" />
                                               </div>
                                             <!--end::Label-->
@@ -130,13 +131,13 @@
                                         <div class="row">
                                             <!--begin::Col-->
                                             <div class="col-lg-6 fv-row">
-                                                <input type="text" name="first_name" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="First name" value="{{ $model->first_name }}" />
+                                                <input type="text" name="first_name" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="First name" value="{{ !empty($model) ? $model->first_name : '' }}" />
                                                 <span id="first_name_error" class="text-danger error">{{ $errors->first('first_name') }}</span>
                                             </div>
                                             <!--end::Col-->
                                             <!--begin::Col-->
                                             <div class="col-lg-6 fv-row">
-                                                <input type="text" name="last_name" class="form-control form-control-lg form-control-solid" placeholder="Last name" value="{{ $model->last_name }}" />
+                                                <input type="text" name="last_name" class="form-control form-control-lg form-control-solid" placeholder="Last name" value="{{ !empty($model) ? $model->last_name : '' }}" />
                                             </div>
                                             <!--end::Col-->
                                         </div>
@@ -177,7 +178,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="text" class="form-control form-control-lg form-control-solid mobileNumber" id="phone_number" placeholder="Enter your phone number" value="{{ $model->profile->phone_number ?? '' }}" name="phone_number" />
+                                        <input type="text" class="form-control form-control-lg form-control-solid mobileNumber" id="phone_number" placeholder="Enter your phone number" value="{{ !empty($model->profile) ? $model->profile->phone_number : '' }}" name="phone_number" />
                                         <span id="phone_number_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
@@ -190,7 +191,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="date" class="form-control form-control-lg form-control-solid" value="{{ $model->profile->date_of_birth ?? '' }}" name="date_of_birth" />
+                                        <input type="date" class="form-control form-control-lg form-control-solid" value="{{ !empty($model->profile) ? $model->profile->date_of_birth : '' }}" name="date_of_birth" />
                                         <span id="date_of_birth_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
@@ -222,7 +223,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <input type="text" class="form-control form-control-lg form-control-solid cnic_number" value="{{ $model->profile->cnic }}" id="cnic_number" placeholder="Enter cnic number" name="cnic" />
+                                        <input type="text" class="form-control form-control-lg form-control-solid cnic_number" value="{{!empty($model->profile) ? $model->profile->cnic : "" }}" id="cnic_number" placeholder="Enter cnic number" name="cnic" />
                                         <span id="cnic_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->
@@ -235,7 +236,7 @@
                                     <!--end::Label-->
                                     <!--begin::Col-->
                                     <div class="col-lg-8 fv-row">
-                                        <textarea name="about_me" id="about_me" cols="30" rows="5" class="form-control form-control-lg form-control-solid" placeholder="Enter about you.">{{ $model->profile->about_me ?? '' }}</textarea>
+                                        <textarea name="about_me" id="about_me" cols="30" rows="5" class="form-control form-control-lg form-control-solid" placeholder="Enter about you.">{{ !empty($model->profile) ? $model->profile->about_me : '' }}</textarea>
                                         <span id="about_me_error" class="text-danger error"></span>
                                     </div>
                                     <!--end::Col-->

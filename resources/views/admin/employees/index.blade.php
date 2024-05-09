@@ -70,7 +70,7 @@
             <div class="row p-3">
                 <div class="col-md-4 mb-3">
                     <label for="">Department</label>
-                    <select name="department" id="department" class="select2 form-select department">
+                    <select name="department" id="department" class=" form-select department">
                         <option value="all">All</option>
                         @if(!empty(getAllDepartments()))
                         @foreach(getAllDepartments() as $department)
@@ -111,7 +111,7 @@
             <div class="card-datatable table-responsive">
                 <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                     <div class="container">
-                        <table class="datatables-users table border-top dataTable no-footer dtr-column data_table table-responsive" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info" style="width: 1227px;">
+                        <table class="datatables-users table border-top dataTable no-footer dtr-column data_table table-responsive" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info" style="width: 1227px;min-height: 360px;">
                             <thead>
                                 <tr>
                                     <th>S.No#</th>
@@ -124,7 +124,7 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="body"></tbody>
+                            <tbody id="body" style="vertical-align:top"></tbody>
                         </table>
                     </div>
                 </div>

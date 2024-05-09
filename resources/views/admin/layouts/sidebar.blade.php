@@ -47,30 +47,34 @@
             @endcan
         </li>
         @canany([ 'users-list', 'roles-list', 'permissions-list', 'users-create', 'roles-create', 'permissions-create'])
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-user"></i>
-                <div data-i18n="Users">Users</div>
+        <li class="menu-item {{ Route::is('users.*') ||
+        Route::is('permissions.*') ||
+        Route::is('roles.*') 
+                ? 'open active'
+            : '' }}"">
+            <a href=" javascript:void(0);" class="menu-link menu-toggle">
+            <i class="menu-icon tf-icons ti ti-user"></i>
+            <div data-i18n="Users">Users</div>
             </a>
 
 
-            <ul class="menu-sub">
+            <ul class="menu-sub ">
                 @canany(['users-list','users-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('users.*') ? 'active' : ''}}">
                     <a href="{{route('users.index')}}" class="menu-link">
                         <div data-i18n="Users">Users</div>
                     </a>
                 </li>
                 @endcanany
                 @canany(['roles-list','roles-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('roles.*') ? 'active' : ''}}">
                     <a href="{{route('roles.index')}}" class="menu-link">
                         <div data-i18n="Roles">Roles</div>
                     </a>
                 </li>
                 @endcanany
                 @canany(['permissions-list','permissions-create'])
-                <li class="menu-item">
+                <li class="menu-item {{Route::is('permissions.*') ? 'active' : ''}}">
                     <a href="{{route('permissions.index')}}" class="menu-link">
                         <div data-i18n="Permissions">Permissions</div>
                     </a>
@@ -79,41 +83,54 @@
             </ul>
         </li>
         @endcanany
+        @canany(['employees-list', 'employees-new-hired-employee', 'employees-terminated', 'employees-terminated','employees-terminated-current-month'])
+        <li class="menu-item  {{ Route::is('admin.companies.employees') || Route::is('admin.companies.employees.new_hiring')  ||  Route::is('admin.companies.terminated_employees') || Route::is('admin.companies.terminated_employees_of_current_month') ? 'open active' : '' }}">
 
-        <li class="menu-item {{ request()->is('admin/companies/employees')?'active':'' }}">
-            @can('employees-list')
-            <a href="{{ route('admin.companies.employees') }}" class="menu-link">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-users"></i>
-                <div>All Employees</div>
+                <div data-i18n="Employees">Employees</div>
             </a>
 
-            @endcan
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->is('admin/companies/employees')?'active':'' }}">
+                    @can('employees-list')
+                    <a href="{{ route('admin.companies.employees') }}" class="menu-link">
+
+                        <div>All Employees</div>
+                    </a>
+                    @endcan
+                </li>
+                <li class="menu-item {{ request()->is('admin/companies/employees/new_hiring')?'active':'' }}">
+                    @can('employees-new-hired-employee')
+                    <a href="{{ route('admin.companies.employees.new_hiring') }}" class="menu-link">
+
+                        <div>New Hired Employees</div>
+                    </a>
+                    @endcan
+                </li>
+                <li class="menu-item {{ request()->is('admin/companies/terminated_employees')?'active':'' }}">
+                    @can('employees-terminated')
+                    <a href="{{ route('admin.companies.terminated_employees') }}" class="menu-link">
+                        <div>Terminated Employees</div>
+                    </a>
+                    @endcan
+                </li>
+                <li class="menu-item {{ request()->is('admin/companies/terminated_employees_of_current_month')?'active':'' }}">
+                    @can('employees-terminated-current-month')
+                    <a href="{{ route('admin.companies.terminated_employees_of_current_month') }}" class="menu-link">
+
+                        <div>Terminated Employees of current month</div>
+                    </a>
+                    @endcan
+                </li>
+
+
+            </ul>
 
         </li>
-        <li class="menu-item {{ request()->is('admin/companies/employees/new_hiring')?'active':'' }}">
-            @can('employees-new-hired-employee')
-            <a href="{{ route('admin.companies.employees.new_hiring') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-users"></i>
-                <div>New Hired Employees</div>
-            </a>
-            @endcan
-        </li>
-        <li class="menu-item {{ request()->is('admin/companies/terminated_employees')?'active':'' }}">
-            @can('employees-terminated')
-            <a href="{{ route('admin.companies.terminated_employees') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-tag"></i>
-                <div>Terminated Employees</div>
-            </a>
-            @endcan
-        </li>
-        <li class="menu-item {{ request()->is('admin/companies/terminated_employees_of_current_month')?'active':'' }}">
-            @can('employees-terminated-current-month')
-            <a href="{{ route('admin.companies.terminated_employees_of_current_month') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-tag"></i>
-                <div>Terminated Employees of current month</div>
-            </a>
-            @endcan
-        </li>
+        @endcanany
+
+
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             @can('vahicles-list')
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
@@ -160,6 +177,28 @@
                 </li>
             </ul>
             @endcan
+        </li>
+        @endcanany
+
+
+        @canany(['attendances-show-companies'])
+        <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-users"></i>
+                <div data-i18n="Attendance">Attendance</div>
+            </a>
+            <ul class="menu-sub">
+                @can('attendances-show-companies')
+                <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
+                    <a href="{{ route('admin.companies.list') }}" class="menu-link">
+
+                        <div>Companies</div>
+                    </a>
+                </li>
+                @endcan
+
+            </ul>
+
         </li>
         @endcanany
 
