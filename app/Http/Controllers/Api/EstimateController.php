@@ -193,7 +193,7 @@ class EstimateController extends Controller
                 foreach ($estimates as $key => $value) {
                     $data['estimates'][] = [
                         'id' => $value->id ?? null,
-                        'creator' => getUserName($value->creator) ?? null,
+                        'creator' => getUserName($value->creator->id) ?? null,
                         'title' => $value->title ?? null,
                         'description' => $value->description ?? null,
                         'price' => $value->price ?? null,
