@@ -190,12 +190,13 @@
             <ul class="menu-sub">
                 @can('attendances-show-companies')
                 <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
-                    <a href="{{ route('admin.companies.list') }}" class="menu-link">
+                    <a href="{{ route('admin.companies.attendance') }}" class="menu-link">
 
                         <div>Companies</div>
                     </a>
                 </li>
                 @endcan
+               
 
             </ul>
 

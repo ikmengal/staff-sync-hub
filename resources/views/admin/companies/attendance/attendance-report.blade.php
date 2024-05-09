@@ -1,6 +1,7 @@
 @extends('admin.layouts.app')
 @section('title', $title . ' - ' . appName())
 @section('content')
+@dd($data)
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card mb-4">

@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 @section('title', $title . ' - ' . appName())
 @php
-    use App\Http\Controllers\Admin\AdminController;
+
     use Carbon\Carbon;
 @endphp
 @section('content')
-    <input type="hidden" id="current_user_slug" value="{{ $user->slug }}">
+    <input type="hidden" id="current_user_slug" value="{{ !empty($user) ?  $user->slug : ''}}">
     <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card mb-4">
@@ -23,16 +23,8 @@
                 <div class="card-header d-flex justify-content-between align-items-center row">
 
                     <div class="col-md-4 mt-md-0 mt-3">
-                        @php $url = URL::to('admin/company/attendance/') @endphp
-                        @include('admin.layouts.employee_dropdown', [
-                            'employees' => $employees,
-                        
-                            'url' => $url,
-                            'month' => $month,
-                            'year' => $year,
-                            'type' => 'redirect',
-                            'company' => $company,
-                        ])
+                   
+                    
 
                     </div>
                     <div class="col-md-4 mt-md-0 mt-3">
@@ -47,6 +39,7 @@
                     </div>
 
                 </div>
+                @if(isset($user) && !empty($user))
                 <div class="card-header d-flex justify-content-between align-items-center row">
                     <div class="col-md-8">
                         <span class="card-title mb-0">
@@ -82,6 +75,7 @@
                     </div>
 
                 </div>
+                @endif
                 <div class="card-header row">
                     <div class="col-md-4">
                         <button class="btn btn-success" onclick="exportAttendance($month,$year,$company)">Export</button>
@@ -105,15 +99,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
-                                    $beginDate = Carbon::parse($begin);
-                                    $start_date = '';
-                                    if (getUserJoiningDate($user)) {
-                                        $start_date = getUserJoiningDate($user);
-                                    }
-                                    $end = new DateTime($year . '-' . (int) $month . '-25');
-                                @endphp
+                              @if(isset($user) && !empty($user))
                                 @for ($i = $begin; $i <= $end; $i->modify('+1 day'))
                                     @php
                                         $shift = getUserShift($user, $i->format('Y-m-d'), $company);
@@ -132,7 +118,7 @@
                                         } else {
                                             $next = date('Y-m-d', strtotime($end_time));
                                         }
-                                        $reponse = AdminController::getAttandanceSingleRecord(
+                                        $reponse = getAttandanceSingleRecord(
                                             $user->id,
                                             $i->format('Y-m-d'),
                                             $next,
@@ -211,6 +197,7 @@
                                         @endif
                                     @endif
                                 @endfor
+                            @endif
                             </tbody>
                         </table>
                     </div>

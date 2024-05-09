@@ -1500,7 +1500,7 @@ function getTeamMembers($user, $companyName)
 
 function getCompanyFromID($company_id)
 {
-    return Company::where("company_id" , $company_id)->first();
+    return Company::where("company_id", $company_id)->first();
 }
 function getCompanyBaseUrl($company_id)
 {
@@ -1534,5 +1534,424 @@ function getCompanyBaseUrl($company_id)
             $url = config("project.rocket_base_url");
         }
         return $url;
+    }
+}
+
+function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, $shift, $company)
+{
+
+
+    foreach (companies() as $portalName => $portalDb) {
+        if ($company != null && $company == $portalName) {
+
+            $user = User::on($portalDb)->where('id', $userID)->first();
+        }
+    }
+    $beginDate = Carbon::parse($current_date);
+
+    $start_date = '';
+    if (isset($user) && !empty($user)) {
+        if (getUserJoiningDate($user)) {
+            $start_date = getUserJoiningDate($user);
+        }
+    }
+
+
+    if ($shift->type == 'scheduled') {
+        $scheduled = '(Flexible)';
+
+        $shiftTiming = date("h:i A", strtotime($shift->start_time)) . ' - ' . date("h:i A", strtotime($shift->end_time)) . $scheduled;
+
+        // $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift->start_time));
+        $shift_start_time = $shift->start_time;
+        if ($shift->start_time == "00:00:00") {
+            $shift_start_time = str_replace($shift->start_time, '24:00:00', $shift->start_time);
+        }
+        $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift_start_time));
+        $end_time = date("Y-m-d H:i:s", strtotime($next_date . ' ' . $shift->end_time));
+
+        $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+        $end = date("Y-m-d H:i:s", strtotime('+10 hours ' . $end_time));
+
+        
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first();
+            }
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first();
+            }
+        }
+
+
+        $label = '-';
+        $type = '';
+        $workingHours = '-';
+        $workingMinutes = 0;
+        $checkSecond = true;
+        $attendance_id = '';
+        $checkOut = '';
+
+        if ($punchIn != null) {
+            $attendance_id = $punchIn->id;
+            $punchInRecord = new DateTime($punchIn->in_date);
+            $checkIn = $punchInRecord->format('h:i A');
+            $label = '<span class="badge bg-label-success">Regular</span>';
+            $type = 'regular';
+        } else {
+            $checkIn = '-';
+        }
+
+        if ($punchIn != null && $punchOut != null) {
+            $h1 = new DateTime($punchIn->in_date);
+            $h2 = new DateTime($punchOut->in_date);
+            $diff = $h2->diff($h1);
+            $workingHours = $diff->format('%H:%I');
+            $workingMinutes = $diff->h * 60 + $diff->i;
+        }
+        // dd($workingMinutes);
+        $requiredMinutes = 8 * 60 + 30;
+        $seven_hours = 7 * 60;
+
+        if ($punchOut != null) {
+            if ($punchIn == null) {
+                $attendance_id = $punchOut->id;
+            }
+            $punchOutRecord = new DateTime($punchOut->in_date);
+            $checkOut = $punchOutRecord->format('h:i A');
+            if ($workingMinutes < $seven_hours) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'lasthalf';
+            } elseif ($workingMinutes > $seven_hours && $workingMinutes < $requiredMinutes) {
+                $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Early Out</span>';
+                $type = 'earlyout';
+            }
+        } else {
+            $checkOut = '-';
+        }
+
+        if (($punchIn != null && $punchOut == null)) {
+            if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'lasthalf';
+            } else {
+                $checkOut = 'Not Yet';
+            }
+        } elseif (($punchIn == null && $punchOut != null)) {
+            if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'firsthalf';
+            }
+        }
+
+        $currentDatecheck = date('Y-m-d'); // Current date in 'Y-m-d' format
+        $midnightTimestamp = strtotime($currentDatecheck . ' 00:00:00'); // Midnight timestamp
+
+        if (($punchIn == null && $punchOut == null) && $beginDate->greaterThanOrEqualTo($start_date) && strtotime($current_date) < $midnightTimestamp) {
+            $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Absent</span>';
+            $type = 'absent';
+            $attendance_date = $current_date;
+            $checkIn = '-';
+            $checkOut = '-';
+        }
+
+        $discrepancy = '';
+        $discrepancyStatus = '';
+        $applied_discrepancy = '';
+        $attendance_date = '';
+
+        if ($type == 'earlyout' && !empty($punchIn)) {
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalDb) {
+                    $discrepancy_record = Discrepancy::on($portalDb)->where('attendance_id', $punchIn->log_id)->orWhereDate('date', date('Y-m-d', strtotime($punchIn->in_date)))->where('user_id', $userID)->first();
+                }
+            }
+            if (!empty($discrepancy_record)) {
+                $discrepancy = $discrepancy_record->type;
+                $discrepancyStatus = $discrepancy_record->status;
+                $applied_discrepancy = $discrepancy_record;
+            } else {
+                $attendance_date = $punchIn;
+                $attendance_id = $attendance_date->id;
+            }
+        }
+
+        $leave = '';
+        $applied_leaves = '';
+        $leaveStatus = '';
+        $punch_date = '';
+
+        if ($type == 'absent') {
+            $punch_date = date('Y-m-d', strtotime($current_date));
+        } elseif ($type == 'lasthalf') {
+            $punch_date = date('Y-m-d', strtotime($current_date));
+        }
+
+        if (isset($punch_date) && $punch_date != '') {
+            if (userLeaveApplied($userID, $punch_date, $company)) {
+                $leaves = userLeaveApplied($userID, $punch_date, $company);
+            } else {
+                foreach (companies() as $portalName => $portalDb) {
+                    if ($company != null && $company == $portalDb) {
+                        $leaves = UserLeave::on($portalDb)->where('behavior_type', $type)->whereDate('start_at', $punch_date)->where('user_id', $userID)->first();
+                    }
+                }
+            }
+            if (!empty($leaves)) {
+                $leave = $leaves->behavior_type;
+                $leaveStatus = $leaves->status;
+                $applied_leaves = $leaves;
+            } else {
+                if ($type == 'absent') {
+                    $attendance_date = $current_date;
+                } elseif ($type == "lasthalf" && $punchIn == '') {
+                    $attendance_date = $current_date;
+                }
+            }
+        }
+    } else {
+        $scheduled = '';
+
+        $shiftTiming = date("h:i A", strtotime($shift->start_time)) . ' - ' . date("h:i A", strtotime($shift->end_time)) . $scheduled;
+
+        $shift_start_time = $shift->start_time;
+        if ($shift->start_time == "00:00:00") {
+            $shift_start_time = str_replace($shift->start_time, '24:00:00', $shift->start_time);
+        }
+        $start_time = date("Y-m-d H:i:s", strtotime($current_date . ' ' . $shift_start_time));
+
+        $end_time = date("Y-m-d H:i:s", strtotime($next_date . ' ' . $shift->end_time));
+        $shift_start_time = date("Y-m-d h:i A", strtotime('+16 minutes ' . $start_time));
+
+        $shift_end_time = date("Y-m-d h:i A", strtotime('-16 minutes ' . $end_time));
+
+        $shift_start_halfday = date("Y-m-d h:i A", strtotime('+121 minutes ' . $start_time));
+        $shift_end_halfday = date("Y-m-d h:i A", strtotime('-121 minutes ' . $end_time));
+        $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
+        $end = date("Y-m-d H:i:s", strtotime('+6 hours ' . $end_time));
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date',  [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first(); // 2023-12-27 00:28:42
+            }
+        }
+        foreach (companies() as $portalName => $portalDb) {
+            if ($company != null && $company == $portalName) {
+                $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first(); // 2023-12-27 09:24:15
+            }
+        }
+
+
+        $label = '-';
+        $type = '';
+        $workingHours = '-';
+        $workingMinutes = 0;
+        $checkSecondDiscrepancy = true;
+        $checkSecond = true;
+        $attendance_id = '';
+
+        if ($punchIn != null) {
+            $attendance_id = $punchIn->id;
+            $punchInRecord = new DateTime($punchIn->in_date);
+            $checkIn = $punchInRecord->format('h:i A');
+
+            if (strtotime($punchIn->in_date) < strtotime($shift_start_time)) {
+                $label = '<span class="badge bg-label-success">Regular</span>';
+                $type = 'regular';
+            } elseif (strtotime($punchIn->in_date) >= strtotime($shift_start_time) && strtotime($punchIn->in_date) <= strtotime($shift_start_halfday)) {
+                $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Late In</span>';
+                $type = 'lateIn';
+                $checkSecondDiscrepancy = false;
+            } else {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'firsthalf';
+                $checkSecond = false;
+                $checkSecondDiscrepancy = false;
+            }
+        } else {
+            $checkIn = '-';
+        }
+
+        if ($punchOut != null) {
+
+            if ($punchIn == null) {
+                $attendance_id = $punchOut->id;
+            }
+            $punchOutRecord = new DateTime($punchOut->in_date);
+            $checkOut = $punchOutRecord->format('h:i A');
+
+            if ($checkSecondDiscrepancy && (strtotime($punchOut->in_date) < strtotime($shift_end_time) && strtotime($punchOut->in_date) > strtotime($shift_end_halfday))) {
+                $label = '<span class="badge bg-label-warning"><i class="far fa-dot-circle text-warning"></i> Early Out</span>';
+                $type = 'earlyout';
+            } else if ($checkSecond && strtotime($punchOut->in_date) < strtotime($shift_end_halfday)) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'lasthalf';
+            }
+        } else {
+            $checkOut = '-';
+        }
+
+        if ($punchIn != null && $punchOut != null) {
+
+            $h1 = new DateTime($punchIn->in_date);
+            $h2 = new DateTime($punchOut->in_date);
+            $diff = $h2->diff($h1);
+            $workingHours = $diff->format('%H:%I');
+            $workingMinutes = $diff->h * 60 + $diff->i;
+        }
+
+        if (($punchIn != null && $punchOut == null)) {
+            if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'lasthalf';
+            } else {
+                $checkOut = 'Not Yet';
+            }
+        } elseif (($punchIn == null && $punchOut != null)) {
+            if (date('Y-m-d H:i') > date('Y-m-d H:i', strtotime($end))) {
+                $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Half-Day</span>';
+                $type = 'firsthalf';
+            }
+        }
+
+        $current_time = date("H:i:s");
+        $date_comparsion = '';
+        if (strtotime($current_time) > strtotime("00:00:00") && strtotime($current_time) <= strtotime("01:00:00")) {
+            $date_comparsion = $current_date < date('Y-m-d');
+        } else {
+            $date_comparsion = $current_date <= date('Y-m-d');
+        }
+
+        $currentDatecheck = date('Y-m-d'); // Current date in 'Y-m-d' format
+        $midnightTimestamp = strtotime($currentDatecheck . '00:00:01'); // Midnight timestamp
+
+        if (($punchIn == null && $punchOut == null) && date('Y-m-d h:i A') > $shift_start_time && $date_comparsion && $beginDate->greaterThanOrEqualTo($start_date) && strtotime($current_date) < $midnightTimestamp) {
+            $label = '<span class="badge bg-label-danger"><i class="far fa-dot-circle text-danger"></i> Absent</span>';
+            $type = 'absent';
+            $attendance_date = $current_date;
+            $checkIn = '-';
+        }
+
+        $discrepancy = '';
+        $discrepancyStatus = '';
+        $applied_discrepancy = '';
+        $attendance_date = '';
+
+        if ($type == 'lateIn' || $type == 'late' || $type == 'earlyout' && !empty($punchIn)) {
+            $originalDate = $punchIn->in_date;
+            $carbonDate = \Carbon\Carbon::parse($originalDate);
+            // Subtract 1 hour
+            $modifiedDate = $carbonDate->subHour();
+
+            // Format the result as needed
+            $result = \Carbon\Carbon::parse($start)->toDateString();
+
+            foreach (companies() as $portalName => $portalDb) {
+                if ($company != null && $company == $portalName) {
+                    $discrepancy_record = Discrepancy::on($portalDb)->whereDate('date',  $result)->where('user_id', $userID)->first();
+                }
+            }
+
+            if (!empty($discrepancy_record)) {
+                $discrepancy = $discrepancy_record->type;
+                $discrepancyStatus = $discrepancy_record->status;
+                $applied_discrepancy = $discrepancy_record;
+            } else {
+                $attendance_date = $punchIn;
+                $attendance_id = $attendance_date->id;
+            }
+        }
+
+        $leave = '';
+        $applied_leaves = '';
+        $leaveStatus = '';
+        $punch_date = '';
+
+        if ($type == 'absent') {
+            $punch_date = date('Y-m-d', strtotime($current_date));
+        } else if ($type == 'firsthalf') {
+            $punch_date = date('Y-m-d', strtotime($current_date));
+        } else if ($type == 'lasthalf') {
+            $punch_date = date('Y-m-d', strtotime($current_date));
+        }
+
+        if (isset($punch_date) && $punch_date != '') {
+
+            if (userLeaveApplied($userID, $punch_date, $company)) {
+                $leaves = userLeaveApplied($userID, $punch_date, $company);
+            } else {
+                foreach (companies() as $portalName => $portalDb) {
+                    if ($company != null && $company == $portalName) {
+                        $leaves = UserLeave::on($portalDb)->where('behavior_type', $type)->whereDate('start_at', $punch_date)->where('user_id', $userID)->first();
+                    }
+                }
+            }
+
+            if (!empty($leaves)) {
+                $leave = $leaves->behavior_type;
+                $leaveStatus = $leaves->status;
+                $applied_leaves = $leaves;
+            } else {
+                if ($type == 'absent') {
+                    $attendance_date = $current_date;
+                } elseif ($type == "lasthalf" && $punchIn == '') {
+                    $attendance_date = $current_date;
+                } elseif ($type == "lasthalf" && $punchIn != '') {
+                    $attendance_date = $punchIn;
+                    $attendance_id = $attendance_date->id;
+                } elseif ($type == "firsthalf" && $punchIn == '') {
+                    $attendance_date = $current_date;
+                } elseif ($type == "firsthalf" && $punchIn != '') {
+                    $attendance_date = $current_date;
+                }
+            }
+        }
+    }
+
+    if ($type == 'regular') {
+        $attendance_date = $punchIn;
+        $attendance_id = $attendance_date->id;
+    }
+
+    $data = array(
+        'punchIn' => $checkIn,
+        'punchOut' => $checkOut,
+        'label' => $label,
+        'type' => $type,
+        'shiftTiming' => $shiftTiming,
+        'shiftType' => $shift->type,
+        'workingHours' => $workingHours,
+        'workingMinutes' => $workingMinutes,
+        'discrepancy' => $discrepancy,
+        'discrepancyStatus' => $discrepancyStatus,
+        'applied_discrepancy' => $applied_discrepancy,
+        'leave' => $leave,
+        'leaveStatus' => $leaveStatus,
+        'applied_leaves' => $applied_leaves,
+        'attendance_date' => $attendance_date,
+        'attendance_id' => $attendance_id,
+        'user' => $user,
+        'punch_in_id' => $punchIn->id ?? null,
+        'punch_out_id' => $punchOut->id ?? null,
+        'punch_in' => $punchIn ?? null,
+        'punch_out' => $punchOut ?? null,
+        'shift' => $shift,
+    );
+
+    if ($status == 'all') {
+        return $data;
+    } elseif ($status == 'regular' && $type == 'regular') {
+        return $data;
+    } elseif ($status == 'absent' && $type == 'absent') {
+        return $data;
+    } elseif ($status == 'lateIn' && $type == 'lateIn') {
+        return $data;
+    } elseif ($status == 'earlyout' && $type == 'earlyout') {
+        return $data;
+    } elseif ($status == 'halfday' && ($type == 'firsthalf' || $type == 'lasthalf')) {
+        return $data;
+    } else {
+        return null;
     }
 }
