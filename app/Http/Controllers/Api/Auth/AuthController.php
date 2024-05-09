@@ -57,7 +57,7 @@ class AuthController extends Controller
             } else {
                 return apiResponse(false, null, 'Incorrect Password', 500);
             }
-        }else{
+        } else {
             return apiResponse(false, null, 'Your Are Not Allowed To Login', 500);
         }
     }
@@ -81,6 +81,8 @@ class AuthController extends Controller
             'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'user_for_api' => 1,
+
         ]);
 
         $token = $user->createToken('token')->plainTextToken;
@@ -136,7 +138,8 @@ class AuthController extends Controller
         return Password::broker('users');
     }
 
-    public function verifyOtp(Request $request){
+    public function verifyOtp(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'otp' => 'required|string',
         ]);
@@ -144,13 +147,13 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 500);
         }
-        
+
         $otp = Otp::where('otp', $request->otp)->first();
-        
-        if (isset($otp) && !empty($otp)){
-            if(!$otp->otp_expires > now()){
+
+        if (isset($otp) && !empty($otp)) {
+            if (!$otp->otp_expires > now()) {
                 return apiResponse(true, null, "Your otp verificated successfully now changed the password", 200);
-            }else{
+            } else {
                 return apiResponse(false, null, "OTP has expired", 500);
             }
         } else {

@@ -229,7 +229,7 @@
     <script src="{{ asset('public/admin/assets/js/custom-dashboard.js') }}"></script>
     <script src="{{ asset('public/admin/assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js') }}"></script>
     <script>
-        const markAttendanceStoreRoute = '{{ route('mark_attendance.store') }}';
+        const markAttendanceStoreRoute = "{{ route('mark_attendance.store') }}";
 
 
 

@@ -18,6 +18,7 @@ use App\Models\WorkingShiftUser;
 use App\Models\AttendanceSummary;
 use Illuminate\Support\Facades\DB;
 use App\Models\AttendanceAdjustment;
+use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use App\Models\HolidayCustomizeEmployee;
 use Spatie\Permission\Models\Permission;
@@ -106,7 +107,7 @@ function companies()
         // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
         // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
         // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
+        // // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
         // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
         // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
@@ -1020,9 +1021,9 @@ function getUser($user_id = null, $company = null)
     } else {
         $user_id = Auth::user()->id;
     }
-  
-            $user = User::with("profile")->where('id', $user_id)->where('status', 1)->with('roles')->first();
-    
+
+    $user = User::with("profile")->where('id', $user_id)->where('status', 1)->with('roles')->first();
+
     if (!empty($user)) {
         return $user;
     }
@@ -1056,13 +1057,12 @@ function hasExceededLeaveLimit($user, $company)
 
         foreach (companies() as $portalName => $portalDb) {
             if ($company != null && $company == $portalName) {
-              
-                 
+
+
                 $total_used_leaves = UserLeave::on($portalDb)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereBetween('start_at', [yearPeriod()['yearStart'], yearPeriod()['yearEnd']])
                     ->sum('duration');
-                  
             }
         }
 
@@ -1077,11 +1077,11 @@ function hasExceededLeaveLimit($user, $company)
         $leaveYearStart = Carbon::createFromDate(yearPeriod()['yearStart']); // June 26th of the current year
         $monthsElapsed = $leaveYearStart->diffInMonths($currentDate) + 1;
         $leaveYearDate = Carbon::createFromDate(yearPeriod()['yearEnd']); // June 26th of the current year
-      
+
         // Check if the user joined after the leave year started
         // $joiningDate = Carbon::createFromDate($user->employeeStatus->start_date); // Replace with the actual joining date
         $joiningDate = getUserJoiningDate($user); // Replace with the actual joining date
-       
+
         if ($joiningDate > $leaveYearStart) {
             $monthsElapsed = max(0, $joiningDate->diffInMonths($currentDate)) + 1;
             $interval = $joiningDate->diff($leaveYearDate);
@@ -1092,7 +1092,7 @@ function hasExceededLeaveLimit($user, $company)
             $monthsDifference = ($interval->y * 12) + $interval->m;
             $total_leaves = $monthsDifference * 2;
         }
-       
+
 
         $total_leaves_in_account = $monthsElapsed * 2;
 
@@ -1105,7 +1105,7 @@ function hasExceededLeaveLimit($user, $company)
         // if ((float) $total_used_leaves >=  (float) $total_leaves) {
         //     $total_used_leaves =  $total_leaves;
         // }
-       
+
         $leave_report = [
             'total_leaves' => $total_leaves,
             'total_remaining_leaves' => $total_leaves - $total_used_leaves,
@@ -1209,7 +1209,7 @@ function getFifthDateOfMonth($year, $month)
 
 function getUserShift($user, $attendanceDate, $company)
 {
-   
+
     foreach (companies() as $portalName => $portalDb) {
         if ($company != null && $company == $portalName) {
             $shift = WorkingShiftUser::on($portalDb)->where('user_id', $user->id)->where('start_date', '<=', $attendanceDate)
@@ -1221,7 +1221,7 @@ function getUserShift($user, $attendanceDate, $company)
                 ->first();
         }
     }
-  
+
     if (!empty($shift) && isset($shift->workShift) && !empty($shift->workShift)) {
         return $shift->workShift;
     } else {
@@ -1316,9 +1316,9 @@ function checkAdjustedAttendance($userID, $current_date, $company)
 
 function userAppliedLeaveOrDiscrepency($user_id, $type, $start_at, $company)
 {
-    
+
     if ($type == 'absent' || $type == 'firsthalf' || $type == "lasthalf") {
-      
+
         foreach (companies() as $portalName => $portalDb) {
             if ($company != null && $company == $portalName) {
                 $user_leave = UserLeave::on($portalDb)->where('user_id', $user_id)
@@ -1329,7 +1329,7 @@ function userAppliedLeaveOrDiscrepency($user_id, $type, $start_at, $company)
                     ->first();
             }
         }
-     
+
 
         if (empty($user_leave)) {
             foreach (companies() as $portalName => $portalDb) {
@@ -1353,9 +1353,9 @@ function userAppliedLeaveOrDiscrepency($user_id, $type, $start_at, $company)
             } else {
 
                 foreach (companies() as $portalName => $portalDb) {
-                 
+
                     if ($company != null && $company == $portalName) {
-                       
+
                         $userleave = UserLeave::on($portalDb)->where('user_id', $user_id)->where('behavior_type', $type)->where('start_at', $start_at)->first();
                     }
                 }
@@ -1493,4 +1493,46 @@ function getTeamMembers($user, $companyName)
         }
     }
     return User::whereIn('id', $team_members)->where('id', '!=', $user->id)->where('is_employee', 1)->where('status', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email', 'status'])->get();
+}
+
+
+
+
+function getCompanyFromID($company_id)
+{
+    return Company::where("company_id" , $company_id)->first();
+}
+function getCompanyBaseUrl($company_id)
+{
+    $url = '';
+    if (!empty($company_id)) {
+        if ($company_id == 2) { //Vertical Edge
+            $url = config("project.vertical_base_url");
+        } elseif ($company_id == 3) { //Braincell  Technology
+            $url = config("project.braincell_base_url");
+        } elseif ($company_id == 4) { //C-Level
+            $url = config("project.clevel_base_url");
+        } elseif ($company_id == 5) { //DELVE12
+            $url = config("project.deleve_base_url");
+        } elseif ($company_id == 6) { //HORIZONTAL
+            $url = config("project.horizental_base_url");
+        } elseif ($company_id == 7) { //MERCURY
+            $url = config("project.mercury_base_url");
+        } elseif ($company_id == 8) { //MOMYOM
+            $url = config("project.momyom_base_url");
+        } elseif ($company_id == 9) { //SOFTNOVA
+            $url = config("project.softnova_base_url");
+        } elseif ($company_id == 10) { //SOFTFELLOW
+            $url = config("project.softfellow_base_url");
+        } elseif ($company_id == 11) { //SWYFTCUBE
+            $url = config("project.swyftcube_base_url");
+        } elseif ($company_id == 12) { //SWYFTZONE
+            $url = config("project.swyftzone_base_url");
+        } elseif ($company_id == 13) { //TECHCOMRADE
+            $url = config("project.techcomrade_base_url");
+        } elseif ($company_id == 14) { //ROCKET
+            $url = config("project.rocket_base_url");
+        }
+        return $url;
+    }
 }

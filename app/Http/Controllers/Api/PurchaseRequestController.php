@@ -65,6 +65,7 @@ class PurchaseRequestController extends Controller
                 "company_id" => $request->company_id ?? null,
                 "subject" => $request->subject ?? null,
                 "description" => $request->description ?? null,
+                "portal_request_id" => $request->portal_request_id ?? null
             ]);
             if ($create->id) {
                 return response()->json([
