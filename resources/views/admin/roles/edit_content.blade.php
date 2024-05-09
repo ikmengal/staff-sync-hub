@@ -1,10 +1,12 @@
-<form class="pt-0 fv-plugins-bootstrap5 fv-plugins-framework" id="editRoleForm" data-method="" data-modal-id="editRoleModal" data-url={{ route('roles.update', $role->id) }} data-id="{{ $role->id }}">
+<form class="pt-0 fv-plugins-bootstrap5 fv-plugins-framework" id="editRoleForm" data-method="" data-modal-id="editRoleModal"
+    data-url={{ route('roles.update', $role->id) }} data-id="{{ $role->id }}">
     @csrf
 
     <span id="edit-content">
         <div class="col-12 mb-4">
             <label class="form-label" for="name">Role Name <span class="text-danger">*</span></label>
-            <input type="text" id="name" name="name" class="form-control" placeholder="Enter a role name" tabindex="-1" value="{{ $role->name }}" readonly />
+            <input type="text" id="name" name="name" class="form-control" placeholder="Enter a role name"
+                tabindex="-1" value="{{ $role->name }}" readonly />
             <span id="name_error" class="text-danger"></span>
         </div>
         <div class="col-12">
@@ -16,7 +18,8 @@
                         <tr>
                             <td class="text-nowrap fw-semibold">
                                 Administrator Access
-                                <i class="ti ti-info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Allows a full access to the system"></i>
+                                <i class="ti ti-info-circle" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="Allows a full access to the system"></i>
                             </td>
                             <td>
                                 <div class="form-check">
@@ -27,30 +30,28 @@
                             </td>
                         </tr>
                         @foreach ($models as $permission)
-                        <tr>
-                            <td class="text-nowrap fw-semibold">
-                                {{ ucfirst($permission->label) }} Management
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    @foreach (SubPermissions($permission->label) as $sub_permission)
-                                    @php $label = explode('-', $sub_permission->name) @endphp
-                                    <div class="form-check me-3 me-lg-5">
-                                        <input class="form-check-input childCheckBox" id="{{ $sub_permission->id }}" type="checkbox" value="{{ $sub_permission->name ?? null }}" @if (isset($role_permissions) && !empty($role_permissions)) @foreach ($role_permissions as $val) @if ($val==$sub_permission->name){{ 'checked' }} @endif
-                                        @endforeach
-                                        @endif
+                            <tr>
+                                <td class="text-nowrap fw-semibold">
+                                    {{ ucfirst($permission->label) }} Management</td>
+                                <td>
+                                    <div class="d-flex">
+                                        @foreach (SubPermissions($permission->label) as $sub_permission)
+                                            @php $label = explode('-', $sub_permission->name) @endphp
+                                            <div class="form-check me-3 me-lg-5">
+                                                <input class="form-check-input childCheckBox" id="{{ $sub_permission->id }}" type="checkbox"
+                                                    value="{{ $sub_permission->name ?? null }}"
+                                                    @if (isset($role_permissions) && !empty($role_permissions)) 
+                                                    @foreach ($role_permissions as $val)
+                                                        @if ($val == $sub_permission->name){{ 'checked' }} @endif
+                                                    @endforeach
+                                                    @endif
                                         name="permissions[]" />
-                                        <label class="form-check-label" for="{{ $sub_permission->id }}">
+                                        <label class="form-check-label"
+                                            for="{{ $sub_permission->id }}">
                                             {{ $sub_permission->display_name }}</label>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                    @endforeach
-                                    @endif
-                                    name="permissions[]" />
-                                    <label class="form-check-label" for="userManagementRead-{{ $sub_permission->id }}">
-                                        {{ Str::ucfirst($label[1]) }}</label>
-                                </div>
-                                @endforeach
-            </div>
             </td>
             </tr>
             @endforeach

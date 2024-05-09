@@ -52,9 +52,9 @@
         Route::is('roles.*') 
                 ? 'open active'
             : '' }}"">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-user"></i>
-                <div data-i18n="Users">Users</div>
+            <a href=" javascript:void(0);" class="menu-link menu-toggle">
+            <i class="menu-icon tf-icons ti ti-user"></i>
+            <div data-i18n="Users">Users</div>
             </a>
 
 
@@ -84,21 +84,18 @@
         </li>
         @endcanany
         @canany(['employees-list', 'employees-new-hired-employee', 'employees-terminated', 'employees-terminated','employees-terminated-current-month'])
-        <li class="menu-item" {{ Route::is('admin.companies.employees') || Route::is('admin.companies.employees.new_hiring')  || 
-        Route::is('admin.companies.terminated_employees') || Route::is('admin.companies.terminated_employees_of_current_month')
-                ? 'open active'
-            : '' }}">
-           
+        <li class="menu-item  {{ Route::is('admin.companies.employees') || Route::is('admin.companies.employees.new_hiring')  ||  Route::is('admin.companies.terminated_employees') || Route::is('admin.companies.terminated_employees_of_current_month') ? 'open active' : '' }}">
+
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-users"></i>
                 <div data-i18n="Employees">Employees</div>
             </a>
 
             <ul class="menu-sub">
-                <li class="menu-item {{ request()->is('admin/companies/employees')?'active':'' }}" >
+                <li class="menu-item {{ request()->is('admin/companies/employees')?'active':'' }}">
                     @can('employees-list')
-                    <a href="{{ route('admin.companies.employees') }}"  class="menu-link">
-                        
+                    <a href="{{ route('admin.companies.employees') }}" class="menu-link">
+
                         <div>All Employees</div>
                     </a>
                     @endcan
@@ -106,7 +103,7 @@
                 <li class="menu-item {{ request()->is('admin/companies/employees/new_hiring')?'active':'' }}">
                     @can('employees-new-hired-employee')
                     <a href="{{ route('admin.companies.employees.new_hiring') }}" class="menu-link">
-                       
+
                         <div>New Hired Employees</div>
                     </a>
                     @endcan
@@ -121,7 +118,7 @@
                 <li class="menu-item {{ request()->is('admin/companies/terminated_employees_of_current_month')?'active':'' }}">
                     @can('employees-terminated-current-month')
                     <a href="{{ route('admin.companies.terminated_employees_of_current_month') }}" class="menu-link">
-                       
+
                         <div>Terminated Employees of current month</div>
                     </a>
                     @endcan
@@ -133,7 +130,7 @@
         </li>
         @endcanany
 
- 
+
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             @can('vahicles-list')
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
@@ -183,11 +180,9 @@
         </li>
         @endcanany
 
-        
+
         @canany(['attendances-show-companies'])
-        <li class="menu-item" {{ Route::is('admin.companies.list.*') 
-                ? 'open active'
-            : '' }}">
+        <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-users"></i>
                 <div data-i18n="Attendance">Attendance</div>
@@ -196,11 +191,12 @@
                 @can('attendances-show-companies')
                 <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
                     <a href="{{ route('admin.companies.list') }}" class="menu-link">
-                        
+
                         <div>Companies</div>
                     </a>
                 </li>
                 @endcan
+
             </ul>
 
         </li>
