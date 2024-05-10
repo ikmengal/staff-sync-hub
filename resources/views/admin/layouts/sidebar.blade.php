@@ -179,7 +179,7 @@
             @endcan
         </li>
         @endcanany
-        @canany(['pre_employees-list'])
+        @canany(['pre-employees-list'])
         <li class="menu-item {{ Route::is('pre-employees.*')  
                 ? 'open active'
             : '' }}">
@@ -188,7 +188,7 @@
                 <div data-i18n="Pre Employees">Pre Employees</div>
             </a>
             <ul class="menu-sub">
-                @can('pre_employees-list')
+                @can('pre-employees-list')
                 <li class="menu-item {{ Route::is('pre-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('pre-employees.index') }}" class="menu-link">
 

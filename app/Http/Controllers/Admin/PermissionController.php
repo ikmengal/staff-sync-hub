@@ -131,6 +131,7 @@ class PermissionController extends Controller
 
         if (!empty($request->permissions)) {
             foreach ($request->permissions as $display_name) {
+                 
                 $name = setPermissionName($request->name, $display_name) ?? null;
                 $result = Permission::create([
                     'label' =>  isset($request->name) ? ucfirst($request->name) : null,

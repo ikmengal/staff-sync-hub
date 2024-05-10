@@ -26,7 +26,7 @@ class PreEmployeeController extends Controller
     }
     public function index(Request $request)
     {
-         $this->authorize("pre_employees-list");
+         $this->authorize("pre-employees-list");
         $title = 'All Pre-Employees';
         $companies = companies();
         $company = $request->company;
@@ -119,7 +119,7 @@ class PreEmployeeController extends Controller
      */
     public function show(Request $request,string $id)
     {
-        $this->authorize("pre_employees-list");
+        $this->authorize("pre-employees-list");
         foreach(companies() as $index => $portalDb){
             if(isset($request->company) && $request->company == $portalDb){
                 $model = PreEmployee::on($portalDb)->with('haveReferences')->where('id', $id)->first();
