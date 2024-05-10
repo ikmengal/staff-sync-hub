@@ -24,7 +24,7 @@ class SalaryController extends Controller
     }
     public function index(Request $request)
     {
-     
+
 
         //
     }
@@ -77,27 +77,22 @@ class SalaryController extends Controller
         //
     }
 
-    public function salaryDetails(Request $request){
+    public function salaryDetails(Request $request)
+    {
 
 
-        
+
         $data['title'] = $this->moduleName;
- 
-        $data['companies'] = companies();
+
+        $data['companies'] = getAllCompanies();
         $data['company'] = $request->company;
         $advance_availed_leaves = 0;
-
-     
-       
+        $data['currentMonth'] = date('m/Y');
         if (isset($request->slug) && !empty($request->slug)) {
-            foreach(companies() as $index => $item){
+            foreach (companies() as $index => $item) {
                 $user = User::on($index)->where('slug', $request->slug)->first();
-
             }
-         
-        } 
-
-      
+        }
         $currency_code = !empty($user) ?  getCurrencyCodeForSalary($user) :  "Rs.";
         $user_joining_date = date('m/Y');
         if (isset($user->joiningDate->joining_date) && !empty($user->joiningDate->joining_date)) {
@@ -107,37 +102,24 @@ class SalaryController extends Controller
         $data['user_joining_date'] = $user_joining_date;
 
         $employees = [];
-
-      
-
-            if(isset($request->company)){
-
-                $employees = getEmployees($request->company);
-
-            }
-
-        
-
+        if (isset($request->company)) {
+            $employees = getEmployees($request->company);
+        }
         // $month = date('m');
         // $year = date('Y');
 
         $data['month'] = date('m');
         $data['year'] = date('Y');
-
         $data['user'] = !empty($user) ? $user : [];
         $data['employees'] = $employees;
         $daysData = getMonthDaysForSalary();
-
-        $data['currentMonth'] = date('m/Y');
         if (date('d') > 25) {
             $data['currentMonth'] = date('m/Y', strtotime('first day of +1 month'));
-
             $data['month'] = date('m', strtotime('first day of +1 month'));
             if ($data['month'] == 01) {
                 $data['year'] = date('Y', strtotime('first day of +1 month'));
             }
         }
-     
         if (!empty($user->employeeStatus->end_date)) {
             if (isset($getMonth) && !empty($getMonth)) {
                 $filterMonthYear = $request->year . '/' . $request->month;
@@ -150,14 +132,12 @@ class SalaryController extends Controller
                     $data['year'] = date('Y', strtotime($user->employeeStatus->end_date));
 
                     //A Employee is last month if he has extra availed leaves will be deducted salary
-                    $leave_report = hasExceededLeaveLimit($user,$request->company);
-
+                    $leave_report = hasExceededLeaveLimit($user, $request->company);
                     $total_used_leaves = $leave_report['total_used_leaves'];
                     $total_leaves_in_account = $leave_report['total_leaves_in_account'];
-
                     $advance_used_leaves = 0;
-                    if($total_used_leaves > $total_leaves_in_account){
-                        $advance_used_leaves = $total_used_leaves-$total_leaves_in_account;
+                    if ($total_used_leaves > $total_leaves_in_account) {
+                        $advance_used_leaves = $total_used_leaves - $total_leaves_in_account;
                     }
 
                     $advance_availed_leaves = $advance_used_leaves;
@@ -171,12 +151,7 @@ class SalaryController extends Controller
         }
 
         $daysData = getMonthDaysForSalary($data['year'], $data['month']);
-
-     
-  
-
         $total_earning_days = $daysData->total_days;
-
         if ((isset($user->employeeStatus->start_date) && !empty($user->employeeStatus->start_date))) {
             // $empStartMonthDate = $user->employeeStatus->start_date;
             $empStartMonthDate = getUserJoiningDate($user);
@@ -188,9 +163,9 @@ class SalaryController extends Controller
 
             $monthYear = $data['month'] . '/' . $data['year'];
             if ($empStartMonthDate->gte($startMonthDate) && $empStartMonthDate->lte($endMonthDate)) {
-                if(!empty($empEndMonthDate) && $empEndMonthDate <= $endMonthDate ){
+                if (!empty($empEndMonthDate) && $empEndMonthDate <= $endMonthDate) {
                     $total_earning_days = $empStartMonthDate->diffInDays($empEndMonthDate->addDay());
-                }else{
+                } else {
                     $total_earning_days = $empStartMonthDate->diffInDays($endMonthDate->addDay());
                 }
             } elseif ($monthYear == $data['currentMonth']) {
@@ -207,12 +182,9 @@ class SalaryController extends Controller
                 }
             }
         }
-
         $data['total_earning_days'] = $total_earning_days;
-
         $date = date('F Y', mktime(0, 0, 0, $data['month'], 1, $data['year']));
         $data['month_year'] = $date;
-
         $date = Carbon::create($data['year'], $data['month']);
         // Create a Carbon instance for the specified month
         $dateForMonth = Carbon::create($data['year'], $data['month'], 1);
@@ -240,30 +212,27 @@ class SalaryController extends Controller
             $data['shift'] = defaultShift();
         }
         $statistics = [];
-      
-        if(!empty($user)){
-          
+
+        if (!empty($user)) {
+
             if (isset($empStartMonthDate) && ($empStartMonthDate->gte($startMonthDate) && $empStartMonthDate->lte($endMonthDate)) && $empEndMonthDate->lte($endMonthDate)) {
-          
-                $statistics = getAttandanceCount($user->id, date('Y-m-d', strtotime($empStartMonthDate)), date('Y-m-d', strtotime($empEndMonthDate)-1), 'all', $data['shift'],$request->company);
+
+                $statistics = getAttandanceCount($user->id, date('Y-m-d', strtotime($empStartMonthDate)), date('Y-m-d', strtotime($empEndMonthDate) - 1), 'all', $data['shift'], $request->company);
                 $lateIn = count($statistics['lateInDates']);
                 $earlyOut = count($statistics['earlyOutDates']);
                 $total_discrepancies = $lateIn + $earlyOut;
             }
-
-
         }
-       
+
         $filled_discrepencies = "";
-       if(!empty($user)){
-        foreach(companies() as $index => $item){
-                 if(isset($request->company) && $index == $request->company){
+        if (!empty($user)) {
+            foreach (companies() as $index => $item) {
+                if (isset($request->company) && $index == $request->company) {
                     $filled_discrepencies = Discrepancy::on($item)->where('user_id', $user->id)->where('status', 1)->whereBetween('date', [$startDate, $endDate])->count();
-                 }   
-      
+                }
+            }
         }
-       }
-        
+
 
         $total_over_discrepancies = 0;
         $discrepancies_absent_days = 0;
@@ -278,7 +247,7 @@ class SalaryController extends Controller
             $discrepancies_absent_days = floor($total_discrepancies / 3);
             $discrepancies_absent_days = $discrepancies_absent_days / 2;
             $data['late_in_early_out_amount'] = $discrepancies_absent_days * $data['per_day_salary'];
-        }elseif($filled_discrepencies == 0 && $total_discrepancies > 2){
+        } elseif ($filled_discrepencies == 0 && $total_discrepancies > 2) {
             $discrepancies_absent_days = floor($total_discrepancies / 3);
             $discrepancies_absent_days = $discrepancies_absent_days / 2;
             $data['late_in_early_out_amount'] = $discrepancies_absent_days * $data['per_day_salary'];
@@ -295,45 +264,43 @@ class SalaryController extends Controller
         //Calculation late in and early out days amount.
         $filled_full_day_leaves = 0;
         $filled_half_day_leaves = 0;
-        if(!empty($user)){
-            foreach(companies() as $index => $item){
+        if (!empty($user)) {
+            foreach (companies() as $index => $item) {
                 $filled_full_day_leaves = UserLeave::on($index)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereMonth('start_at', $data['month'])
                     ->whereYear('start_at', $data['year'])
                     ->where('behavior_type', 'Full Day')
                     ->get();
-                }
-                $filled_full_day_leaves = $filled_full_day_leaves->sum('duration');
-                
-        foreach(companies() as $index => $item){
-            $filled_half_day_leaves = UserLeave::on($index)->where('user_id', $user->id)
-                ->where('status', 1)
-                ->whereMonth('start_at', $data['month'])
-                ->whereYear('start_at', $data['year'])
-                ->where('behavior_type', 'First Half')
-                ->orWhere('behavior_type', 'Last Half')
-                ->count();
             }
-    
-            
+            $filled_full_day_leaves = $filled_full_day_leaves->sum('duration');
+
+            foreach (companies() as $index => $item) {
+                $filled_half_day_leaves = UserLeave::on($index)->where('user_id', $user->id)
+                    ->where('status', 1)
+                    ->whereMonth('start_at', $data['month'])
+                    ->whereYear('start_at', $data['year'])
+                    ->where('behavior_type', 'First Half')
+                    ->orWhere('behavior_type', 'Last Half')
+                    ->count();
+            }
         }
-    
- 
+
+
         $over_half_day_leaves = 0;
         $over_absent_days = 0;
         $absent_days_amount = 0;
-        if(!empty($statistics)){
+        if (!empty($statistics)) {
             if ($filled_half_day_leaves > 0) {
                 $filled_half_day_leaves = $statistics['halfDay'] - $filled_half_day_leaves;
                 $over_half_day_leaves = $filled_half_day_leaves / 2;
-    
+
                 $data['half_days_amount'] = $over_half_day_leaves * $data['per_day_salary'];
             } else {
                 $over_half_day_leaves = $statistics['halfDay'] / 2;
                 $data['half_days_amount'] = $over_half_day_leaves * $data['per_day_salary'];
             }
-    
+
             if ($filled_full_day_leaves > 0) {
                 $over_absent_days = $statistics['absent'] - $filled_full_day_leaves;
                 $data['absent_days_amount'] = $over_absent_days * $data['per_day_salary'];
@@ -341,13 +308,12 @@ class SalaryController extends Controller
                 $data['absent_days_amount'] = $statistics['absent'] * $data['per_day_salary'];
                 $over_absent_days = $statistics['absent'];
             }
-
         }
-    
+
 
         //Calculate extra availed leaves
         $data['extra_availed_leave_days_amount'] = 0;
-        if($advance_availed_leaves > 0){
+        if ($advance_availed_leaves > 0) {
             $data['extra_availed_leave_days_amount'] = $advance_availed_leaves * $data['per_day_salary'];
         }
 
@@ -382,15 +348,15 @@ class SalaryController extends Controller
         $total_earning_salary = $data['earning_days_amount'] - $totalApprovedDaysAndAbsentDaysAmount;
         $data['total_earning_salary'] = number_format($data['earning_days_amount'] + $data['car_allowance']);
         $data['total_leave_discrepancies_approve_salary'] = $all_absent_days_amount;
-        if(isset($data['late_in_early_out_amount']) && isset($data['half_days_amount']) && isset($data['absent_days_amount'])){
+        if (isset($data['late_in_early_out_amount']) && isset($data['half_days_amount']) && isset($data['absent_days_amount'])) {
             $all_absent_days_amount = $data['late_in_early_out_amount'] + $data['half_days_amount'] + $data['absent_days_amount'];
             $total_net_salary = $data['earning_days_amount'] - $all_absent_days_amount;
-                  //Advanced Availed leave amount
-        $total_net_salary = $total_net_salary - $data['extra_availed_leave_days_amount'];
-        $data['net_salary'] = number_format($total_net_salary + $data['car_allowance']);
+            //Advanced Availed leave amount
+            $total_net_salary = $total_net_salary - $data['extra_availed_leave_days_amount'];
+            $data['net_salary'] = number_format($total_net_salary + $data['car_allowance']);
         }
-    
 
-        return view('admin.companies.salaries.index',$data);
+
+        return view('admin.companies.salaries.index', $data);
     }
 }

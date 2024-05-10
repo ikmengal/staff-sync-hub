@@ -23,8 +23,8 @@
                             <option value="">Select</option>
                             @if (isset($companies) && !empty($companies))
                                 @foreach ($companies as $index => $item)
-                                    <option value="{{ $index }}" @if ($index == $company) selected @endif>
-                                        {{ $item }}</option>
+                                    <option value="{{ $item->company_key }}" @if ($item->company_key == $company) selected @endif>
+                                        {{ $item->name }}</option>
                                 @endforeach
 
 

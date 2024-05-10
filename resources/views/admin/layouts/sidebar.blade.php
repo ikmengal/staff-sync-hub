@@ -239,7 +239,7 @@
                 <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
                     <a href="{{ route('admin.companies.attendance') }}" class="menu-link">
 
-                        <div>Companies</div>
+                        <div>Attendance List</div>
                     </a>
                 </li>
                 @endcan

@@ -32,7 +32,7 @@
 
                     <div class="col-md-2 mt-md-0 mt-3">
 
-                        <button class="btn btn-primary mt-3" id="searchBtn"><i class="fa-solid fa-filter"></i></button>
+                        <button class="btn btn-primary mt-4" id="searchBtn"><i class="fa-solid fa-filter"></i></button>
                     </div>
 
                 </div>
