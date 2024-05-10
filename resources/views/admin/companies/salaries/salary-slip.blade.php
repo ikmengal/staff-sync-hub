@@ -624,7 +624,7 @@
 
                 // Get the HTML content to be converted
                 var htmlContent = document.getElementById("contentToConvert");
-                alert(htmlContent)
+              
                 // Use html2pdf library to convert HTML to PDF
                 html2pdf(htmlContent, {
                     margin: 10,
