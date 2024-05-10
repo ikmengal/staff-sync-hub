@@ -179,7 +179,7 @@
             @endcan
         </li>
         @endcanany
-        @canany(['pre_employees-list'])
+        @canany(['pres-employee-list'])
         <li class="menu-item {{ Route::is('pre-employees.*')  
                 ? 'open active'
             : '' }}">
@@ -188,7 +188,7 @@
                 <div data-i18n="Pre Employees">Pre Employees</div>
             </a>
             <ul class="menu-sub">
-                @can('pre_employees-list')
+                @can('pres-employee-list')
                 <li class="menu-item {{ Route::is('pre-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('pre-employees.index') }}" class="menu-link">
 
@@ -228,14 +228,14 @@
         </li>
         @endcanany
 
-        @canany(['attendances-show-companies'])
+        @canany(['attendances-list'])
         <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-users"></i>
                 <div data-i18n="Attendance">Attendance</div>
             </a>
             <ul class="menu-sub">
-                @can('attendances-show-companies')
+                @can('attendances-list')
                 <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
                     <a href="{{ route('admin.companies.attendance') }}" class="menu-link">
 
