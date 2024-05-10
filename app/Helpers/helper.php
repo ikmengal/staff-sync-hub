@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AttendanceController;
 
 function settings()
 {
+
     return Setting::first();
 }
 
@@ -37,7 +38,13 @@ function defaultShift()
 
 function appName()
 {
-    $setting = Setting::first();
+    
+    foreach(companies() as $index => $portalDb) {
+        if(!empty($company) && $company == $index){
+            $setting = Setting::on($portalDb)->first();
+        }
+
+    }
     if (isset($setting) && !empty($setting->name)) {
         $app_name = $setting->name;
     } else {
@@ -98,7 +105,7 @@ function getUserData($user)
 function companies()
 {
     $companies = [
-        'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
+         'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
         // 'vertical' => env('VERTICAL_DB_DATABASE'),
         // 'braincell' => env('BRAINCELL_DB_DATABASE'),
         // 'clevel' => env('CLEVEL_DB_DATABASE'),
@@ -2073,7 +2080,7 @@ function checkSalarySlipGenerationDate($data)
     }
 }
 
-function getUserSalary($user, $month, $year)
+function getUserSalary($user, $month, $year,$company)
 {
     // Get current date
     $currentDateTime = "$year-$month-" . date('d');
@@ -2088,14 +2095,24 @@ function getUserSalary($user, $month, $year)
         }
     }
 
-    $userSalary = SalaryHistory::where('user_id', $user->id)
-        ->where('effective_date', '<=', "$year-$month-" . $date)
-        ->where(function ($query) use ($month, $year) {
-            $query->where('end_date', '>=', "$year-$month-" . date('d'))
-                ->orWhereNull('end_date');
-        })
-        ->orderBy('effective_date', 'desc')
-        ->first();
+
+    foreach(companies() as $index => $portalDb){
+        if(!empty($company) && $company == $index){
+
+            $userSalary = SalaryHistory::on($portalDb)->where('user_id', $user->id)
+            ->where('effective_date', '<=', "$year-$month-" . $date)
+            ->where(function ($query) use ($month, $year) {
+                $query->where('end_date', '>=', "$year-$month-" . date('d'))
+                    ->orWhereNull('end_date');
+            })
+            ->orderBy('effective_date', 'desc')
+            ->first();
+
+        }
+
+
+    }
+ 
 
     if (!empty($userSalary)) {
         return $userSalary->salary;
@@ -2105,5 +2122,6 @@ function getUserSalary($user, $month, $year)
 }
 function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company)
 {
+   
     return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company);
 }

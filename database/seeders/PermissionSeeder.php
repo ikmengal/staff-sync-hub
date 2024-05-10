@@ -233,6 +233,18 @@ class PermissionSeeder extends Seeder
               'name'=>'pres-employee-view',
               'display_name'=>'View',
               'guard_name'=>'web'
+            ],
+            [
+              'label'=>'salaries',
+              'name'=>'salaries-generate-salary-slip',
+              'display_name'=>'Generate salary slip',
+              'guard_name'=>'web'
+            ],
+            [
+              'label'=>'salaries',
+              'name'=>'salaries-create-salary-slip',
+              'display_name'=>'Create salary slip',
+              'guard_name'=>'web'
           ]
          
 

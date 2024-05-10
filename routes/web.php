@@ -135,6 +135,7 @@ Route::middleware('auth')->group(function () {
 
     //salary details
     Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
+    Route::get('salaries/generate-salary-slip',[SalaryController::class,'generateSalarySlip'])->name('salaries.generate.salary.slip');
 
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);

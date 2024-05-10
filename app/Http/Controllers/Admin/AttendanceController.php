@@ -180,6 +180,7 @@ class AttendanceController extends Controller
 
     public static function getAttandanceCount($userID, $start_date, $end_date, $status, $shiftID, $company)
     {
+       
         $begin = new DateTime($start_date);
         $end   = new DateTime($end_date);
         $totalDays = 0;
@@ -198,7 +199,19 @@ class AttendanceController extends Controller
         $leave_last_half = 0;
         $leave_single = 0;
         $check_in_out_time = '';
-        $user = User::where('id', $userID)->first();
+
+     foreach(companies() as $index => $portalDb){
+        if(isset($company) && $company == $index){
+
+            $user = User::on($portalDb)->where('id', $userID)->first();
+
+        }
+
+     }
+
+    
+      
+    
         $start_date = '';
         if (getUserJoiningDate($user)) {
             $start_date = getUserJoiningDate($user);
