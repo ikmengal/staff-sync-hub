@@ -221,6 +221,18 @@ class PermissionSeeder extends Seeder
               'name'=>'attendances-list',
               'display_name'=>'List',
               'guard_name'=>'web'
+            ],
+            [
+              'label'=>'pre_employees',
+              'name'=>'pre_employees-list',
+              'display_name'=>'List',
+              'guard_name'=>'web'
+            ],
+            [
+              'label'=>'pre_employees',
+              'name'=>'pre_employees-view',
+              'display_name'=>'View',
+              'guard_name'=>'web'
           ]
          
 

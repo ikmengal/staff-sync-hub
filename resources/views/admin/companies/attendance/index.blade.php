@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 @section('title', $title . ' - ' . appName())
 @php
-    use App\Http\Controllers\Admin\AdminController;
+
     use Carbon\Carbon;
 @endphp
 @section('content')
-    <input type="hidden" id="current_user_slug" value="{{ $user->slug }}">
+    <input type="hidden" id="current_user_slug" value="{{ !empty($user) ? $user->slug : '' }}">
     <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card mb-4">
@@ -23,34 +23,54 @@
                 <div class="card-header d-flex justify-content-between align-items-center row">
 
                     <div class="col-md-4 mt-md-0 mt-3">
-                        @php $url = URL::to('admin/company/attendance/') @endphp
-                        @include('admin.layouts.employee_dropdown', [
-                            'employees' => $employees,
-                        
-                            'url' => $url,
-                            'month' => $month,
-                            'year' => $year,
-                            'type' => 'redirect',
-                            'company' => $company,
-                        ])
+
+
+                        <label>Select Company</label>
+                        <select class="form-control select2 " data-control="select2" id="companyList">
+                            <option value="">select </option>
+
+                            @if (!empty($companies))
+                                @foreach ($companies as $index => $companyName)
+                                    <option value="{{ $index }}" {{ $index == $company ? 'selected' : '' }}>
+                                        {{ $companyName }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+
 
                     </div>
                     <div class="col-md-4 mt-md-0 mt-3">
+                        <label>Select Employee</label>
+                        <select class="form-control select2 " id="employeeList">
+                            <option value="">select</option>
+                            @if (isset($employees['total_employees']) && !empty($employees))
+                                @foreach ($employees['total_employees'] as $item)
+                                    <option value="{{ $item->slug }}" @if (!empty($user) && $user->slug == $item->slug) selected @endif>
+                                        {{ $item->name }} ({{ $item->employment_id }})</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 mt-md-0 mt-4">
 
                         <input type="text" id="month-list" data-joining-date="{{ $user_joining_date }}"
                             data-company="{{ $company }}" data-current-month="{{ $currentMonth }}"
-                            placeholder="Select Month" class="form-control flatpickr-input" readonly>
+                            placeholder="Select Month" class="form-control flatpickr-input mt-3" readonly>
                     </div>
-                    <div class="col-md-4 mt-md-0">
+                    <div class="col-md-2 mt-md-0 mt-3">
 
-                        <button class="btn btn-primary " id="filterAttendance"><i class="fa-solid fa-filter"></i></button>
+                        <button class="btn btn-primary mt-3" id="filterAttendance"><i
+                                class="fa-solid fa-filter"></i></button>
                     </div>
 
                 </div>
-                <div class="card-header d-flex justify-content-between align-items-center row">
-                    <div class="col-md-8">
-                        <span class="card-title mb-0">
-                            <a href="{{ route('employees.show', $user->slug) }}" class="text-body text-truncate">
+                @if (isset($user) && !empty($user))
+                    <div class="card-header d-flex justify-content-between align-items-center row">
+                        <div class="col-md-8">
+                            <span class="card-title mb-0">
+
                                 <div class="d-flex align-items-center">
                                     @if (isset($user->profile) && !empty($user->profile->profile))
                                         <img src="{{ resize(asset('public/admin/assets/img/avatars') . '/' . $user->profile->profile, null) }}"
@@ -77,11 +97,18 @@
                                         </div>
                                     </div>
                                 </div>
-                            </a>
-                        </span>
+
+                            </span>
+                        </div>
+
                     </div>
-                   
-                </div>
+                @endif
+                {{-- <div class="card-header row"> --}}
+                {{-- <div class="col-md-4">
+                        <button class="btn btn-success" onclick="exportAttendance($month,$year,$company)">Export</button>
+                    </div> --}}
+
+                {{-- </div> --}}
                 <div class="card-header border-top">
                     <div class="table-responsive">
                         <table class="attendance-table table table-border min-w-800 body-input-checkbox">
@@ -99,112 +126,109 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
-                                    $beginDate = Carbon::parse($begin);
-                                    $start_date = '';
-                                    if (getUserJoiningDate($user)) {
-                                        $start_date = getUserJoiningDate($user);
-                                    }
-                                    $end = new DateTime($year . '-' . (int) $month . '-25');
-                                @endphp
-                                @for ($i = $begin; $i <= $end; $i->modify('+1 day'))
-                                    @php
-                                        $shift = getUserShift($user, $i->format('Y-m-d'), $company);
-                                        $day = date('D', strtotime($i->format('Y-m-d')));
-                                        $start_time =
-                                            date('Y-m-d', strtotime($i->format('Y-m-d'))) . ' ' . $shift->start_time;
-                                        $end_time =
-                                            date('Y-m-d', strtotime($i->format('Y-m-d'))) . ' ' . $shift->end_time;
-
-                                        $shiftEndTime = $shift->end_time;
-                                        $shiftEndTime = date('H:i', strtotime($shiftEndTime));
-                                        $carbonEndTime = Carbon::createFromFormat('H:i', $shiftEndTime);
-
-                                        if ($carbonEndTime->hour < 12) {
-                                            $next = date('Y-m-d', strtotime('+1 day ' . $i->format('Y-m-d')));
-                                        } else {
-                                            $next = date('Y-m-d', strtotime($end_time));
-                                        }
-                                        $reponse = AdminController::getAttandanceSingleRecord(
-                                            $user->id,
-                                            $i->format('Y-m-d'),
-                                            $next,
-                                            'all',
-                                            $shift,
-                                            $company,
-                                        );
-
-                                    @endphp
-                                    @if ($reponse != null)
+                                @if (isset($user) && !empty($user))
+                                    @for ($i = $begin; $i <= $end; $i->modify('+1 day'))
                                         @php
-                                            $attendance_adjustment = attendanceAdjustment(
+                                            $shift = getUserShift($user, $i->format('Y-m-d'), $company);
+                                            $day = date('D', strtotime($i->format('Y-m-d')));
+                                            $start_time =
+                                                date('Y-m-d', strtotime($i->format('Y-m-d'))) .
+                                                ' ' .
+                                                $shift->start_time;
+                                            $end_time =
+                                                date('Y-m-d', strtotime($i->format('Y-m-d'))) . ' ' . $shift->end_time;
+
+                                            $shiftEndTime = $shift->end_time;
+                                            $shiftEndTime = date('H:i', strtotime($shiftEndTime));
+                                            $carbonEndTime = Carbon::createFromFormat('H:i', $shiftEndTime);
+
+                                            if ($carbonEndTime->hour < 12) {
+                                                $next = date('Y-m-d', strtotime('+1 day ' . $i->format('Y-m-d')));
+                                            } else {
+                                                $next = date('Y-m-d', strtotime($end_time));
+                                            }
+                                            $reponse = getAttandanceSingleRecord(
                                                 $user->id,
-                                                $reponse['attendance_id'],
                                                 $i->format('Y-m-d'),
+                                                $next,
+                                                'all',
+                                                $shift,
                                                 $company,
                                             );
-                                            $checkHoliday = checkHoliday($user->id, $i->format('Y-m-d'), $company); //check it is holiday or company off
+
                                         @endphp
-                                        @if (!empty($checkHoliday))
-                                            <tr style="background: #cbf4dc;color: #28c76f;">
-                                                <td class="mb-0" style="color: black;">{{ $i->format('d-m-Y') }}</td>
-                                                <td class="mb-0" style="color: black;">{{ $reponse['shiftTiming'] }}</td>
-                                                <td colspan="5" style="color: #28c76f;">
-                                                    <h4 class="mb-0" style="color: #28c76f;">{{ $checkHoliday->name }}
-                                                    </h4>
-                                                </td>
-                                            </tr>
-                                        @else
-                                            <tr class="{{ $day }}">
-                                                <td>{{ formatDate($i->format('d-m-Y')) }}</td>
-                                                <td>{{ $reponse['shiftTiming'] }}</td>
-                                                <td>
-                                                    @if ($day != 'Sat' && $day != 'Sun')
-                                                        <span
-                                                            class="punchedin d-block mb-2">{{ $reponse['punchIn'] }}</span>
-                                                    @else
-                                                        {{ '-' }}
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($day != 'Sat' && $day != 'Sun')
-                                                        <span
-                                                            class="punchedin d-block mb-2">{{ $reponse['punchOut'] }}</span>
-                                                    @else
-                                                        {{ '-' }}
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($day != 'Sat' && $day != 'Sun')
-                                                        @if (isset($attendance_adjustment) && !empty($attendance_adjustment) && $i->format('Y-m-d') <= date('Y-m-d'))
-                                                            @php $mark_type = $attendance_adjustment->mark_type; @endphp
-                                                            @if ($mark_type == 'firsthalf')
-                                                                @php $mark_type = 'Half Day' @endphp
-                                                            @endif
-                                                            <span class="badge bg-label-danger"><i
-                                                                    class="far fa-dot-circle text-danger"></i> Marked as
-                                                                {{ Str::ucfirst($mark_type) }}</span>
+                                        @if ($reponse != null)
+                                            @php
+                                                $attendance_adjustment = attendanceAdjustment(
+                                                    $user->id,
+                                                    $reponse['attendance_id'],
+                                                    $i->format('Y-m-d'),
+                                                    $company,
+                                                );
+                                                $checkHoliday = checkHoliday($user->id, $i->format('Y-m-d'), $company); //check it is holiday or company off
+                                            @endphp
+                                            @if (!empty($checkHoliday))
+                                                <tr style="background: #cbf4dc;color: #28c76f;">
+                                                    <td class="mb-0" style="color: black;">{{ $i->format('d-m-Y') }}</td>
+                                                    <td class="mb-0" style="color: black;">{{ $reponse['shiftTiming'] }}
+                                                    </td>
+                                                    <td colspan="5" style="color: #28c76f;">
+                                                        <h4 class="mb-0" style="color: #28c76f;">
+                                                            {{ $checkHoliday->name }}
+                                                        </h4>
+                                                    </td>
+                                                </tr>
+                                            @else
+                                                <tr class="{{ $day }}">
+                                                    <td>{{ formatDate($i->format('d-m-Y')) }}</td>
+                                                    <td>{{ $reponse['shiftTiming'] }}</td>
+                                                    <td>
+                                                        @if ($day != 'Sat' && $day != 'Sun')
+                                                            <span
+                                                                class="punchedin d-block mb-2">{{ $reponse['punchIn'] }}</span>
                                                         @else
-                                                            @if ($day != 'Sat' && $day != 'Sun')
-                                                                {!! $reponse['label'] !!}
-                                                            @else
-                                                                {{ '-' }}
-                                                            @endif
+                                                            {{ '-' }}
                                                         @endif
-                                                    @else
-                                                        {{ '-' }}
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($day != 'Sat' && $day != 'Sun')
-                                                        {{ $reponse['workingHours'] }}@else{{ '-' }}
-                                                    @endif
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                    <td>
+                                                        @if ($day != 'Sat' && $day != 'Sun')
+                                                            <span
+                                                                class="punchedin d-block mb-2">{{ $reponse['punchOut'] }}</span>
+                                                        @else
+                                                            {{ '-' }}
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($day != 'Sat' && $day != 'Sun')
+                                                            @if (isset($attendance_adjustment) && !empty($attendance_adjustment) && $i->format('Y-m-d') <= date('Y-m-d'))
+                                                                @php $mark_type = $attendance_adjustment->mark_type; @endphp
+                                                                @if ($mark_type == 'firsthalf')
+                                                                    @php $mark_type = 'Half Day' @endphp
+                                                                @endif
+                                                                <span class="badge bg-label-danger"><i
+                                                                        class="far fa-dot-circle text-danger"></i> Marked as
+                                                                    {{ Str::ucfirst($mark_type) }}</span>
+                                                            @else
+                                                                @if ($day != 'Sat' && $day != 'Sun')
+                                                                    {!! $reponse['label'] !!}
+                                                                @else
+                                                                    {{ '-' }}
+                                                                @endif
+                                                            @endif
+                                                        @else
+                                                            {{ '-' }}
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($day != 'Sat' && $day != 'Sun')
+                                                            {{ $reponse['workingHours'] }}@else{{ '-' }}
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endif
                                         @endif
-                                    @endif
-                                @endfor
+                                    @endfor
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -234,54 +258,102 @@
 
             var selecCompany = $("#Slipbutton").data('company');
             var currentMonth = $('#month-list').data('current-month');
-        var joiningMonthYear = $('#month-list').data('joining-date');
+            var joiningMonthYear = $('#month-list').data('joining-date');
 
 
-        var selectedMonth, selectedYear, employeeSlug;
-        $('#month-list').datepicker({
-            format: 'mm/yyyy',
-            startView: 'year',
-            minViewMode: 'months',
-            startDate: joiningMonthYear,
-            endDate: currentMonth
+            var selectedMonth, selectedYear, employeeSlug;
+            var urlParams = new URLSearchParams(window.location.search);
+            var month = urlParams.get('month');
+            var year = urlParams.get('year');
 
-        }).on('changeMonth', function(e) {
-
-            //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
-
-
-            selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
-            selectedYear = e.date.getFullYear();
-
-
-
-        });
-
-
-        $("#filterAttendance").on('click', function(e) {
-
-            var selecCompany = $("#month-list").data('company');
-            var employeeSlug = $("#redirectDropdown").val();
-            // if (employeeSlug == undefined) {
-            //     employeeSlug = $('#current_user_slug').val();
-            // }
-       
-            if (employeeSlug == "") {
-                alert("Please select an employee.");
-                return false; // Stop further execution
+            var initialDate = '';
+            if (month && year) {
+                initialDate = new Date(year, month - 1);
             }
+            $('#month-list').datepicker({
+                format: 'mm/yyyy',
+                startView: 'year',
+                minViewMode: 'months',
+                startDate: joiningMonthYear,
+                endDate: currentMonth,
+                defaultViewDate: initialDate
 
-            if (!selectedMonth || !selectedYear) {
-                // Set current month and year if not selected
-                var currentDate = new Date();
-                selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-                selectedYear = currentDate.getFullYear();
-            }
-            var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany + "?month=" +
-                selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
+            }).on('changeMonth', function(e) {
 
-            window.location.href = selectOptionUrl;
-        })
+                //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
+
+
+                selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
+                selectedYear = e.date.getFullYear();
+
+
+
+            });
+
+
+            $("#filterAttendance").on('click', function(e) {
+
+                var selecCompany = $("#companyList").val();
+                var employeeSlug = $("#employeeList").val();
+                // if (employeeSlug == undefined) {
+                //     employeeSlug = $('#current_user_slug').val();
+                // }
+
+                if (employeeSlug == "") {
+                    alert("Please select an employee.");
+                    return false; // Stop further execution
+                }
+
+                if (!selectedMonth || !selectedYear) {
+                    // Set current month and year if not selected
+                    var currentDate = new Date();
+                    selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    selectedYear = currentDate.getFullYear();
+                }
+                var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany +
+                    "?month=" +
+                    selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
+
+                window.location.href = selectOptionUrl;
+            })
+
+            $("#companyList").on("change", function(e) {
+
+                var company = $(this).val();
+                $.ajax({
+                    type: "get",
+                    url: "{{ route('admin.get.company.employees') }}",
+                    data: {
+                        company: company
+                    },
+
+                    success: function(res) {
+                        if (res.success == true) {
+                            var employee_list = $("#employeeList");
+                            var employees = res.data;
+                            employee_list.empty();
+
+
+                            employee_list.append('<option value="">select</>')
+                            employees.forEach(function(employee) {
+
+                                employee_list.append('<option value="' + employee.slug +
+                                    '" >' +
+                                    employee.name + '(' + employee.employment_id +
+                                    ') </option>');
+                            });
+
+                        } else {
+                            var employee_list = $("#employeeList");
+                            employee_list.empty();
+                            employee_list.append('<option value="">No Employee Found</>')
+                        }
+                    }
+                });
+
+            })
+
+
 
 
             const url = new URL(window.location.href);
@@ -314,6 +386,53 @@
                 });
             }
         });
+
+
+        function exportAttendance(event) {
+
+            var route = event.data('route');
+            var currentDate = new Date();
+
+            var month = event.data('month');
+            var year = event.data('year');
+            var slug = event.data('slug');
+            var company = event.data('company');
+
+            var formattedDate = currentDate.getFullYear() +
+                ('0' + (currentDate.getMonth() + 1)).slice(-2) +
+                ('0' + currentDate.getDate()).slice(-2);
+            var formattedTime = ('0' + currentDate.getHours()).slice(-2) +
+                ('0' + currentDate.getMinutes()).slice(-2) +
+                ('0' + currentDate.getSeconds()).slice(-2);
+
+            // Construct the dynamic file name
+            var filename = 'attendance_report_' + formattedDate + '_' + formattedTime + '.csv';
+
+            // Create a hidden anchor element
+            var downloadLink = document.createElement('a');
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            // Set the href attribute to the download URL
+            downloadLink.href = route + "?company=" + company + "?month=" + month + "?year=" + year + "?slug=" + slug;
+            // Set the download attribute to force download
+            downloadLink.setAttribute('download', filename);
+            // Trigger a click event on the anchor element
+            downloadLink.click();
+            // Clean up the anchor element
+            document.body.removeChild(downloadLink);
+
+        }
+
+        function extractQueryParameters(queryString) {
+            var queryParams = {};
+            var pairs = queryString.slice(1).split('&');
+            pairs.forEach(function(pair) {
+                pair = pair.split('=');
+                queryParams[pair[0]] = decodeURIComponent(pair[1] || '');
+            });
+            return queryParams;
+        }
+
 
         function redirectPage(dropdown) {
             var selectedOption = dropdown.value;
