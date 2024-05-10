@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="http://portal.cyberonix.co/public/admin/assets/vendor/fonts/tabler-icons.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    @if(!empty(settings()))
-    <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
+    @if (!empty(settings()))
+        <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @else
         <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @endif
@@ -118,245 +118,248 @@
                     </div>
                 </div>
                 <div class="container">
-                    @if(Auth::user()->hasPermissionTo('salaries-generate-salary-slip'))
-                    <div class="row mb-3">
-                        <div class="col-md-6 pr-0 ">
-                            <table class="table table-bordered mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th scope="row" contenteditable>Employee No. </th>
-                                        <td contenteditable>
-                                            @if (isset($user->profile) && !empty($user->profile->employment_id))
-                                                {{ $user->profile->employment_id }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>CNIC #</th>
-                                        <td contenteditable>
-                                            @if (!empty($user->profile->cnic))
-                                                {{ $user->profile->cnic }}
-                                            @else
-                                                @if (isset($user->hasPreEmployee) && !empty($user->hasPreEmployee->cnic))
-                                                    {{ $user->hasPreEmployee->cnic }}
+                    @if (Auth::user()->hasPermissionTo('salaries-generate-salary-slip'))
+                        <div class="row mb-3">
+                            <div class="col-md-6 pr-0 ">
+                                <table class="table table-bordered mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row" contenteditable>Employee No. </th>
+                                            <td contenteditable>
+                                                @if (isset($user->profile) && !empty($user->profile->employment_id))
+                                                    {{ $user->profile->employment_id }}
                                                 @else
-                                                    N/A
+                                                    -
                                                 @endif
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Designation </th>
-                                        <td contenteditable>
-                                            @if (isset($user->jobHistory->designation->title) && !empty($user->jobHistory->designation->title))
-                                                {{ $user->jobHistory->designation->title }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Total Days </th>
-                                        <td contenteditable>{{ $totalDays }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Per Day Salary </th>
-                                        <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                            {{ number_format($per_day_salary) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Bank </th>
-                                        <td contenteditable>
-                                            {{ !empty($user->bankDetails) ? $user->bankDetails->bank_name : '' }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-6 pl-0 ">
-                            <table class="table table-bordered mb-0">
-                                <tbody>
-                                    <tr>
-                                        <th scope="row" contenteditable>Employee Name</th>
-                                        <td contenteditable>{{ $user->first_name }} {{ $user->last_name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Appointment Date</th>
-                                        <td contenteditable>
-                                            @if (isset($user->profile) && !empty($user->profile->joining_date))
-                                                {{ date('d M Y', strtotime($user->profile->joining_date)) }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Department</th>
-                                        <td contenteditable>
-                                            @if (isset($user->departmentBridge->department) && !empty($user->departmentBridge->department->name))
-                                                {{ $user->departmentBridge->department->name }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Earning Days</th>
-                                        <td contenteditable>{{ $total_earning_days }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Pay Through</th>
-                                        <td contenteditable>Interbank Funds Transfer</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" contenteditable>Branch Code</th>
-                                        <td contenteditable>
-                                            {{ !empty($user->bankDetails) ? $user->bankDetails->branch_code : '' }}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-6 pr-0 ">
-                            <div class="custom-table">
-                                <h5 class="border text-center py-3 border-top-0 mb-0 border-bottom-0" contenteditable>
-                                    Salary & Allowances</h5>
-                                <table class="table table-bordered mb-0 col-md-12">
-                                    <thead>
-                                        <tr>
-                                            <th scope="row" contenteditable>Title </th>
-                                            <th scope="row" contenteditable>Actual </th>
-                                            <th scope="row" contenteditable>Earning </th>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
                                         <tr>
-                                            <th scope="row" contenteditable>Basic </th>
+                                            <th scope="row" contenteditable>CNIC #</th>
+                                            <td contenteditable>
+                                                @if (!empty($user->profile->cnic))
+                                                    {{ $user->profile->cnic }}
+                                                @else
+                                                    @if (isset($user->hasPreEmployee) && !empty($user->hasPreEmployee->cnic))
+                                                        {{ $user->hasPreEmployee->cnic }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Designation </th>
+                                            <td contenteditable>
+                                                @if (isset($user->jobHistory->designation->title) && !empty($user->jobHistory->designation->title))
+                                                    {{ $user->jobHistory->designation->title }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Total Days </th>
+                                            <td contenteditable>{{ $totalDays }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Per Day Salary </th>
                                             <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($salary) }} </td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($earning_days_amount) }}</td>
+                                                {{ number_format($per_day_salary) }}</td>
                                         </tr>
                                         <tr>
-                                            <th scope="row" contenteditable>House Rent</th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Medical </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Cost Of Living Allowance</th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Fuel Allowance </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Car Allowance </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($car_allowance) }}</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($car_allowance) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Arrears </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Extra Days Amount </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" class="text-center" contenteditable>Total</th>
-                                            <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ $total_actual_salary }}</th>
-                                            <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ $total_earning_salary }}</th>
+                                            <th scope="row" contenteditable>Bank </th>
+                                            <td contenteditable>
+                                                {{ !empty($user->bankDetails) ? $user->bankDetails->bank_name : '' }}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                        <div class="col-md-6 pl-0 ">
-                            <div class="custom-table">
-                                <h5 class="border text-center py-3 border-top-0 mb-0 border-bottom-0" contenteditable>
-                                    Deductions</h5>
-                                <table class="table table-bordered mb-0 col-md-12">
-                                    <thead>
-                                        <tr>
-                                            <th scope="row" contenteditable>Title </th>
-                                            <th scope="row" contenteditable>Amount </th>
-                                        </tr>
-                                    </thead>
+                            <div class="col-md-6 pl-0 ">
+                                <table class="table table-bordered mb-0">
                                     <tbody>
                                         <tr>
-                                            <th scope="row" contenteditable>Absent Days Amount </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($absent_days_amount) }}</td>
+                                            <th scope="row" contenteditable>Employee Name</th>
+                                            <td contenteditable>{{ $user->first_name }} {{ $user->last_name }}</td>
                                         </tr>
-                                        @php $boo = true @endphp
-                                        @if ($extra_availed_leave_days_amount > 0)
-                                            @php $boo = false @endphp
+                                        <tr>
+                                            <th scope="row" contenteditable>Appointment Date</th>
+                                            <td contenteditable>
+                                                @if (isset($user->profile) && !empty($user->profile->joining_date))
+                                                    {{ date('d M Y', strtotime($user->profile->joining_date)) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Department</th>
+                                            <td contenteditable>
+                                                @if (isset($user->departmentBridge->department) && !empty($user->departmentBridge->department->name))
+                                                    {{ $user->departmentBridge->department->name }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Earning Days</th>
+                                            <td contenteditable>{{ $total_earning_days }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Pay Through</th>
+                                            <td contenteditable>Interbank Funds Transfer</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" contenteditable>Branch Code</th>
+                                            <td contenteditable>
+                                                {{ !empty($user->bankDetails) ? $user->bankDetails->branch_code : '' }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6 pr-0 ">
+                                <div class="custom-table">
+                                    <h5 class="border text-center py-3 border-top-0 mb-0 border-bottom-0"
+                                        contenteditable>
+                                        Salary & Allowances</h5>
+                                    <table class="table table-bordered mb-0 col-md-12">
+                                        <thead>
                                             <tr>
-                                                <th scope="row" contenteditable>Advance Availed Leave Days Amount
-                                                </th>
+                                                <th scope="row" contenteditable>Title </th>
+                                                <th scope="row" contenteditable>Actual </th>
+                                                <th scope="row" contenteditable>Earning </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row" contenteditable>Basic </th>
                                                 <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                    {{ number_format($extra_availed_leave_days_amount) }}</td>
+                                                    {{ number_format($salary) }} </td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($earning_days_amount) }}</td>
                                             </tr>
-                                        @endif
-                                        <tr>
-                                            <th scope="row" contenteditable>Half Days Amount</th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($half_days_amount) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Late In + Early Out Amount </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ number_format($late_in_early_out_amount) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Income Tax</th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>EOBI </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Loan Installment </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row" contenteditable>Advance Salary </th>
-                                            <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
-                                        </tr>
-                                        @if ($boo)
-                                            <tr class="invisible">
-                                                <th scope="row">Advance Salary </th>
-                                                <td>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            <tr>
+                                                <th scope="row" contenteditable>House Rent</th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
                                             </tr>
-                                        @endif
-                                        <tr>
-                                            <th scope="row" class="text-center" contenteditable>NET SALARY</th>
-                                            <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
-                                                {{ $net_salary }}</th>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                            <tr>
+                                                <th scope="row" contenteditable>Medical </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Cost Of Living Allowance</th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Fuel Allowance </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Car Allowance </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($car_allowance) }}</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($car_allowance) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Arrears </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Extra Days Amount </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0 </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-center" contenteditable>Total</th>
+                                                <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ $total_actual_salary }}</th>
+                                                <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ $total_earning_salary }}</th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+                            <div class="col-md-6 pl-0 ">
+                                <div class="custom-table">
+                                    <h5 class="border text-center py-3 border-top-0 mb-0 border-bottom-0"
+                                        contenteditable>
+                                        Deductions</h5>
+                                    <table class="table table-bordered mb-0 col-md-12">
+                                        <thead>
+                                            <tr>
+                                                <th scope="row" contenteditable>Title </th>
+                                                <th scope="row" contenteditable>Amount </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row" contenteditable>Absent Days Amount </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($absent_days_amount) }}</td>
+                                            </tr>
+                                            @php $boo = true @endphp
+                                            @if ($extra_availed_leave_days_amount > 0)
+                                                @php $boo = false @endphp
+                                                <tr>
+                                                    <th scope="row" contenteditable>Advance Availed Leave Days Amount
+                                                    </th>
+                                                    <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                        {{ number_format($extra_availed_leave_days_amount) }}</td>
+                                                </tr>
+                                            @endif
+                                            <tr>
+                                                <th scope="row" contenteditable>Half Days Amount</th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($half_days_amount) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Late In + Early Out Amount </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ number_format($late_in_early_out_amount) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Income Tax</th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>EOBI </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Loan Installment </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" contenteditable>Advance Salary </th>
+                                                <td contenteditable>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                            </tr>
+                                            @if ($boo)
+                                                <tr class="invisible">
+                                                    <th scope="row">Advance Salary </th>
+                                                    <td>{{ $currency_code ?? 'Rs.' }} 0</td>
+                                                </tr>
+                                            @endif
+                                            <tr>
+                                                <th scope="row" class="text-center" contenteditable>NET SALARY</th>
+                                                <th scope="row" contenteditable>{{ $currency_code ?? 'Rs.' }}
+                                                    {{ $net_salary }}</th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
                         </div>
-
-
-                    </div>
                     @endif
                     <div class="row mb-3">
                         <div class="col-md-6 pr-0">
@@ -624,7 +627,7 @@
 
                 // Get the HTML content to be converted
                 var htmlContent = document.getElementById("contentToConvert");
-              
+
                 // Use html2pdf library to convert HTML to PDF
                 html2pdf(htmlContent, {
                     margin: 10,
@@ -646,13 +649,20 @@
 
 
             $(document).keydown(function(event) {
+
                 // Check if Ctrl key (or Command key on Mac) is pressed and the 'P' key is pressed
                 if (event.ctrlKey || event.metaKey) {
+                    console.log(String.fromCharCode(event.which))
                     if (String.fromCharCode(event.which).toLowerCase() === 'p') {
                         // Prevent the default action (printing)
                         event.preventDefault();
                     }
                 }
+            });
+
+            $(document).on("contextmenu", function(e) {
+                // Prevent default context menu
+                e.preventDefault();
             });
 
         });
