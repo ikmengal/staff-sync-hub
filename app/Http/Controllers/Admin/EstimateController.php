@@ -120,6 +120,7 @@ class EstimateController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            "request_id" => "required",
             "title" => "required|max:255",
             "description" => "required",
             "price" => "required|integer",
@@ -127,34 +128,40 @@ class EstimateController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-        try {
 
-            $create = Estimate::create([
-                "creator_id" => Auth::user()->id,
-                "request_id" => $request->request_id ?? null,
-                "company_id" => $request->company_id ?? null,
-                "title" => $request->title ?? null,
-                "description" => $request->description ?? null,
-                "price" => $request->price ?? null,
-            ]);
-            if (!empty($create->id)) {
-                if (isset($request->attachments) && !empty($request->attachments)) {
-                    foreach ($request->attachments as $attachment) {
-                        $fileName = uploadSingleFile($attachment, config("project.upload_path.estimates"), "ESTIMATE-");
-                        if (isset($fileName) && !empty($fileName)) {
-                            $attachment = Attachment::create([
-                                "model_id" => $create->id,
-                                "model_name" => "\App\Models\Estimate",
-                                "attached_by" => Auth::user()->id,
-                                "file" => $fileName ?? null,
-                            ]);
+        $purchaseRequest = PurchaseRequest::where('id', $request->request_id)->first();
+        
+        if(isset($purchaseRequest) && !empty($purchaseRequest)){
+            try {
+                $create = Estimate::create([
+                    "creator_id" => Auth::user()->id,
+                    "request_id" => $request->request_id ?? null,
+                    "company_id" => $purchaseRequest->company_id ?? null,
+                    "title" => $request->title ?? null,
+                    "description" => $request->description ?? null,
+                    "price" => $request->price ?? null,
+                ]);
+                if (!empty($create->id)) {
+                    if (isset($request->attachments) && !empty($request->attachments)) {
+                        foreach ($request->attachments as $attachment) {
+                            $fileName = uploadSingleFile($attachment, config("project.upload_path.estimates"), "ESTIMATE-");
+                            if (isset($fileName) && !empty($fileName)) {
+                                $attachment = Attachment::create([
+                                    "model_id" => $create->id,
+                                    "model_name" => "\App\Models\Estimate",
+                                    "attached_by" => Auth::user()->id,
+                                    "file" => $fileName ?? null,
+                                ]);
+                            }
                         }
                     }
                 }
+                return redirect()->route("estimates.index")->with("success", "Estimate has been created");
+            } catch (Exception $e) {
+                return back()->with("error", $e->getMessage())->withInput();
             }
-            return redirect()->route("estimates.index")->with("success", "Estimate has been created");
-        } catch (Exception $e) {
-            return back()->with("error", $e->getMessage())->withInput();
+        }else{
+            return redirect()->route("estimates.index")->with("success", "Purchase Request not found select another record...!");
         }
     }
 
