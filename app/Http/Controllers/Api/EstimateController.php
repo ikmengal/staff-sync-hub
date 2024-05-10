@@ -193,7 +193,7 @@ class EstimateController extends Controller
                 foreach ($estimates as $key => $value) {
                     $data['estimates'][] = [
                         'id' => $value->id ?? null,
-                        'creator' => $value->company->name ?? null,
+                        'creator' => getUserName($value->creator->id) ?? null,
                         'title' => $value->title ?? null,
                         'description' => $value->description ?? null,
                         'price' => $value->price ?? null,
@@ -310,7 +310,7 @@ class EstimateController extends Controller
         if (isset($array['request_data']) && !empty($array['request_data'])) {
             $company = $array['request_data']->company;
             $companyBaseUrl = getCompanyBaseUrl($company->company_id);
-            $url = config("project.braincell_base_url") . 'api/update-purchase-request';
+            $url = $companyBaseUrl . 'api/update-purchase-request'; 
             $response = Http::post($url, $array);
             if ($response->successful()) {
                 $data = $response->json();
