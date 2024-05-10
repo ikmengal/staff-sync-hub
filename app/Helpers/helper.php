@@ -662,8 +662,8 @@ function employeeDetails($company, $employee)
 
 function preEmployeeDetails($company, $employee)
 {
-    $profile = '';
- 
+    
+   
     $title = '-';
     if (isset($employee->hasAppliedPosition->hasPosition) && !empty($employee->hasAppliedPosition->hasPosition->title)) {
         $title = $employee->hasAppliedPosition->hasPosition->title;
@@ -673,8 +673,8 @@ function preEmployeeDetails($company, $employee)
         $expected_salary  = $employee->hasAppliedPosition->expected_salary;
     }
     $is_exist = '-';
-    if (isset($employee->is_exist) && !empty($employee->is_exist)) {
-        $shift = $employee->is_exist;
+    if (isset($employee) && !empty($employee)) {
+        $is_exist = $employee->is_exist;
     }
     $status = '-';
     if (isset($employee->status) && !empty($employee->status)) {
