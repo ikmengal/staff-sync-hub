@@ -36,7 +36,7 @@
                         <label for="">Employee</label>
                         <select name="employee" id="employee" data-control="select2"
                             class="select2 form-select employee  unselectValue">
-                            <option value="">select</option>
+                            <option value="">Select</option>
                             @if (isset($employees['total_employees']) && !empty($employees))
                                 @foreach ($employees['total_employees'] as $item)
                                     <option value="{{ $item->slug }}" @if (!empty($user) && $user->slug == $item->slug) selected @endif>
@@ -554,14 +554,13 @@
             format: 'mm/yyyy',
             startView: 'year',
             minViewMode: 'months',
-     
             endDate: currentMonth,
-            defaultViewDate: initialDate
+           
         }).on('changeMonth', function(e) {
 
             //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
 
-
+               console.log(e.date.getMonth())
             selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
             selectedYear = e.date.getFullYear();
 
