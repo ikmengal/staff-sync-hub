@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Company;
 use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\UserLeave;
@@ -9,6 +10,7 @@ use App\Models\WorkShift;
 use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\Discrepancy;
+use App\Models\PreEmployee;
 use App\Models\UserContact;
 use App\Models\VehicleUser;
 use Illuminate\Support\Str;
@@ -18,10 +20,10 @@ use App\Models\WorkingShiftUser;
 use App\Models\AttendanceSummary;
 use Illuminate\Support\Facades\DB;
 use App\Models\AttendanceAdjustment;
-use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use App\Models\HolidayCustomizeEmployee;
 use Spatie\Permission\Models\Permission;
+use App\Http\Controllers\Admin\AttendanceController;
 
 function settings()
 {
@@ -171,6 +173,9 @@ function getAllCompanies()
             if (!empty($head)) {
                 $company_head = getUserData($head);
             }
+
+
+            $pre_employees = PreEmployee::on($portalDb)->where('form_type',1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no','status','created_at','is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
             $settings['vehicle_percent'] =  (count($vehicleUsers) != 0 && count($total_employees) != 0) ? number_format(count($vehicleUsers) / count($total_employees) * 100) : 0;
@@ -182,6 +187,7 @@ function getAllCompanies()
             $settings['head'] = $company_head;
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
+            $settings['pre_employees']=  $pre_employees;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -225,6 +231,34 @@ function getEmployees($companyName = null)
 
     $data['total_employees_count'] = $total_employees_count;
     $data['total_employees'] =  $allEmployees;
+
+    return $data;
+}
+
+function getPreEmployees($companyName = null)
+{
+
+    $data = [];
+    $allEmployees = [];
+    $pre_employees_count = 0;
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            $pre_employees_count += count($company->pre_employees);
+            foreach ($company->pre_employees as $employee) {
+                $allEmployees[] = (object) preEmployeeDetails($company, $employee);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            $pre_employees_count += count($company->pre_employees);
+
+            foreach ($company->pre_employees as $employee) {
+                $allEmployees[] = (object) preEmployeeDetails($company, $employee);
+            }
+        }
+    }
+
+
+    $data['pre_employees'] =  $allEmployees;
 
     return $data;
 }
@@ -619,6 +653,60 @@ function employeeDetails($company, $employee)
         'department' => $department,
         'shift' => $shift,
         'employment_status' => $employment_status,
+    ];
+
+
+
+    return $data;
+}
+
+function preEmployeeDetails($company, $employee)
+{
+    $profile = '';
+ 
+    $title = '-';
+    if (isset($employee->hasAppliedPosition->hasPosition) && !empty($employee->hasAppliedPosition->hasPosition->title)) {
+        $title = $employee->hasAppliedPosition->hasPosition->title;
+    }
+    $expected_salary = '-';
+    if (isset($employee->hasAppliedPosition) && !empty($employee->hasAppliedPosition->expected_salary)) {
+        $expected_salary  = $employee->hasAppliedPosition->expected_salary;
+    }
+    $is_exist = '-';
+    if (isset($employee->is_exist) && !empty($employee->is_exist)) {
+        $shift = $employee->is_exist;
+    }
+    $status = '-';
+    if (isset($employee->status) && !empty($employee->status)) {
+        if ($employee->status == '1') {
+            $status = 'Approved';
+        } elseif ($employee->status == '0') {
+            $status = 'Pending';
+        } elseif ($employee->status == '2') {
+            $status = 'Rejected';
+        } 
+    }
+    $created_at = "";
+    if(isset($employee->created_at) && !empty($employee->created_at)){
+          $created_at = $employee->created_at;
+    }
+    $manager_id = "";
+    if(isset($employee->manager_id) && !empty($employee->manager_id)){
+        $manager_id = $employee->manager_id;
+
+    }
+    $data = [
+
+        'company' => $company->name,
+        'company_key' => $company->company_key,
+        'title' => $title,
+        'expected_salary' => $expected_salary,
+        'is_exist' => $is_exist,
+        'status' => $status,
+        'created_at' => $created_at,
+        'manager_id' => $manager_id,
+        'employee' => $employee
+   
     ];
 
 
@@ -1547,6 +1635,8 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
             $user = User::on($portalDb)->where('id', $userID)->first();
         }
     }
+
+
     $beginDate = Carbon::parse($current_date);
 
     $start_date = '';
@@ -1556,7 +1646,8 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
         }
     }
 
-
+    $punchIn = "";
+    $punchOut = "";
     if ($shift->type == 'scheduled') {
         $scheduled = '(Flexible)';
 
@@ -1750,7 +1841,7 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
         $checkSecondDiscrepancy = true;
         $checkSecond = true;
         $attendance_id = '';
-
+     
         if ($punchIn != null) {
             $attendance_id = $punchIn->id;
             $punchInRecord = new DateTime($punchIn->in_date);
@@ -1954,4 +2045,65 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
     } else {
         return null;
     }
+}
+
+function getCurrencyCodeForSalary($user)
+{
+    if (!empty($user->salaryHistory) && !empty($user->salaryHistory->getCurrency)) {
+        return $user->salaryHistory->getCurrency->symbol;
+    } else {
+        return "Rs.";
+    }
+}
+
+function checkSalarySlipGenerationDate($data)
+{
+    $currentDate = new DateTime(); // Get the current date and time
+    $currentDate->modify('-1 month'); // Go back one month
+    $previousMonth = $currentDate->format('d'); // Format the date as needed
+
+    if (($previousMonth == $data->month || $data->month == date('m')) && (date('d') >= 25 || date('d') <= 5)) {
+        return true;
+    } else {
+        if ($data->first_date <  Carbon::now()->toDateString()  && $data->fifth_date >  Carbon::now()->toDateString()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+function getUserSalary($user, $month, $year)
+{
+    // Get current date
+    $currentDateTime = "$year-$month-" . date('d');
+    $date = date('d');
+    if (!empty($user->profile->joining_date)) {
+        $joiningDate = $user->profile->joining_date;
+        // Convert joining date string to Carbon instance
+        $joiningDateTime = Carbon::createFromFormat('Y-m-d', $joiningDate);
+        // Compare the dates
+        if ($joiningDateTime->gt($currentDateTime)) {
+            $date = date('d', strtotime($joiningDateTime));
+        }
+    }
+
+    $userSalary = SalaryHistory::where('user_id', $user->id)
+        ->where('effective_date', '<=', "$year-$month-" . $date)
+        ->where(function ($query) use ($month, $year) {
+            $query->where('end_date', '>=', "$year-$month-" . date('d'))
+                ->orWhereNull('end_date');
+        })
+        ->orderBy('effective_date', 'desc')
+        ->first();
+
+    if (!empty($userSalary)) {
+        return $userSalary->salary;
+    } else {
+        return 0;
+    }
+}
+function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company)
+{
+    return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company);
 }

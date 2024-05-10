@@ -8,6 +8,7 @@ use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\SalaryController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\SettingController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\MasterLoginController;
+use App\Http\Controllers\Admin\PreEmployeeController;
 use App\Http\Controllers\Admin\PurchaseRequestController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\AttendanceAdjustmentController;
@@ -102,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
     Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
     Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
+    Route::get("admin//company/get-compnany-employees",[AttendanceController::class,'getCompanyEmployees'])->name('admin.get.company.employees');
     // Route::get('admin/company/attendance/filter',[AttendanceController::class,'monthlyAttendanceReportfgdfg'])->name('admin.company.attendance.filter');
  
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
@@ -130,6 +133,9 @@ Route::middleware('auth')->group(function () {
    
     Route::get('users-search-data',[UserController::class,'getSearchData'])->name('users.search.data');
 
+    //salary details
+    Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
+
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);
     Route::resource('/permissions', PermissionController::class);
@@ -146,6 +152,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class);
     Route::resource('/mark_attendance', AttendanceAdjustmentController::class);
+    Route::resource('/pre-employees',PreEmployeeController::class);
+    Route::resource('salaries',SalaryController::class);
     Route::resource('/user_leaves', UserLeaveController::class);
 
 

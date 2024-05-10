@@ -179,7 +179,54 @@
             @endcan
         </li>
         @endcanany
+        @canany(['pre_employees-list'])
+        <li class="menu-item {{ Route::is('pre-employees.*')  
+                ? 'open active'
+            : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-users"></i>
+                <div data-i18n="Pre Employees">Pre Employees</div>
+            </a>
+            <ul class="menu-sub">
+                @can('pre_employees-list')
+                <li class="menu-item {{ Route::is('pre-employees.*') ? 'active' : '' }}">
+                    <a href="{{ route('pre-employees.index') }}" class="menu-link">
 
+                        <div>Pre Employees</div>
+                    </a>
+                </li>
+                @endcan
+               
+               
+
+            </ul>
+
+        </li>
+        @endcanany
+        @canany(['salaries-list'])
+        <li class="menu-item {{ Route::is('salaries.*')  
+                ? 'open active'
+            : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-users"></i>
+                <div data-i18n="Salary">Salary</div>
+            </a>
+            <ul class="menu-sub">
+            @can('salaries-details')
+                <li class="menu-item {{ Route::is('salaries.*') ? 'active' : '' }}">
+                    <a href="{{ route('salaries.detail') }}" class="menu-link">
+
+                        <div>Salary Detail</div>
+                    </a>
+                </li>
+                @endcan
+               
+               
+
+            </ul>
+
+        </li>
+        @endcanany
 
         @canany(['attendances-show-companies'])
         <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
