@@ -113,6 +113,7 @@ class PurchaseRequestController extends Controller
                 'company_id' => $request->company_id ?? null,
                 'subject' => $request->subject ?? null,
                 'description' => $request->description ?? null,
+                'remarks' => 'New Purchase Requsest Created',
             ]);
             if ($purchase) {
                 $data = [
@@ -125,18 +126,16 @@ class PurchaseRequestController extends Controller
                 $baseUrl = getCompanyBaseUrl($request->company_id);
                 $url = $baseUrl . 'api/store-purchase-request';
                 $response = Http::post($url, $data);
-                dd($response->json());
+
                 if ($response->successful()) {
                     $response = (object) $response->json();
-                    dd($response);
+
                     if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
-                        $data = json_encode($response->data);
-                        $purchase->update(['api_response' => $data, "portal_request_id" => $response->portal_request_id ?? '']);
+                        $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->portal_request_id ?? '']);
                         DB::commit();
-                        return response()->json(['success' => true, 'message' => 'Purhcase Request has been added successfully']);
+                        return response()->json(['success' => true, 'message' => $response->message ?? 'Purchase Request has been created']);
                     }
                 } else {
-                    Log::info("Error occurred while delete vehicle inspection request API: " . $response->status());
                     return response()->json(['error' => "API error occurred: " . $response->status()]);
                 }
             } else {
