@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PurchaseRequestController extends Controller
@@ -18,7 +20,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('purchases-request');
+        $this->authorize('purchase-requests-list');
         $data['title'] = 'Purchase Requests';
         $data['companies'] = Company::get();
         $records = PurchaseRequest::orderby("id", "desc")->select("*");
@@ -63,12 +65,12 @@ class PurchaseRequestController extends Controller
                         $instance->orWhere('creator', "LIKE", "%$search%");
                     }
 
-                    if(!empty($request['company'])){
+                    if (!empty($request['company'])) {
                         $search = $request['company'];
                         $instance->where('company_id', $search);
                     }
 
-                    if(!empty($request['filter_status'])){
+                    if (!empty($request['filter_status'])) {
                         $search = $request['filter_status'];
                         $instance->where('status', $search);
                     }
@@ -112,11 +114,32 @@ class PurchaseRequestController extends Controller
                 'subject' => $request->subject ?? null,
                 'description' => $request->description ?? null,
             ]);
-
-            if($purchase){
-                DB::commit();
-                return response()->json(['success' => true, "message" => 'Purchase added successfully'], 200);
-            }else{
+            if ($purchase) {
+                $data = [
+                    'hub_request_id' => $purchase->id,
+                    'company_code' => $request->company_id,
+                    'subject' => $request->subject,
+                    'description' => $request->description,
+                    'hub_creator' => json_encode(getUser()),
+                ];
+                $baseUrl = getCompanyBaseUrl($request->company_id);
+                $url = $baseUrl . 'api/store-purchase-request';
+                $response = Http::post($url, $data);
+                dd($response->json());
+                if ($response->successful()) {
+                    $response = (object) $response->json();
+                    dd($response);
+                    if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
+                        $data = json_encode($response->data);
+                        $purchase->update(['api_response' => $data, "portal_request_id" => $response->portal_request_id ?? '']);
+                        DB::commit();
+                        return response()->json(['success' => true, 'message' => 'Purhcase Request has been added successfully']);
+                    }
+                } else {
+                    Log::info("Error occurred while delete vehicle inspection request API: " . $response->status());
+                    return response()->json(['error' => "API error occurred: " . $response->status()]);
+                }
+            } else {
                 DB::rollback();
                 return response()->json(['success' => false, "message" => 'Purchase request not added.'], 401);
             }
@@ -133,13 +156,13 @@ class PurchaseRequestController extends Controller
     {
         $title = 'Purchase Request Detail';
         $record = PurchaseRequest::where('id', $id)->first();
-        if(isset($record) && !empty($record)){
+        if (isset($record) && !empty($record)) {
             if (view()->exists('admin.purchase-requests.show')) {
                 return view('admin.purchase-requests.show', compact('record', 'title'));
-            }else{
-                abort(404);                
+            } else {
+                abort(404);
             }
-        }else{
+        } else {
             abort(404);
         }
     }
@@ -172,7 +195,7 @@ class PurchaseRequestController extends Controller
     {
         $record = PurchaseRequest::find($request->purchase_status_id);
         $userId = Auth()->id();
-        if($record){
+        if ($record) {
             DB::beginTransaction();
             try {
                 $record->status = $request->status_data;
@@ -186,7 +209,7 @@ class PurchaseRequestController extends Controller
                 DB::rollback();
                 return response()->json(['success' => false, "message" => $e->getMessage()], 401);
             }
-        }else{
+        } else {
             DB::rollback();
             return response()->json(['success' => false, "message" => 'No record found'], 401);
         }

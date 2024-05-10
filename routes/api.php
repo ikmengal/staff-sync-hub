@@ -55,6 +55,7 @@ Route::post('store-player-id', [UserPlayerIdController::class, 'store']);
 
 // for other portals
 Route::post("store-purchase-request", [PurchaseRequestController::class, 'store']);
+Route::post("save-response-from-store-purchase-request", [PurchaseRequestController::class, 'updateResponse']);
 Route::get("get-purchase-request", [PurchaseRequestController::class, 'index']);
 
 // Estimate Route

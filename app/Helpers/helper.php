@@ -1614,7 +1614,9 @@ function getCompanyBaseUrl($company_id)
 {
     $url = '';
     if (!empty($company_id)) {
-        if ($company_id == 2) { //Vertical Edge
+        if ($company_id == 1) { // Cyberonixe
+            $url = config("project.cyberonix_base_url");
+        }elseif ($company_id == 2) { //Vertical Edge
             $url = config("project.vertical_base_url");
         } elseif ($company_id == 3) { //Braincell  Technology
             $url = config("project.braincell_base_url");
@@ -2127,3 +2129,4 @@ function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavi
 {
     return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company);
 }
+ 
