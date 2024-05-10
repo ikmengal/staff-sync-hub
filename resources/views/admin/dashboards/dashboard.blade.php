@@ -1,7 +1,55 @@
 @extends('admin.layouts.app')
+@push('styles')
+    <link href="{{ asset('public/admin/assets/vendor/css/pages/page-profile.css') }}" rel="stylesheet" />
+@endpush
 @section('title', $data['title'].' | '.appName())
 @section('content')
 <div class="container-fluid flex-grow-1 container-p-y">
+
+    <div class="row mb-4">
+        <div class="col-lg-9">
+            <div class="card profile-card p-3">
+                <div class="">
+                  <div class="user-profile-header-banner position-relative rounded overflow-hidden">
+                    <img src="{{ asset('public/admin') }}/assets/img/pages/curved0.jpg" alt="Banner image">
+                  </div>
+                  <div class="profile-image p-4 mx-4 rounded">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <img src="{{ asset('public/admin') }}/default.png" alt="user image" class="d-block h-auto rounded user-profile-img" width="80">
+                        </div>
+                        <div class="col">
+                            <div class="h-100">
+                                <h4 class="mb-1 text-capitalize">Super Admin</h4>
+                                <p class="mb-0 font-weight-bold text-sm">
+                                    CEO / Co-Founder
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col text-end">
+                            <a href="{{ route('profile.edit') }}" class="btn btn-primary waves-effect waves-light">
+                                <i class="ti ti-user-check me-1"></i>View Profile
+                            </a>
+                        </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-about mx-4 mt-4">
+                    <h5>Admin , Welcome To Your Realm Of Leadership: 🏆</h5>
+                    <p>Step into the future of workforce excellence, where every keystroke orchestrates seamless employee management, precise attendance tracking, salary tranquility, ticket wizardry, chat connectivity, and administrative mastery. 🚀🌟🤝   </p>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 d-lg-block d-none">
+            <div class="card h-100 d-flex align-items-center justify-content-end">
+                <h3 class="text-center">Have you tried <br> {{appName()}} ?</h3>
+                <img src="{{ asset('public/admin') }}/assets/img/illustrations/page-misc-under-maintenance.png" alt="Dashboard Image" width="330">
+            </div>
+        </div>
+      </div>
+
     <!-- Counter Boxex -->
     @include('admin.dashboards.counter-boxes')
     <!-- Counter Boxex -->
