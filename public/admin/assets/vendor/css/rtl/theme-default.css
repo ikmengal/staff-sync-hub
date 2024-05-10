@@ -1338,7 +1338,7 @@ li.ui-timepicker-selected,
 }
 
 .bg-menu-theme {
-  background-color: #fff !important;
+  background-color: rgba(47, 51, 73) !important;
   color: #6f6b7d;
 }
 .bg-menu-theme.menu-horizontal {
@@ -1347,7 +1347,7 @@ li.ui-timepicker-selected,
 .bg-menu-theme .menu-link,
 .bg-menu-theme .menu-horizontal-prev,
 .bg-menu-theme .menu-horizontal-next {
-  color: #6f6b7d;
+  color: #9ca0bb;
 }
 .bg-menu-theme .menu-link:hover, .bg-menu-theme .menu-link:focus,
 .bg-menu-theme .menu-horizontal-prev:hover,
@@ -1429,10 +1429,12 @@ li.ui-timepicker-selected,
   }
 }
 .bg-menu-theme .menu-inner .menu-item.open > .menu-link.menu-toggle, .layout-menu-hover.layout-menu-collapsed .bg-menu-theme .menu-inner .menu-item.open > .menu-link.menu-toggle, .bg-menu-theme .menu-inner .menu-item.active > .menu-link.menu-toggle, .layout-menu-hover.layout-menu-collapsed .bg-menu-theme .menu-inner .menu-item.active > .menu-link.menu-toggle {
-  background: #f8f8f8;
+  background: #373b51;
+  color: #9ca0bb;
 }
 html:not(.layout-menu-collapsed) .bg-menu-theme .menu-inner .menu-item:not(.active) .menu-link:hover, .layout-menu-hover.layout-menu-collapsed .bg-menu-theme .menu-inner .menu-item:not(.active) .menu-link:hover {
-  background: #f8f8f8;
+  background: #373b51;
+  color: #9ca0bb;
 }
 .bg-menu-theme .menu-inner .menu-sub .menu-item:not(.active) > .menu-link::before {
   color: #a5a3ae !important;

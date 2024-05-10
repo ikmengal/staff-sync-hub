@@ -4,10 +4,10 @@
         <a href="{{ url('/dashboard') }}" class="app-brand-link">
             @if(isset(settings()->logo) && !empty(settings()->logo))
             <img src="{{ asset('public/admin/cyberonix-logo-light.png') }}" class="img-fluid light-logo img-logo" alt="{{ settings()->name }}" />
-            <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="{{ settings()->name }}" />
+            {{-- <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="{{ settings()->name }}" /> --}}
             @else
             <img src="{{ asset('public/admin/cyberonix-logo-light.png') }}" class="img-fluid light-logo img-logo" alt="Default" />
-            <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="Default" />
+            {{-- <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="Default" /> --}}
             @endif
         </a>
 
