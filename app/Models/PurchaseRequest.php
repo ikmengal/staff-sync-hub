@@ -21,4 +21,7 @@ class PurchaseRequest extends Model
     public function modifiedBy() {
         return $this->belongsTo(User::class ,'modified_by' , 'id');
     }
+    public function createdBy() {
+        return $this->belongsTo(User::class ,'creator_id' , 'id');
+    }
 }

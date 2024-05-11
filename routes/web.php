@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\PreEmployeeController;
 use App\Http\Controllers\Admin\PurchaseRequestController;
 use App\Http\Controllers\Admin\EmployeeRequisitionController;
 use App\Http\Controllers\Admin\AttendanceAdjustmentController;
+use App\Http\Controllers\Admin\UserLeaveController;
 
 /*
 |--------------------------------------------------------------------------
@@ -169,3 +170,4 @@ Route::middleware('auth')->group(function () {
 //Authentication Routes
 
 require __DIR__ . '/auth.php';
+

@@ -82,7 +82,7 @@ class SalaryController extends Controller
     {
 
 
-
+        $this->authorize("salaries-list");
         $data['title'] = $this->moduleName;
         $data['companies'] = getAllCompanies();
         $data['company'] = $request->company;
@@ -92,7 +92,6 @@ class SalaryController extends Controller
         if (isset($request->slug) && !empty($request->slug)) {
 
             foreach (companies() as $index => $item) {
-
                 $user = User::on($item)->where('slug', $request->slug)->first();
             }
         }

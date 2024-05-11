@@ -4,10 +4,10 @@
         <a href="{{ url('/dashboard') }}" class="app-brand-link">
             @if(isset(settings()->logo) && !empty(settings()->logo))
             <img src="{{ asset('public/admin/cyberonix-logo-light.png') }}" class="img-fluid light-logo img-logo" alt="{{ settings()->name }}" />
-            <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="{{ settings()->name }}" />
+            {{-- <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="{{ settings()->name }}" /> --}}
             @else
             <img src="{{ asset('public/admin/cyberonix-logo-light.png') }}" class="img-fluid light-logo img-logo" alt="Default" />
-            <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="Default" />
+            {{-- <img src="{{ asset('public/admin/cyberonix-logo.png') }}" class="img-fluid dark-logo img-logo" alt="Default" /> --}}
             @endif
         </a>
 
@@ -140,13 +140,13 @@
             @endcan
         </li>
         <!-- purchases -->
-        @canany(['purchases-list', 'purchases-request', 'estimates-list', 'receipts-list'])
+        @canany(['purchase-requests-list', 'purchase-requests-list', 'estimates-list', 'receipts-list'])
         <li class="menu-item {{ Route::is('purchase-requests.*') ||
                 Route::is('estimates.*') ||
                 Route::is('receipts.*') 
                         ? 'open active'
                     : '' }}">
-            @can('purchases-list')
+            @can('purchase-requests-list')
             <a href=" javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-layout-sidebar"></i>
                 <div data-i18n="Purchases">Purchases</div>
@@ -154,7 +154,7 @@
 
             <ul class="menu-sub">
                 <li class="menu-item hover is_shown {{Route::is('purchase-requests.*') ? 'active' : ''}} ">
-                    @can('purchases-request')
+                    @can('purchase-requests-list')
                     <a href="{{ route('purchase-requests.index') }}" class="menu-link">
                         <div data-i18n="Requests">Requests</div>
                     </a>
@@ -179,7 +179,7 @@
             @endcan
         </li>
         @endcanany
-        @canany(['pres-employee-list'])
+        @canany(['pre-employees-list'])
         <li class="menu-item {{ Route::is('pre-employees.*')  
                 ? 'open active'
             : '' }}">
@@ -188,7 +188,7 @@
                 <div data-i18n="Pre Employees">Pre Employees</div>
             </a>
             <ul class="menu-sub">
-                @can('pres-employee-list')
+                @can('pre-employees-list')
                 <li class="menu-item {{ Route::is('pre-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('pre-employees.index') }}" class="menu-link">
 
@@ -196,8 +196,8 @@
                     </a>
                 </li>
                 @endcan
-               
-               
+
+
 
             </ul>
 
@@ -212,7 +212,7 @@
                 <div data-i18n="Salary">Salary</div>
             </a>
             <ul class="menu-sub">
-            @can('salaries-details')
+                @can('salaries-list')
                 <li class="menu-item {{ Route::is('salaries.*') ? 'active' : '' }}">
                     <a href="{{ route('salaries.detail') }}" class="menu-link">
 
@@ -220,8 +220,8 @@
                     </a>
                 </li>
                 @endcan
-               
-               
+
+
 
             </ul>
 
@@ -243,7 +243,7 @@
                     </a>
                 </li>
                 @endcan
-               
+
 
             </ul>
 

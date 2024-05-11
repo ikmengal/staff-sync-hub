@@ -182,7 +182,7 @@ function getAllCompanies()
             }
 
 
-            $pre_employees = PreEmployee::on($portalDb)->where('form_type',1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no','status','created_at','is_exist'])->get();
+            $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
             $settings['vehicle_percent'] =  (count($vehicleUsers) != 0 && count($total_employees) != 0) ? number_format(count($vehicleUsers) / count($total_employees) * 100) : 0;
@@ -194,7 +194,7 @@ function getAllCompanies()
             $settings['head'] = $company_head;
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
-            $settings['pre_employees']=  $pre_employees;
+            $settings['pre_employees'] =  $pre_employees;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -669,8 +669,8 @@ function employeeDetails($company, $employee)
 
 function preEmployeeDetails($company, $employee)
 {
-    
-   
+
+
     $title = '-';
     if (isset($employee->hasAppliedPosition->hasPosition) && !empty($employee->hasAppliedPosition->hasPosition->title)) {
         $title = $employee->hasAppliedPosition->hasPosition->title;
@@ -691,16 +691,15 @@ function preEmployeeDetails($company, $employee)
             $status = 'Pending';
         } elseif ($employee->status == '2') {
             $status = 'Rejected';
-        } 
+        }
     }
     $created_at = "";
-    if(isset($employee->created_at) && !empty($employee->created_at)){
-          $created_at = $employee->created_at;
+    if (isset($employee->created_at) && !empty($employee->created_at)) {
+        $created_at = $employee->created_at;
     }
     $manager_id = "";
-    if(isset($employee->manager_id) && !empty($employee->manager_id)){
+    if (isset($employee->manager_id) && !empty($employee->manager_id)) {
         $manager_id = $employee->manager_id;
-
     }
     $data = [
 
@@ -713,7 +712,7 @@ function preEmployeeDetails($company, $employee)
         'created_at' => $created_at,
         'manager_id' => $manager_id,
         'employee' => $employee
-   
+
     ];
 
 
@@ -860,11 +859,32 @@ function apiResponse($success = null, $data = null, $message = null, $code = nul
 
 function setPermissionName($name = null, $permission = null)
 {
-
-    $name = str_replace(' ', '-', Str::lower($name));
+    //  $permission = list , create , delete etc
+    $name = preg_replace('/\s+/', '-', $name); // remove all empty spaces with -  sign 
+    $permission_names = explode(' ', $name);
     $permission = str_replace(' ', '-', Str::lower($permission));
+    $p_name = "";
+    if (isset($permission_names) && count($permission_names) > 0) {
+        foreach ($permission_names as  $i => $p) {
+            if ($i == 0) {
+                $p_name .=    $p;
+            }
+            if ($i > 0) {
+                $p_name .= "-" .   $p;
+            }
+        }
+        $p_name = Str::plural($p_name);
+        $p_name = strtolower($p_name);
+        $p_name = $p_name . "-" . $permission;
+    }
+    return $p_name;
+    // $p_name .= " " . $permission;
+    // $p_name = str_replace(" ", "-", $p_name);
+    // dd($p_name);
+
+    // return  $p_name;
+    $lastIndex = count($permission_names) - 1;
     $permission_name = $name . "-" . $permission;
-    $permission_names = explode('-', $permission_name);
     $first[] = Str::plural($permission_names[0]);
     unset($permission_names[0]);
     $n = array_merge($first, $permission_names);
@@ -1122,6 +1142,11 @@ function getUser($user_id = null, $company = null)
     if (!empty($user)) {
         return $user;
     }
+}
+function getMyRole()
+{
+    $roles =  getUser()->roles->pluck("name")->toArray();
+    return $roles[0];
 }
 
 function hasExceededLeaveLimit($user, $company)
@@ -1601,7 +1626,9 @@ function getCompanyBaseUrl($company_id)
 {
     $url = '';
     if (!empty($company_id)) {
-        if ($company_id == 2) { //Vertical Edge
+        if ($company_id == 1) { // Cyberonixe
+            $url = config("project.cyberonix_base_url");
+        } elseif ($company_id == 2) { //Vertical Edge
             $url = config("project.vertical_base_url");
         } elseif ($company_id == 3) { //Braincell  Technology
             $url = config("project.braincell_base_url");
@@ -1671,7 +1698,7 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
         $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
         $end = date("Y-m-d H:i:s", strtotime('+10 hours ' . $end_time));
 
-        
+
         foreach (companies() as $portalName => $portalDb) {
             if ($company != null && $company == $portalName) {
                 $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first();
@@ -1848,7 +1875,7 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
         $checkSecondDiscrepancy = true;
         $checkSecond = true;
         $attendance_id = '';
-     
+
         if ($punchIn != null) {
             $attendance_id = $punchIn->id;
             $punchInRecord = new DateTime($punchIn->in_date);
@@ -2115,8 +2142,7 @@ function getUserSalary($user, $month, $year,$company)
         return 0;
     }
 }
-function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company)
+function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company)
 {
-   
-    return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift,$company);
+    return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company);
 }

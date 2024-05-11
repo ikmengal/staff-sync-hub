@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', $title.' | '.appName()) 
+@section('title', $title.' | '.appName())
 @section('content')
 
 
@@ -28,10 +28,8 @@
                         <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
                             <option value="">All</option>
                             @if(isset($companies) && !empty($companies))
-
                             @foreach($companies as $index => $value)
                             <option value="{{$value->id}}">{{$value->name ?? '-'}}</option>
-
                             @endforeach
                             @endif
                         </select>
@@ -48,6 +46,11 @@
                     <div class="col-md-4 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
+                        @can("purchase-requests-create")
+                        <a href="javascript:;" class="btn btn-success add_purchase_request">
+                            Add&nbsp;<i class="fa-solid fa-plus"></i>
+                        </a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-datatable table-responsive">
@@ -73,7 +76,72 @@
             </div>
             <!-- Stocks List Table -->
         </div>
+        <!-- edit estimate modal  -->
+        <div class="modal fade" id="add-purchase-request" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered1 modal-add-new-role">
+                <div class="modal-content p-3 p-md-5">
+                    <button type="button" class="btn-close btn-pinned" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div>
+                        <h3 class="role-title mb-2">Add Purchase Request</h3>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="form-label" for="company">Company<span class="text-danger">*</span></label>
+                                <select name="add_purchase_company" id="add_purchase_company" data-control="select2" class="select2 form-select company unselectValue">
+                                    <option value="">Select Company</option>
+                                    @if(isset($companies) && !empty($companies))
+                                    @foreach($companies as $index => $value)
+                                    <option value="{{$value->id}}">{{$value->name ?? '-'}}</option>
+                                    @endforeach
+                                    @endif
+                                </select>
+                                <span id="add_purchase_company_error" class="text-danger error"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label" for="subject">Subject<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="subject" placeholder="Enter Subject" name="subject" />
+                                <div class="fv-plugins-message-container invalid-feedback"></div>
+                                <span id="subject_error" class="text-danger error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="mb-1 fv-plugins-icon-container col-12">
+                                <label class="form-label" for="description">Description<span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" placeholder="Enter description" name="description" cols="15" rows="5"></textarea>
+                                <div class="fv-plugins-message-container invalid-feedback"></div>
+                                <span id="description_error" class="text-danger error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 action-btn">
+                        <div class="demo-inline-spacing sub-btn">
+                            <button type="submit" id="add_purchase_request" class="btn btn-primary me-sm-3 me-1  ">Submit</button>
+                            <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
+                                Cancel
+                            </button>
+                        </div>
+                        <div class="demo-inline-spacing loading-btn" style="display: none;">
+                            <button class="btn btn-primary waves-effect waves-light" type="button" disabled="">
+                                <span class="spinner-border me-1" role="status" aria-hidden="true"></span>
+                                Loading...
+                            </button>
+                            <button type="reset" class="btn btn-label-secondary btn-reset" data-bs-dismiss="modal" aria-label="Close">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
+    <!-- edit estimate modal  -->
+</div>
 </div>
 
 @endsection
@@ -163,6 +231,86 @@
         $('input[type="search"]').val('').trigger('keyup');
         var table = $('.data_table').DataTable();
         table.ajax.reload(null, false)
+    });
+
+    $(document).on("click", ".add_purchase_request", function() {
+        $("#add-purchase-request").modal("show");
+    });
+
+    $(document).on("click", "#add_purchase_request", function() {
+        $("#add_purchase_company_error").html("");
+        var errors = [];
+
+        var add_purchase_company = $("#add_purchase_company").val();
+
+        if (!add_purchase_company) {
+            errors.push(1)
+            $("#add_purchase_company_error").html("Please Company ");
+        } else {
+            $("#add_purchase_company_error").html("");
+        }
+
+        var subject = $("#subject").val();
+
+        if (!subject) {
+            errors.push(1)
+            $("#subject_error").html("Please enter subject");
+        } else {
+            $("#subject_error").html("");
+        }
+
+         
+        var editor = CKEDITOR.instances['description'];
+        var description = editor.getData();
+        if (!description) {
+            errors.push(1)
+            $("#description_error").html("Please enter description");
+        } else {
+            $("#description_error").html("");
+        }
+
+        if (errors.length > 0) {
+            return false;
+        } else {
+            $.ajax({
+                url: "{{route('purchase-requests.store')}}",
+                method: "POST",
+                data: {
+                    _token: "{{csrf_token()}}",
+                    company_id: add_purchase_company,
+                    subject: subject,
+                    description: description,
+                },
+                beforeSend: function() {
+                    console.log("processing");
+                },
+                success: function(res) {
+                    if (res.success == true) {
+                        $("#add-purchase-request").modal("hide");
+
+                        $("#subject").val('');
+                        $("#description").val('');
+                        $("#add_purchase_company").val('').trigger('change');
+                        loadPageData();
+                        Swal.fire({
+                            text: res.message,
+                            icon: "success"
+                        });
+                    } else {
+                        Swal.fire({
+                            text: res.message,
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        text: error,
+                        icon: "error"
+                    });
+                }
+            });
+        }
     });
 </script>
 @endpush

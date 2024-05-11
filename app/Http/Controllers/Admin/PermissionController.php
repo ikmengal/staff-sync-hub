@@ -27,7 +27,7 @@ class PermissionController extends Controller
 
         $model = Permission::groupBy('label')
             ->select('label')
-            
+
             ->get();
 
 
@@ -43,7 +43,7 @@ class PermissionController extends Controller
                 ->addColumn('permissions', function ($permission) {
                     $display_names = SubPermissions($permission->label) ?? null;
                     $display_name = "";
-                    return view('admin.permissions.permissions', ['permission' =>$display_names])->render();
+                    return view('admin.permissions.permissions', ['permission' => $display_names])->render();
                 })
 
                 ->addColumn('action', function ($permission) {
@@ -68,12 +68,12 @@ class PermissionController extends Controller
     // public function store(Request $request)
     // {
 
-       
+
     //     $request['label'] = Str::lower($request->name);
     //     try {
     //              $rules = [
     //             'name' => 'required:unique:permissions,name',
-               
+
     //         ];
 
     //         $message = [
@@ -81,9 +81,9 @@ class PermissionController extends Controller
     //         ];
 
     //     $validator = Validator::make($request->all(), $rules, $message);
-      
+
     //     if ($validator->fails()) {
-          
+
     //         return response()->json(['success' => false, 'message' => $validator->errors()->toArray(), 'validation' => false]);
     //     }
     //         $input_permissions = $request->permissions;
@@ -101,11 +101,11 @@ class PermissionController extends Controller
     //             }
     //         }
 
-            
-          
+
+
     //         return ['success' => true, 'message' => 'Permission successfuly created', 'status' => 200];
     //     } catch (\Exception $e) {
-          
+
     //         return ['success' => false, 'message' => 'Permission not created, something went wrong', 'status' => 501];
     //     }
     // }
@@ -113,7 +113,7 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $this->authorize('permissions-create');
-        
+
         $rules = [
             'name' => 'required:unique:permissions,name',
             'permissions' => 'array|min:1|required',
@@ -131,14 +131,14 @@ class PermissionController extends Controller
 
         if (!empty($request->permissions)) {
             foreach ($request->permissions as $display_name) {
+           
                 $name = setPermissionName($request->name, $display_name) ?? null;
                 $result = Permission::create([
-                    'label' =>  isset($request->name) ? ucfirst($request->name) : null,
-                    'name' =>  $name ?? null ,
-                    'display_name' => ucfirst($display_name),
+                    'label' =>  isset($request->name) ? Str::plural(ucfirst($request->name)) : null,
+                    'name' =>  $name ?? null,
+                    'display_name' => $display_name,
                     'guard_name' => 'web',
                 ]);
-              
             }
         }
 
@@ -147,12 +147,10 @@ class PermissionController extends Controller
         } else {
             return ['success' => false, 'message' => 'Permission not created, something went wrong', 'status' => 501];
         }
-
-      
     }
 
 
-    
+
     public function edit($id)
     {
         $this->authorize('permissions-edit');
@@ -167,9 +165,9 @@ class PermissionController extends Controller
 
     public function update(Request $request, $id)
     {
-      
+
         $rules = [
-            'name' => 'required:unique:permissions,name,'.$id,
+            'name' => 'required:unique:permissions,name,' . $id,
             'custom_permission' => 'required',
         ];
 
@@ -183,21 +181,20 @@ class PermissionController extends Controller
             return ['success' => false, 'message' => $validator->errors(), 'validation' => false];
         }
         $permission = Permission::where('id', $id)->first();
-        
-        if(isset($permission) && !empty($permission)) {
+
+        if (isset($permission) && !empty($permission)) {
             if (!empty($request->custom_permission)) {
                 $name = setPermissionName($permission->label, $request->custom_permission) ?? null;
                 $result = Permission::create([
                     'label' =>  isset($permission->label) ? ucfirst($permission->label) : null,
-                    'name' =>  $name ?? null ,
+                    'name' =>  $name ?? null,
                     'display_name' => ucfirst($request->custom_permission),
                     'guard_name' => 'web',
                 ]);
-              
             }
-    
+
             if (isset($result) && !empty($result)) {
-             
+
                 $result = ['success' => true, 'message' => 'Permission successfuly updated', 'status' => 200];
             } else {
                 $result = ['success' => false, 'message' => 'Permission not updated, something went wrong', 'status' => 501];
@@ -220,10 +217,10 @@ class PermissionController extends Controller
         $this->authorize('permissions-delete');
         $find = Permission::where('label', $id);
         if (isset($find) && !empty($find)) {
-         
+
             $model = $find->delete();
             if ($model) {
-     
+
                 return response()->json([
                     'status' => true,
                 ]);
@@ -234,6 +231,4 @@ class PermissionController extends Controller
             return false;
         }
     }
-
-    
 }

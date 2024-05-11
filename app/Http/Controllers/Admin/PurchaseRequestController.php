@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PurchaseRequestController extends Controller
 {
@@ -17,7 +20,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('purchases-request');
+        $this->authorize('purchase-requests-list');
         $data['title'] = 'Purchase Requests';
         $data['companies'] = Company::get();
         $records = PurchaseRequest::orderby("id", "desc")->select("*");
@@ -45,11 +48,6 @@ class PurchaseRequestController extends Controller
                     return $model->creator ?? '';
                 })
                 ->addColumn('status', function ($model) {
-                    // $data = '';
-                    // $class = $model->getStatus->class  ?? "primary";
-                    // $name = $model->getStatus->name  ?? "-";
-                    // $data .= '<span class="badge bg-label-' . $class  . '">' . $name   . '</span>';
-                    // return $data;
                     $data = '';
                     $class = $model->getStatus->class  ?? "primary";
                     $name = $model->getStatus->name  ?? "-";
@@ -67,12 +65,12 @@ class PurchaseRequestController extends Controller
                         $instance->orWhere('creator', "LIKE", "%$search%");
                     }
 
-                    if(!empty($request['company'])){
+                    if (!empty($request['company'])) {
                         $search = $request['company'];
                         $instance->where('company_id', $search);
                     }
 
-                    if(!empty($request['filter_status'])){
+                    if (!empty($request['filter_status'])) {
                         $search = $request['filter_status'];
                         $instance->where('status', $search);
                     }
@@ -96,7 +94,60 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $user = Auth()->user();
+        $validator = Validator::make($request->all(), [
+            "company_id" => "required|integer",
+            "subject" => "required|max:255",
+            "description" => "required",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["success" => false, "message" => "Validation Error", "error" => $validator->errors()->all()], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            
+            $purchase = PurchaseRequest::create([
+                'creator' => $user->email ?? null,
+                'creator_id' => $user->id ?? null,
+                'company_id' => $request->company_id ?? null,
+                'subject' => $request->subject ?? null,
+                'description' => $request->description ?? null,
+                'remarks' => 'New Purchase Requsest Created',
+            ]);
+            if ($purchase) {
+                $data = [
+                    'hub_request_id' => $purchase->id,
+                    'company_code' => $request->company_id,
+                    'subject' => $request->subject,
+                    'description' => $request->description,
+                    'hub_creator' => json_encode(getUser()),
+                ];
+                $baseUrl = getCompanyBaseUrl($request->company_id);
+                $url = $baseUrl . 'api/store-purchase-request';
+                $response = Http::post($url, $data);
+
+                if ($response->successful()) {
+                    $response = (object) $response->json();
+                     
+                    if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
+                        $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->data['portal_request_id'] ?? '']);
+                        DB::commit();
+                        return response()->json(['success' => true, 'message' => $response->message ?? 'Purchase Request has been created']);
+                    }
+                } else {
+                    return response()->json(['error' => "API error occurred: " . $response->status()]);
+                }
+            } else {
+                DB::rollback();
+                return response()->json(['success' => false, "message" => 'Purchase request not added.'], 401);
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, "message" => $e->getMessage()], 401);
+        }
     }
 
     /**
@@ -106,13 +157,13 @@ class PurchaseRequestController extends Controller
     {
         $title = 'Purchase Request Detail';
         $record = PurchaseRequest::where('id', $id)->first();
-        if(isset($record) && !empty($record)){
+        if (isset($record) && !empty($record)) {
             if (view()->exists('admin.purchase-requests.show')) {
                 return view('admin.purchase-requests.show', compact('record', 'title'));
-            }else{
-                abort(404);                
+            } else {
+                abort(404);
             }
-        }else{
+        } else {
             abort(404);
         }
     }
@@ -145,7 +196,7 @@ class PurchaseRequestController extends Controller
     {
         $record = PurchaseRequest::find($request->purchase_status_id);
         $userId = Auth()->id();
-        if($record){
+        if ($record) {
             DB::beginTransaction();
             try {
                 $record->status = $request->status_data;
@@ -159,7 +210,7 @@ class PurchaseRequestController extends Controller
                 DB::rollback();
                 return response()->json(['success' => false, "message" => $e->getMessage()], 401);
             }
-        }else{
+        } else {
             DB::rollback();
             return response()->json(['success' => false, "message" => 'No record found'], 401);
         }

@@ -316,6 +316,7 @@
         </div>
         <div class="showUserModal"></div>
         @include('admin.roles.edit')
+    </div>
     @endsection
     @push('js')
         <script>
