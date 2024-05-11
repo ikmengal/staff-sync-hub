@@ -115,7 +115,7 @@
             </div>
             <div class="col-md-12 mb-3">
               <h6>Description</h6>
-              <p>{{ $record->description ?? '' }}</p>
+              <p>{!! $record->description ?? '' !!}</p>
             </div>
             <div class="col-md-6 mb-3">
               <h6>Status</h6>

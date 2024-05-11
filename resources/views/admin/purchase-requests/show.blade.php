@@ -39,8 +39,13 @@
                 <div class="col-md-4 col-6 mb-4">
                   <div class="d-flex align-items-center">
                     <div class="card-info">
+                      @if(isset($record->creator_id) && !empty($record->creator_id))
+                      <h6 class="mb-2">Created By</h6>
+                      <small>{{ getUserName($record->createdBy->id) ?? '-' }} ( from Hub Portal )</small>
+                      @else 
                       <h6 class="mb-2">Creator Email</h6>
-                      <small>{{ $record->creator ?? '-' }}</small>
+                      <small>{{ $record->creator ?? '-' }}  ( from API ) </small>
+                      @endif
                     </div>
                   </div>
                 </div>

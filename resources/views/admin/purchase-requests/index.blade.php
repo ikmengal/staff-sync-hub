@@ -259,8 +259,9 @@
             $("#subject_error").html("");
         }
 
-        var description = $("#description").val();
-
+         
+        var editor = CKEDITOR.instances['description'];
+        var description = editor.getData();
         if (!description) {
             errors.push(1)
             $("#description_error").html("Please enter description");

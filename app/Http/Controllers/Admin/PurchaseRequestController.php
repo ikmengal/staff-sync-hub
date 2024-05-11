@@ -94,6 +94,7 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request)
     {
+
         $user = Auth()->user();
         $validator = Validator::make($request->all(), [
             "company_id" => "required|integer",
@@ -107,6 +108,7 @@ class PurchaseRequestController extends Controller
 
         DB::beginTransaction();
         try {
+            
             $purchase = PurchaseRequest::create([
                 'creator' => $user->email ?? null,
                 'creator_id' => $user->id ?? null,
@@ -129,9 +131,9 @@ class PurchaseRequestController extends Controller
 
                 if ($response->successful()) {
                     $response = (object) $response->json();
-
+                     
                     if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
-                        $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->portal_request_id ?? '']);
+                        $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->data['portal_request_id'] ?? '']);
                         DB::commit();
                         return response()->json(['success' => true, 'message' => $response->message ?? 'Purchase Request has been created']);
                     }
