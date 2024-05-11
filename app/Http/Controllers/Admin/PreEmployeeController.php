@@ -8,6 +8,7 @@ use App\Models\PreEmployee;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Http\Controllers\Controller;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PreEmployeeController extends Controller
 {
@@ -176,5 +177,109 @@ class PreEmployeeController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function exportPreEmployee(Request $request){
+
+        $company = $request->company;
+        $month = $request->month;
+        $year = $request->year;
+        $slug = $request->slug;
+
+        $response = new StreamedResponse(function () use($ids){
+            // Open output stream
+            $handle = fopen('php://output', 'w');
+            // Add CSV headers
+            fputcsv($handle, [
+                "#",
+                'Brand',
+                'Team',
+                'Creator',
+                'Follwup Agent',
+                'Assignee', 
+                'DBA',
+                'Number Of Equpments', 
+                'Customer Email',
+                'Customer Full Name',
+                'Customer Primary Number',
+                'Customer Secondary Number',
+                'Country', 
+                'State',
+                'City',
+                'Busines Address', 
+                'Postal Code',
+                'Latest Remarks', 
+                'Last Schedule Date',
+                'Last Updated',
+                'Overdue',
+                'Current Status'
+
+            ]);
+    
+            // Query to get Leaddata for all users within the specified date range
+            $leads = $this->model::with('team','latestFollowUp','leadStatus')->whereIn('id', $ids)->orderBy('id','desc')->get();
+            // Loop through each user's monthly Leaddata
+            foreach ($leads as $index => $lead) {
+                // Access the data for each user
+                $id = ++$index;
+                $dba = $lead->dba;
+                $brand = getBrand($lead->brand_id);
+                $customer_name = $lead->customer->full_name ?? "-";
+                $customer_email = $lead->customer->email ?? "-";
+                $customer_primary_phone = $lead->customer->primary_phone_number ?? "-";
+                $customer_secondary_phone = $lead->customer->secondary_phone_number ?? "-";
+                $creator =  getUserName(getUser($lead->creator_id));
+                $team =  (!empty($lead->team)) ? $lead->team->name : "-";
+                $followupAgent = getUserName(getUser($lead->followup_agent_id));
+                $assignee = getUserName(getUser($lead->assignee_1));
+                $equipments = $lead->leadDetails()->count();
+                $country = getCountryOnBrand($lead->brand_id)->name;
+                $state =  getState($lead->state_id)->name;
+                $city = getCity($lead->city_id)->name;
+                $address = $lead->address;
+                $postal_code = $lead->postal_code;
+                $remarks = (!empty($lead->latestFollowUp)) ? $lead->latestFollowUp->remarks : '-';
+                $last_schedule_date_time = formatDateTime($lead->last_schedule_date_time);
+                $last_updated_date = formatDateTime($lead->updated_at);
+                $overdue = ($lead->last_schedule_date < Carbon::now()->toDateString()) ? "YES" : "NO";
+                $status = $lead->leadStatus->name;
+    
+                // Add a new row with data
+                fputcsv($handle, [
+                    $id,
+                    $brand, 
+                    $team, 
+                    $creator,
+                    $followupAgent,
+                    $assignee,
+                    $dba, 
+                    $equipments,
+                    $customer_email, 
+                    $customer_name, 
+                    $customer_primary_phone,  
+                    $customer_secondary_phone, 
+                    $country,
+                    $state,
+                    $city,
+                    $address,
+                    $postal_code,
+                    $remarks,
+                    $last_schedule_date_time,
+                    $last_updated_date,
+                    $overdue,
+                    $status
+                ]);
+               
+            }
+            // Close the output stream
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename='.$filename,
+        ]);
+
+
+        return $response;
+
     }
 }

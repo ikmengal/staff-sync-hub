@@ -523,7 +523,6 @@
     </div>
 
 @endsection
-
 @push('js')
     <script>
         $(document).on('change', ".company", function() {

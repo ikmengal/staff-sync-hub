@@ -103,12 +103,13 @@
 
                     </div>
                 @endif
-                {{-- <div class="card-header row"> --}}
-                {{-- <div class="col-md-4">
-                        <button class="btn btn-success" onclick="exportAttendance($month,$year,$company)">Export</button>
-                    </div> --}}
+                <div class="card-header row">
+                    <div class="col-md-4">
+                        <button class="btn btn-success" id="exportBtn"
+                            data-route="{{ route('admin.employee.attendance.export') }}">Export</button>
+                    </div>
 
-                {{-- </div> --}}
+                </div>
                 <div class="card-header border-top">
                     <div class="table-responsive">
                         <table class="attendance-table table table-border min-w-800 body-input-checkbox">
@@ -441,5 +442,45 @@
                 window.location.href = selectedOption;
             }
         }
+
+        $("#exportBtn").on('click', function() {
+
+            var route = $(this).data('route');
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var month = urlParams.get('month');
+            var year = urlParams.get('year');
+            var company = urlParams.get('company');
+            var slug = urlParams.get('slug');
+            var currentDate = new Date();
+            var formattedDate = currentDate.getFullYear() +
+                ('0' + (currentDate.getMonth() + 1)).slice(-2) +
+                ('0' + currentDate.getDate()).slice(-2);
+            var formattedTime = ('0' + currentDate.getHours()).slice(-2) +
+                ('0' + currentDate.getMinutes()).slice(-2) +
+                ('0' + currentDate.getSeconds()).slice(-2);
+
+            // Construct the dynamic file name
+            var filename = 'pre_employees_report_' + formattedDate + '_' + formattedTime + '.csv';
+
+            // Create a hidden anchor element
+            var downloadLink = document.createElement('a');
+            downloadLink.style.display = 'none';
+
+            document.body.appendChild(downloadLink);
+
+            // Set the href attribute to the download URL
+            downloadLink.href = route + "?company=" + company + "&month=" + $month + "&year=" + $year + "&slug=" +
+                slug;
+            dd($downloadLink.href);
+            // Set the download attribute to force download
+            downloadLink.setAttribute('download', filename);
+
+            // Trigger a click event on the anchor element
+            downloadLink.click();
+            // Clean up the anchor element
+            document.body.removeChild(downloadLink);
+
+        })
     </script>
 @endpush

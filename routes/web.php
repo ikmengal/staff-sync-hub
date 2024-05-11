@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
     // Route::get('admin/company/attendance/filter',[AttendanceController::class,'monthlyAttendanceReportfgdfg'])->name('admin.company.attendance.filter');
  
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
-    Route::get('admin/employee/attendance/monthly/report', [AttendanceController::class, 'monthlyAttendanceReportExport'])->name('admin.employee.attendance.monthly.report.export');
+    Route::get('admin/employee/attendance/monthly/report', [AttendanceController::class, 'monthlyAttendanceReportExport'])->name('admin.employee.attendance.export');
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
@@ -136,6 +136,10 @@ Route::middleware('auth')->group(function () {
     //salary details
     Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
     Route::get('salaries/generate-salary-slip',[SalaryController::class,'generateSalarySlip'])->name('salaries.generate.salary.slip');
+    
+
+    //Pre Employee
+    Route::get('pre-employees/export',[PreEmployeeController::class,'exportPreEmployee'])->name('pre-employees.export');
 
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);

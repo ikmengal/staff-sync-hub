@@ -15,10 +15,18 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('public/admin/favicon.png') }}" />
     @endif
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;500&display=swap" rel="stylesheet">
+    <style type="text/css" media="print">
+        body {
+            visibility: hidden;
+            display: none
+        }
+    </style>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
+
+
 
         a:hover {
             text-decoration: none;
@@ -622,50 +630,82 @@
     <script src="{{ asset('public/admin/assets/js/html2pdf.js') }}"></script>
     <script>
         $(document).ready(function() {
-            // console.log(html2pdf());
-            $("#pdfPrint").click(function() {
+                    // console.log(html2pdf());
+                    $("#pdfPrint").click(function() {
 
-                // Get the HTML content to be converted
-                var htmlContent = document.getElementById("contentToConvert");
+                        // Get the HTML content to be converted
+                        var htmlContent = document.getElementById("contentToConvert");
 
-                // Use html2pdf library to convert HTML to PDF
-                html2pdf(htmlContent, {
-                    margin: 10,
-                    filename: '{{ $user->first_name }} {{ date('F Y', strtotime($year . '-' . $month)) }} Salary Slip.pdf',
-                    image: {
-                        type: 'jpeg',
-                        quality: 0.98
-                    },
-                    html2canvas: {
-                        scale: 2
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'a3',
-                        orientation: 'portrait'
-                    },
-                }).from(htmlContent);
-            });
+                        // Use html2pdf library to convert HTML to PDF
+                        html2pdf(htmlContent, {
+                            margin: 10,
+                            filename: '{{ $user->first_name }} {{ date('F Y', strtotime($year . '-' . $month)) }} Salary Slip.pdf',
+                            image: {
+                                type: 'jpeg',
+                                quality: 0.98
+                            },
+                            html2canvas: {
+                                scale: 2
+                            },
+                            jsPDF: {
+                                unit: 'mm',
+                                format: 'a3',
+                                orientation: 'portrait'
+                            },
+                        }).from(htmlContent);
+                    });
 
 
-            $(document).keydown(function(event) {
+                    $(document).keydown(function(event) {
 
-                // Check if Ctrl key (or Command key on Mac) is pressed and the 'P' key is pressed
-                if (event.ctrlKey || event.metaKey) {
-                    console.log(String.fromCharCode(event.which))
-                    if (String.fromCharCode(event.which).toLowerCase() === 'p') {
-                        // Prevent the default action (printing)
-                        event.preventDefault();
-                    }
-                }
-            });
+                        // Check if Ctrl key (or Command key on Mac) is pressed and the 'P' key is pressed
+                        if (event.ctrlKey || event.metaKey) {
+                            console.log(String.fromCharCode(event.which))
+                            if (String.fromCharCode(event.which).toLowerCase() === 'p') {
+                                // Prevent the default action (printing)
+                                event.preventDefault();
+                            }
+                        }
+                    });
 
-            $(document).on("contextmenu", function(e) {
-                // Prevent default context menu
-                e.preventDefault();
-            });
+                
+                    $(document).on("contextmenu", function(e) {
+                        // Remove the default "Print" option from the context menu
+                        $('#customContextMenu').remove();
+                        var customContextMenu = $('<div id="customContextMenu"></div>');
+                        customContextMenu.css({
+                            position: "absolute",
+                            background: "white",
+                            border: "1px solid #ccc",
+                            boxShadow: "2px 2px 5px rgba(0,0,0,0.2)",
+                            borderRadius: "4px",
+                            padding: "4px",
+                            zIndex: "1000",
+                        });
+                        var clientX = e.clientX;
+                        var clientY = e.clientY;
+                        customContextMenu.css({
+                            top: clientY + "px",
+                            left: clientX + "px",
+                        });
+                        customContextMenu.append('<div>Custom Option 1</div>');
+                        customContextMenu.append('<div>Custom Option 2</div>');
+                        $('body').append(customContextMenu);
+                        // Prevent the default context menu
+                        return false;
+                    });
 
-        });
+                    // Function to handle clicks on the custom context menu
+                    $(document).on('click', '#customContextMenu', function(event) {
+                        console.log($(event.target).text());
+                        // Check if the clicked item is the "Print" option
+                        if ($(event.target).text() === "Print") {
+                            // Prevent the default action for the "Print" option
+                            event.preventDefault();
+                        }
+                    });
+
+                });
     </script>
 </body>
 
