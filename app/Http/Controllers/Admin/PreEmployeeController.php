@@ -26,7 +26,7 @@ class PreEmployeeController extends Controller
     }
     public function index(Request $request)
     {
-         $this->authorize("pre-employees-list");
+        $this->authorize("pre-employees-list");
         $title = 'All Pre-Employees';
         $companies = companies();
         $company = $request->company;
@@ -66,7 +66,7 @@ class PreEmployeeController extends Controller
                 ->addColumn('status', function ($model) {
                     $label = '';
                     if (isset($model->status) && !empty($model->status)) {
-                    $label = '<span class="badge bg-label-danger" text-capitalized="">Rejected</span>';
+                        $label = '<span class="badge bg-label-danger" text-capitalized="">Rejected</span>';
                     }
                     return $label;
                 })
@@ -77,11 +77,11 @@ class PreEmployeeController extends Controller
                     return $model->manager_id;
                 })
                 ->editColumn('name', function ($model) {
-   
+
                     return view('admin.companies.pre-employees.profile', ['employee' => $model->employee])->render();
                 })
                 ->addColumn('action', function ($model) {
-                    return view('admin.companies.pre-employees.action', ['employee' => $model->employee,'company'=>$model->company_key])->render();
+                    return view('admin.companies.pre-employees.action', ['employee' => $model->employee, 'company' => $model->company_key])->render();
                 })
                 ->filter(function ($query) use ($request) {
                     if ($request->has('company')) {
@@ -89,10 +89,9 @@ class PreEmployeeController extends Controller
                         $query->collection = $query->collection->filter(function ($model) use ($company) {
                             return str_contains(strtolower($model['company']), strtolower($company));
                         });
-                    
                     }
                 })
-                ->rawColumns(['status', 'is_exist', 'name', 'manager_id', 'applied_position', 'expected_salary','action'])
+                ->rawColumns(['status', 'is_exist', 'name', 'manager_id', 'applied_position', 'expected_salary', 'action'])
                 ->make(true);
         }
         return view('admin.companies.pre-employees.index', compact('title'));
@@ -117,41 +116,36 @@ class PreEmployeeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request,string $id)
+    public function show(Request $request, string $id)
     {
         $this->authorize("pre-employees-list");
-        foreach(companies() as $index => $portalDb){
-            if(isset($request->company) && $request->company == $portalDb){
+        foreach (companies() as $index => $portalDb) {
+            if (isset($request->company) && $request->company == $index) {
                 $model = PreEmployee::on($portalDb)->with('haveReferences')->where('id', $id)->first();
             }
-
         }
-            
-    
-            if (isset($model->user->profile->profile) && !empty($model->user->profile->profile)) {
-                $profile_img = $model->user->profile->profile ?? null;
-            } else {
-                $profile_img = isset($model->profile_image) && !empty($model->profile_image) ? $model->profile_image : null;
-            }
-            if (isset($model->user->profile->cnic_front) && !empty($model->user->profile->cnic_front)) {
-                $cnic_front = $model->user->profile->cnic_front ?? null;
-            } else {
-                $cnic_front = isset($model->cnic_front) && !empty($model->cnic_front) ? $model->cnic_front : null;
-            }
-            if (isset($model->user->profile->cnic_back) && !empty($model->user->profile->cnic_back)) {
-                $cnic_back = $model->user->profile->cnic_back ?? null;
-            } else {
-                $cnic_back = isset($model->cnic_back) && !empty($model->cnic_back) ? $model->cnic_back : null;
-            }
-            if (isset($model) && $model->form_type == 1) {
-                $title = 'Show Employee Details';
-                return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-            } else {
-                $title = 'Show Office Boy Details';
-                return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-            }
-        
-    
+        if (isset($model->user->profile->profile) && !empty($model->user->profile->profile)) {
+            $profile_img = $model->user->profile->profile ?? null;
+        } else {
+            $profile_img = isset($model->profile_image) && !empty($model->profile_image) ? $model->profile_image : null;
+        }
+        if (isset($model->user->profile->cnic_front) && !empty($model->user->profile->cnic_front)) {
+            $cnic_front = $model->user->profile->cnic_front ?? null;
+        } else {
+            $cnic_front = isset($model->cnic_front) && !empty($model->cnic_front) ? $model->cnic_front : null;
+        }
+        if (isset($model->user->profile->cnic_back) && !empty($model->user->profile->cnic_back)) {
+            $cnic_back = $model->user->profile->cnic_back ?? null;
+        } else {
+            $cnic_back = isset($model->cnic_back) && !empty($model->cnic_back) ? $model->cnic_back : null;
+        }
+        if (isset($model) && $model->form_type == 1) {
+            $title = 'Show Employee Details';
+            return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
+        } else {
+            $title = 'Show Office Boy Details';
+        }
+        return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
     }
 
     /**
