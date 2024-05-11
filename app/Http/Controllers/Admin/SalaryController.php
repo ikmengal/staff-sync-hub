@@ -89,7 +89,7 @@ class SalaryController extends Controller
         $data['currentMonth'] = date('m/Y');
         if (isset($request->slug) && !empty($request->slug)) {
             foreach (companies() as $index => $item) {
-                $user = User::on($index)->where('slug', $request->slug)->first();
+                $user = User::on($item)->where('slug', $request->slug)->first();
             }
         }
         $currency_code = !empty($user) ?  getCurrencyCodeForSalary($user) :  "Rs.";
@@ -265,7 +265,7 @@ class SalaryController extends Controller
         $filled_half_day_leaves = 0;
         if (!empty($user)) {
             foreach (companies() as $index => $item) {
-                $filled_full_day_leaves = UserLeave::on($index)->where('user_id', $user->id)
+                $filled_full_day_leaves = UserLeave::on($item)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereMonth('start_at', $data['month'])
                     ->whereYear('start_at', $data['year'])
@@ -275,7 +275,7 @@ class SalaryController extends Controller
             $filled_full_day_leaves = $filled_full_day_leaves->sum('duration');
 
             foreach (companies() as $index => $item) {
-                $filled_half_day_leaves = UserLeave::on($index)->where('user_id', $user->id)
+                $filled_half_day_leaves = UserLeave::on($item)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereMonth('start_at', $data['month'])
                     ->whereYear('start_at', $data['year'])
