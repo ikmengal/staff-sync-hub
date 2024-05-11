@@ -2094,11 +2094,8 @@ function getUserSalary($user, $month, $year,$company)
             $date = date('d', strtotime($joiningDateTime));
         }
     }
-
-
     foreach(companies() as $index => $portalDb){
         if(!empty($company) && $company == $index){
-
             $userSalary = SalaryHistory::on($portalDb)->where('user_id', $user->id)
             ->where('effective_date', '<=', "$year-$month-" . $date)
             ->where(function ($query) use ($month, $year) {
@@ -2112,8 +2109,6 @@ function getUserSalary($user, $month, $year,$company)
 
 
     }
- 
-
     if (!empty($userSalary)) {
         return $userSalary->salary;
     } else {

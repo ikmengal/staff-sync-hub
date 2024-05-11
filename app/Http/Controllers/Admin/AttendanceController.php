@@ -692,4 +692,14 @@ class AttendanceController extends Controller
 
         return $data;
     }
+
+
+    public function monthlyAttendanceReportExport(Request $request){
+
+        $company = $request->company;
+        $month = $request->month;
+        $year = $request->year;
+
+
+    }
 }
