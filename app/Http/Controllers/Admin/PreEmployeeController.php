@@ -147,10 +147,11 @@ class PreEmployeeController extends Controller
             if (isset($model) && $model->form_type == 1) {
                 $title = 'Show Employee Details';
                 return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-            } else {
-                $title = 'Show Office Boy Details';
-                return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-            }
+            } 
+            // else {
+            //     $title = 'Show Office Boy Details';
+            // return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
+            // }
         
     
     }

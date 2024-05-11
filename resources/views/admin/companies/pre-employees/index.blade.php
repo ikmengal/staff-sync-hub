@@ -38,12 +38,12 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-header d-flex justify-content-between">
+                {{-- <div class="card-header d-flex justify-content-between">
                     <div></div>
                     <div class="mt-md-0 mt-3">
                         <button class="btn btn-success" id="exportBtn" data-route="{{route('pre.employees.export')}}">Export</button>
                     </div>
-                </div>
+                </div> --}}
 
 
 

@@ -472,7 +472,7 @@
             // Set the href attribute to the download URL
             downloadLink.href = route + "?company=" + company + "&month=" + $month + "&year=" + $year + "&slug=" +
                 slug;
-            dd($downloadLink.href);
+       
             // Set the download attribute to force download
             downloadLink.setAttribute('download', filename);
 

@@ -694,12 +694,118 @@ class AttendanceController extends Controller
     }
 
 
-    public function monthlyAttendanceReportExport(Request $request){
+    // public function monthlyAttendanceReportExport(Request $request){
 
-        $company = $request->company;
-        $month = $request->month;
-        $year = $request->year;
+      
+
+    //     $response = new StreamedResponse(function () use($request){
 
 
-    }
+    //         $company = $request->company;
+    
+    //         $slug = $request->slug;
+          
+
+    //             // Open output stream
+    //             $handle = fopen('php://output', 'w');
+
+                
+    //             // Add CSV headers
+    //             fputcsv($handle, [
+    //                 'S.NO#',
+    //                 'MONTH',
+    //                 'FROM',
+    //                 'TO',
+    //                 'EMPLOYEE',
+    //                 'WORKING DAYS',
+    //                 'REGULAR DAYS',
+    //                 'LATE IN',
+    //                 'EARLY OUTS',
+    //                 'HALF DAYS',
+    //                 'ABSENTS',
+    //                 'SHIFT',
+    //             ]);
+
+    //             // Get all users
+
+
+    //             foreach(companies() as $index => $portalDb){
+
+    //                 if(isset($company) && $company == $index){
+
+    //                     User::on($portalDb)->where('slug',$slug)->chunk(500, function ($users) use ($handle,$request) {
+    //                         foreach ($users as $user) {
+                
+    //                             $total_days = 0;
+    //                             $regulars = 0;
+    //                             $late_ins = 0;
+    //                             $early_outs = 0;
+    //                             $half_days = 0;
+    //                             $absents = 0;
+    //                             if (!empty($user->userWorkingShift)) {
+    //                                 $shift =  $user->userWorkingShift->workShift;
+    //                             } else {
+    //                                 if (isset($user->departmentBridge->department->departmentWorkShift->workShift) && !empty($user->departmentBridge->department->departmentWorkShift->workShift->id)) {
+    //                                     $shift =  $user->departmentBridge->department->departmentWorkShift->workShift;
+    //                                 }
+    //                             }
+    //                             if (!empty($request->month) || !empty($request->slug)) {
+
+    //                                 $year = $request->year;
+    //                                 $month = $request->month;
+    //                             } else {
+    //                                 $year = date('Y');
+    //                                 if (date('d') > 26 || (date('d') == 26 && date('H') > 11)) {
+    //                                     $month = date('m', strtotime('first day of +1 month'));
+    //                                 } else {
+    //                                     $month = date('m');
+    //                                 }
+    //                                 if ($month == 01) {
+    //                                     $year = date('Y', strtotime('first day of +1 month'));
+    //                                 }
+    //                             }
+        
+    //                             $daysData = getMonthDaysForSalary($year, $month);
+                            
+
+    //                             // Add a new row with data
+    //                             fputcsv($handle, [
+    //                                 'sno' => $user->id,
+    //                                 'month' =>  $month,
+    //                                 'from' => $daysData->first_date ?? "-",
+    //                                 'to' => $daysData->last_date ?? "-",
+    //                                 'name' => getUserName($user),
+    //                                 'working_days' => $daysData->total_days ?? 0,
+    //                                 'regular' => rand(1, 30)  ?? 0,
+    //                                 'late_in' => rand(1, 30) ?? 0,
+    //                                 'early_out' => rand(1, 30)  ?? 0,
+    //                                 'half_day' => rand(1, 30)  ?? 0,
+    //                                 'absents' => rand(1, 30) ?? 0,
+    //                             ]);
+    //                         }
+    //                     });
+
+
+                        
+
+
+    //                 }
+    //                 fclose($handle);
+
+    //             }, 200, [
+
+    //                 'Content-Type' => 'text/csv',
+    //                 'Content-Disposition' => 'attachment; filename=' . $reportName,
+    //             ]);
+               
+
+
+
+
+    //     });
+
+
+
+
+    // }
 }

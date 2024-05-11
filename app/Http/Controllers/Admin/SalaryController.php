@@ -203,7 +203,7 @@ class SalaryController extends Controller
         $data['salary'] = 0;
         if (isset($user->salaryHistory) && !empty($user->salaryHistory->salary)) {
             // $data['salary'] =  $user->salaryHistory->salary;
-            $data['salary'] =  getUserSalary($user, $data['month'], $data['year']);
+            $data['salary'] =  getUserSalary($user, $data['month'], $data['year'],$request->company);
             $data['per_day_salary'] = $data['salary'] / $data['totalDays'];
         } else {
             $data['per_day_salary'] = 0;
