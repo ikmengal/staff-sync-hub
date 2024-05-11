@@ -44,7 +44,7 @@ class PreEmployeeController extends Controller
                 })
                 ->addColumn('expected_salary', function ($model) {
                     if (isset($model->expected_salary) && !empty($model->expected_salary)) {
-                        $expected_salary_label = 'PKR. <b>' . number_format($model->expected_salary) . '</b>';
+                        $expected_salary_label = 'PKR. <b>' . $model->expected_salary  . '</b>';
                         return '<span class="fw-semibold">' . strip_tags($expected_salary_label) . '</span>';
                     } else {
                         return '-';
