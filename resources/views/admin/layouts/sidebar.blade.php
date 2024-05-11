@@ -212,7 +212,7 @@
                 <div data-i18n="Salary">Salary</div>
             </a>
             <ul class="menu-sub">
-                @can('salaries-details')
+                @can('salaries-list')
                 <li class="menu-item {{ Route::is('salaries.*') ? 'active' : '' }}">
                     <a href="{{ route('salaries.detail') }}" class="menu-link">
 

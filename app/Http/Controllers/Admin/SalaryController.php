@@ -81,9 +81,8 @@ class SalaryController extends Controller
     {
 
 
-
+        $this->authorize("salaries-list");
         $data['title'] = $this->moduleName;
-
         $data['companies'] = getAllCompanies();
         $data['company'] = $request->company;
         $advance_availed_leaves = 0;
