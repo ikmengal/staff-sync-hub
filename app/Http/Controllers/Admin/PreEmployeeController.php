@@ -65,17 +65,15 @@ class PreEmployeeController extends Controller
                     return $label;
                 })
                 ->addColumn('status', function ($model) {
-                    $label = '';
-                    if (isset($model->status) && !empty($model->status)) {
-                        $label = '<span class="badge bg-label-danger" text-capitalized="">Rejected</span>';
-                    }
-                    return $label;
+                
+                    return $model->status;
+              
                 })
                 ->addColumn('created_at', function ($model) {
                     return Carbon::parse($model->created_at)->format('d, M Y');
                 })
                 ->addColumn('manager_id', function ($model) {
-                    return $model->manager_id;
+                    return view('admin.companies.pre-employees.partials.manager-profile', ['employee' => $model->employee])->render();
                 })
                 ->editColumn('name', function ($model) {
 
@@ -119,7 +117,7 @@ class PreEmployeeController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $this->authorize("pre-employees-list");
+          $this->authorize("pre-employees-list");
         foreach (companies() as $index => $portalDb) {
             if (isset($request->company) && $request->company == $index) {
                 $model = PreEmployee::on($portalDb)->with('haveReferences')->where('id', $id)->first();
@@ -143,10 +141,8 @@ class PreEmployeeController extends Controller
         if (isset($model) && $model->form_type == 1) {
             $title = 'Show Employee Details';
             return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-        } else {
-            $title = 'Show Office Boy Details';
-        }
-        return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
+        } 
+        // return view('admin.companies.pre-employees.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
     }
 
     /**
