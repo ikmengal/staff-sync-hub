@@ -179,36 +179,36 @@
             @endcan
         </li>
         @endcanany
-        @canany(['pre-employees-list'])
+        {{-- @canany(['pre-employees-list']) --}}
         <li class="menu-item {{ Route::is('pre-employees.*')  
                 ? 'open active'
             : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-users"></i>
+                <i class="menu-icon tf-icons ti ti-user"></i>
                 <div data-i18n="Pre Employees">Pre Employees</div>
             </a>
             <ul class="menu-sub">
-                @can('pre-employees-list')
+                {{-- @can('pre-employees-list') --}}
                 <li class="menu-item {{ Route::is('pre-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('pre-employees.index') }}" class="menu-link">
 
                         <div>Pre Employees</div>
                     </a>
                 </li>
-                @endcan
+                {{-- @endcan --}}
 
 
 
             </ul>
 
         </li>
-        @endcanany
+        {{-- @endcanany --}}
         @canany(['salaries-list'])
         <li class="menu-item {{ Route::is('salaries.*')  
                 ? 'open active'
             : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-users"></i>
+                <i class="menu-icon tf-icons ti ti-wallet"></i>
                 <div data-i18n="Salary">Salary</div>
             </a>
             <ul class="menu-sub">
@@ -231,7 +231,7 @@
         @canany(['attendances-list'])
         <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-users"></i>
+                <i class="menu-icon tf-icons ti ti-calendar"></i>
                 <div data-i18n="Attendance">Attendance</div>
             </a>
             <ul class="menu-sub">
