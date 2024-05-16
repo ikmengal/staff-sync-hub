@@ -58,10 +58,9 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Company</th>
+                                        <th>Creator</th>
                                         <th>Name</th>
-                                        <th>Description</th>
                                         <th>Anonymous</th>
-                                        <th>Status</th>
                                         <th>Created At</th>
                                         <th>Action</th>
                                     </tr>
@@ -172,20 +171,16 @@
                     name: 'company'
                 },
                 {
+                    data: 'creator',
+                    name: 'creator'
+                }, 
+                {
                     data: 'name',
                     name: 'name'
-                },
-                {
-                    data: 'description',
-                    name: 'description'
-                },
+                }, 
                 {
                     data: 'anonymous',
                     name: 'anonymous'
-                },
-                {
-                    data: 'status',
-                    name: 'status'
                 },
                 {
                     data: 'created_at',

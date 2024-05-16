@@ -17,9 +17,9 @@ class GrievanceController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize("grievances-list");
         $data = [];
-        $data['title'] = 'All Companies Grievances';
-
+        $data['title'] = 'Grievances';
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getGrievances();
             return DataTables::of($records['grievances'])
@@ -28,16 +28,17 @@ class GrievanceController extends Controller
                     return $model->company ?? '';
                 })
                 ->editColumn('name', function ($model) {
-                    return $model->user->first_name. ' ' .$model->user->last_name ?? '';
+                    return  getUserName2($model->user);
                 })
-                ->addColumn('description', function ($model) {
-                    return $model->description ?? '';
+                ->editColumn('creator', function ($model) {
+                    return  getUserName2($model->creator);
                 })
                 ->addColumn('anonymous', function ($model) {
-                    return $model->anonymous ?? '';
-                })
-                ->addColumn('status', function ($model) {
-                    return $model->status  ?? '';
+                    if (isset($model->anonymous) && $model->anonymous == 1) {
+                        return '<span class="badge bg-label-info fw-semibold">No</span>';
+                    } else {
+                        return '<span class="badge bg-label-danger fw-semibold">Yes</span>';
+                    }
                 })
                 ->addColumn('created_at', function ($model) {
                     return $model->created_at ?? '';
@@ -48,14 +49,14 @@ class GrievanceController extends Controller
                 ->filter(function ($query) use ($request) {
                     if ($request->has('company')) {
                         $company = $request->company;
-                            $query->collection = $query->collection->filter(function ($record) use ($company) {
-                                return str_contains(strtolower($record['company']), strtolower($company));
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
                         });
                     }
                     if ($request->has('filter_status')) {
                         $status = $request->filter_status;
-                            $query->collection = $query->collection->filter(function ($record) use ($status) {
-                                return str_contains(strtolower($record['status']), strtolower($status));
+                        $query->collection = $query->collection->filter(function ($record) use ($status) {
+                            return str_contains(strtolower($record['status']), strtolower($status));
                         });
                     }
                     if ($request->has('date_range')) {
@@ -81,7 +82,7 @@ class GrievanceController extends Controller
                         }
                     }
                 })
-                ->rawColumns(['company', 'name', 'description', 'anonymous', 'status', 'created_at', 'action'])
+                ->rawColumns(['company', 'name', 'creator', 'description', 'anonymous',  'created_at', 'action'])
                 ->make(true);
         }
         return view('admin.grievances.index', compact('data'));
@@ -110,13 +111,13 @@ class GrievanceController extends Controller
     {
         $company = $request->company ?? '';
         $gravience = getGrievanceDetail($id);
-        if(isset($gravience) && !empty($gravience)){
-            if(view()->exists('admin.grievances.show')){
+        if (isset($gravience) && !empty($gravience)) {
+            if (view()->exists('admin.grievances.show')) {
                 return view('admin.grievances.show', compact('gravience', 'company'))->render();
-            }else{
+            } else {
                 abort(404);
             }
-        }else{
+        } else {
             abort(404);
         }
     }
@@ -145,7 +146,8 @@ class GrievanceController extends Controller
         //
     }
 
-    public function getSearchDataOnLoad(Request $request){
+    public function getSearchDataOnLoad(Request $request)
+    {
         $data['companies'] = Company::get();
         return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }

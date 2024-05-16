@@ -42,7 +42,7 @@ function appName()
     return env("APP_NAME");
     foreach (companies() as $index => $portalDb) {
         if (!empty($company) && $company == $index) {
-            dd($company , $index);
+            dd($company, $index);
             $setting = Setting::on($portalDb)->first();
         }
     }
@@ -1018,7 +1018,12 @@ function getUserName($id)
     }
 }
 
-
+function getUserName2($user) {
+    if (!empty($user)) {
+        $user_name = $user->first_name . " " . $user->last_name;
+        return $user_name;
+    }
+}
 function getDepartments()
 {
     $connections = companies(); // Update with your actual connection names
@@ -2160,7 +2165,8 @@ function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavi
     return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company);
 }
 
-function grievancesDetail($companyName, $grievance){
+function grievancesDetail($companyName, $grievance)
+{
     $id = '-';
     if (isset($grievance->id) && !empty($grievance->id)) {
         $id = $grievance->id;
@@ -2171,7 +2177,8 @@ function grievancesDetail($companyName, $grievance){
     }
     $user = '-';
     if (isset($grievance->user_id) && !empty($grievance->user_id)) {
-        $user  = $grievance->hasUser;
+        $user  = $grievance->hasUser ?? null;
+        $profile  = $grievance->hasUser->profile ?? null;
     }
     $description = '-';
     if (isset($grievance) && !empty($grievance)) {
@@ -2195,15 +2202,15 @@ function grievancesDetail($companyName, $grievance){
     }
     $created_at = "";
     if (isset($grievance->created_at) && !empty($grievance->created_at)) {
-        $created_at = date('F d, Y',strtotime($grievance->created_at));
+        $created_at = date('F d, Y', strtotime($grievance->created_at));
     }
     $data = [
-
         'id' => $id,
         'company' => $companyName->name,
         'company_key' => $companyName->company_key,
         'creator' => $creator,
         'user' => $user,
+        'user_profile' =>   $profile ?? null,
         'description' => $description,
         'anonymous' => $anonymous,
         'status' => $status,
@@ -2245,4 +2252,28 @@ function getGrievanceDetail($id)
             return 'No Record Found...!';
         }
     }
+}
+
+function userWithHtml($user)
+{
+    $resizeImage = resize(asset('public/admin/assets/img/avatars') . '/' .  $user->profile->profile, [
+        "w" => 256,
+        "h" => 256,
+    ]);
+    if (isset($user->profile->profile) && !empty($user->profile->profile)) {
+        $image = '<img src="' . $resizeImage . '" alt="Avatar" class="rounded-circle img-avatar">';
+    } else {
+        $image = '<img src="' . asset('public/admin/default.png') .  '" alt="Avatar" class="rounded-circle img-avatar">';
+    }
+    $html = "";
+    $html .= '<div class="d-flex justify-content-start align-items-center user-name"><div class="avatar-wrapper"><div class="avatar avatar-sm me-3">';
+    $html .= $image ?? null;
+    $html .= '</div></div><div class="d-flex flex-column">';
+    $html .= '<a href="' . route('employees.show', $user->slug) . '" class="text-body text-truncate">';
+    $html .= '<span class="fw-semibold"> ' . getUserName($user) . '  (' . $user->profile->employment_id  . ')</span>';
+    $html .= '</a><small class="emp_post text-truncate text-muted">';
+    $html .= !empty($user->jobHistory->designation->title) ? $user->jobHistory->designation->title : "-";
+    $html .= '</small></div></div>';
+
+    return $html;
 }

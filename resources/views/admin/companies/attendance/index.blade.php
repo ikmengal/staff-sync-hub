@@ -111,7 +111,6 @@ use Carbon\Carbon;
                             <tr>
                                 <th>Date</th>
                                 <th>Shift Time</th>
-                                <th>Day</th>
                                 <th>Punched In</th>
                                 <th>Punched Out</th>
                                 <th>Status</th>
@@ -169,11 +168,9 @@ use Carbon\Carbon;
                                         </td>
                                     </tr>
                                     @else
-                                
                                     <tr class="{{ $day }}">
                                         <td>{{ formatDate($i->format('d-m-Y')) }}</td>
                                         <td>{{ $reponse['shiftTiming'] }}</td>
-                                        <td>{{$day  ?? ""}}</td>
                                         <td>
                                             @if ($day != 'Sat' && $day != 'Sun')
                                             <span class="punchedin d-block mb-2">{{ $reponse['punchIn'] }}</span>

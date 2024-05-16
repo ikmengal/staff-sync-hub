@@ -130,23 +130,23 @@
         </li>
         @endcanany
 
-        
+
+        @can('grievances-list')
         <li class="menu-item {{ request()->is('admin/grievances')?'active':'' }}">
-            @can('grievances-list')
             <a href="{{ route('grievances.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-file-dislike"></i>
-                <div>All Grievances</div>
+                <div>Grievances</div>
             </a>
-            @endcan
         </li>
+        @endcan
+        @can('vahicles-list')
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
-            @can('vahicles-list')
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-car"></i>
-                <div>All Vehicles</div>
+                <div>Vehicles</div>
             </a>
-            @endcan
         </li>
+        @endcan
         <!-- purchases -->
         @canany(['purchase-requests-list', 'purchase-requests-list', 'estimates-list', 'receipts-list'])
         <li class="menu-item {{ Route::is('purchase-requests.*') ||
