@@ -41,13 +41,17 @@
                         <label>Select Employee</label>
                         <select class="form-control form-select select2 " id="employeeList">
                             <option value="">select</option>
-                            @if (isset($employees['total_employees']) && !empty($employees))
-                                @foreach ($employees['total_employees'] as $item)
-                                    <option value="{{ $item->slug }}" @if (!empty($user) && $user->slug == $item->slug) selected @endif>
-                                        {{ $item->name }} ({{ $item->employment_id }})
-                                    </option>
-                                @endforeach
+                            @if (request()->has('slug'))
+                                @if (isset($employees['total_employees']) && !empty($employees))
+                                    @foreach ($employees['total_employees'] as $item)
+                                        <option value="{{ $item->slug }}"
+                                            @if (!empty($user) && $user->slug == $item->slug) selected @endif>
+                                            {{ $item->name }} ({{ $item->employment_id }})
+                                        </option>
+                                    @endforeach
+                                @endif
                             @endif
+
                         </select>
                     </div>
 
@@ -330,13 +334,13 @@
 
                 if (!selectedMonth || !selectedYear) {
                     // Set current month and year if not selected
-                   
+
                     if (!month && !year) {
                         var currentDate = new Date();
-                    selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-                    selectedYear = currentDate.getFullYear();
+                        selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                        selectedYear = currentDate.getFullYear();
 
-                    }else{
+                    } else {
                         selectedMonth = month;
                         selectedYear = year;
                     }
@@ -352,6 +356,7 @@
             $("#companyList").on("change", function(e) {
 
                 var company = $(this).val();
+
                 $.ajax({
                     type: "get",
                     url: "{{ route('admin.get.company.employees') }}",
@@ -360,6 +365,7 @@
                     },
 
                     success: function(res) {
+                        console.log(res)
                         if (res.success == true) {
                             var employee_list = $("#employeeList");
                             var employees = res.data;
@@ -371,7 +377,8 @@
 
                                 employee_list.append('<option value="' + employee.slug +
                                     '" >' +
-                                    employee.name + '(' + employee.employment_id +
+                                    employee.first_name + ' ' + employee.last_name +
+                                    ' (' + employee.profile.employment_id +
                                     ') </option>');
                             });
 

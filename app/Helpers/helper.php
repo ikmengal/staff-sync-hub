@@ -214,6 +214,23 @@ function getCompanyEmployees($companyName = null)
     return getEmployees($companyName);
 }
 
+
+function companyEmployee($company_title){
+
+    $employees = [];
+
+    foreach (getAllCompanies() as $company) {
+        if ($company_title != null && $company_title == $company->company_key) {
+
+            $employees = User::on($company->portalDb)->with('profile')->where('is_employee',1)->get();
+
+        }
+    }
+    return $employees;
+
+
+}
+
 function getEmployees($companyName = null)
 {
 

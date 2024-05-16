@@ -166,9 +166,9 @@ class AttendanceController extends Controller
     public function getCompanyEmployees(Request $request)
     {
 
-        $employees = getEmployees($request->company);
+        $employees = companyEmployee($request->company);
         if (!empty($employees)) {
-            return ['success' => true, 'data' => $employees['total_employees']];
+            return ['success' => true, 'data' => $employees];
         } else {
             return ['success' => false, 'data' => ""];
         }
