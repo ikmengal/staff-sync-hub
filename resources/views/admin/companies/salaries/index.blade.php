@@ -120,7 +120,8 @@
 
 
                                               @can('salaries-create-salary-slip') 
-                                                @if ($user->employeeStatus->end_date != null)
+
+                                                @if (!empty($user->employeeStatus) && $user->employeeStatus->end_date != null)
                                                     @php $monthYear = $month.'/'.$year; @endphp
                                                     @if ($monthYear > date('m/Y', strtotime($user->employeeStatus->end_date)))
                                                         @php
@@ -525,6 +526,26 @@
 @endsection
 @push('js')
     <script>
+         $(document).ready(function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var month = urlParams.get('month');
+            var year = urlParams.get('year');
+
+            if (month && year) {
+                // Create a new Date object with the specified month and year
+                $('#month-list').datepicker({
+                    format: 'mm/yyyy',
+                    startView: 'year',
+                    minViewMode: 'months',
+                }).datepicker('setDate', new Date(year, month - 1,
+                    1)); // Set the month (subtract 1 since months are zero-based)
+
+                // Update the Datepicker with the new date
+
+            }
+
+        })
+        
         $(document).on('change', ".company", function() {
 
             var company = $(this).val();
@@ -562,31 +583,39 @@
         var currentMonth = $('#month-list').data('current-month');
         var joiningMonthYear = $('#month-list').data('joining-date');
         var selectedMonth, selectedYear, employeeSlug;
-        var urlParams = new URLSearchParams(window.location.search);
-        var month = urlParams.get('month');
-        var year = urlParams.get('year');
+            var urlParams = new URLSearchParams(window.location.search);
+            var month = urlParams.get('month');
+            var year = urlParams.get('year');
 
-        var initialDate = '';
-        if (month && year) {
-            initialDate = new Date(year, month - 1);
-        }
-        $('#month-list').datepicker({
-            format: 'mm/yyyy',
-            startView: 'year',
-            minViewMode: 'months',
-            endDate: currentMonth,
+            var initialDate = '';
+            if (month && year) {
+                // Provided month and year are valid
+                initialDate = new Date(year, month - 1);
+            } else {
+                // Use current month and year
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear();
+                const currentMonth = currentDate.getMonth();
+                initialDate = new Date(currentYear, currentMonth);
+            }
+            $('#month-list').datepicker({
+                format: 'mm/yyyy',
+                startView: 'year',
+                minViewMode: 'months',
+             
+                endDate: currentMonth,
+                defaultViewDate: initialDate
 
-        }).on('changeMonth', function(e) {
+            }).on('changeMonth', function(e) {
 
-            //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
-
-            console.log(e.date.getMonth())
-            selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
-            selectedYear = e.date.getFullYear();
+                //  employeeSlug = $('#employee-slug option:selected').data('user-slug');
 
 
+                selectedMonth = String(e.date.getMonth() + 1).padStart(2, '0');
+                selectedYear = e.date.getFullYear();
 
-        });
+
+            });
 
         $(document).on("click", "#filter", function() {
             var company = $("#company").val();
@@ -595,13 +624,19 @@
                 alert("Please select an employee.");
                 return false; // Stop further execution
             }
-
             if (!selectedMonth || !selectedYear) {
-                // Set current month and year if not selected
-                var currentDate = new Date();
-                selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-                selectedYear = currentDate.getFullYear();
-            }
+                    // Set current month and year if not selected
+                   
+                    if (!month && !year) {
+                        var currentDate = new Date();
+                    selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    selectedYear = currentDate.getFullYear();
+
+                    }else{
+                        selectedMonth = month;
+                        selectedYear = year;
+                    }
+                }
 
             var selectOptionUrl = "{{ URL::to('salaries/details') }}/?company=" + company + "&month=" +
                 selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
