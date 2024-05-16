@@ -2,7 +2,6 @@
 @section('title', $data['title'].' | '.appName())
 @section('content')
 
-
 <div class="container-xxl flex-grow-1 container-p-y">
     <input type="hidden" id="page_url" value="{{ route('grievances.index') }}">
     <input type="hidden" id="search_route" value="{{ route('grievance.getSearchDataOnLoad') }}">
