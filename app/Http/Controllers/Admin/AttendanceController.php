@@ -22,6 +22,7 @@ class AttendanceController extends Controller
         $this->authorize('attendances-show-companies');
         $title = 'Select Company';
         $companies = getAllCompanies();
+  
         return view('admin.companies.attendance.companies', compact('companies', 'title'));
     }
 
@@ -54,7 +55,8 @@ class AttendanceController extends Controller
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
         $employees = getEmployees($company);
         $companies = companies();
-
+        $comapnies_list = getAllCompanies();
+        
 
 
         $currentMonth = date('m/Y');
@@ -158,7 +160,7 @@ class AttendanceController extends Controller
 
         $end = new DateTime($year . '-' . (int) $month . '-25');
 
-        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company', 'begin', 'end', 'companies', 'company'));
+        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'begin', 'end', 'companies', 'company','comapnies_list'));
     }
 
     public function getCompanyEmployees(Request $request)
