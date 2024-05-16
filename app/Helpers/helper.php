@@ -38,9 +38,10 @@ function defaultShift()
 
 function appName()
 {
-
+    return env("APP_NAME");
     foreach (companies() as $index => $portalDb) {
         if (!empty($company) && $company == $index) {
+            dd($company , $index);
             $setting = Setting::on($portalDb)->first();
         }
     }
