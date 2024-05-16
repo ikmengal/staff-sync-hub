@@ -230,7 +230,7 @@ class SalaryController extends Controller
         $filled_discrepencies = "";
         if (!empty($user)) {
             foreach (companies() as $index => $item) {
-                if (isset($request->company) && $index == $request->company) {
+                if (isset($request->company) && $item == $request->company) {
                     $filled_discrepencies = Discrepancy::on($item)->where('user_id', $user->id)->where('status', 1)->whereBetween('date', [$startDate, $endDate])->count();
                 }
             }
@@ -386,7 +386,7 @@ class SalaryController extends Controller
         if (!empty($slug)) {
             foreach (companies() as $index => $portalDb) {
 
-                if (!empty($company) && $index == $company) {
+                if (!empty($company) && $portalDb == $company) {
                     $user = User::on($portalDb)->with('bankDetails', 'profile', 'hasPreEmployee', 'jobHistory', 'departmentBridge')->where('slug', $slug)->first();
                     $setting = Setting::on($portalDb)->first();
                 }
@@ -491,7 +491,7 @@ class SalaryController extends Controller
         $total_discrepancies = $lateIn + $earlyOut;
 
         foreach (companies() as $index => $portalDb) {
-            if (!empty($company) && $index == $company) {
+            if (!empty($company) && $portalDb == $company) {
                 $filled_discrepencies = Discrepancy::on($portalDb)->where('user_id', $user->id)->where('status', 1)->whereBetween('date', [$startDate, $endDate])->count();
             }
         }
@@ -523,7 +523,7 @@ class SalaryController extends Controller
         $data['totalDiscrepanciesEarlyOutApprovedAmount'] = $total_approved_discrepancies * $data['per_day_salary'];
         //Calculation late in and early out days amount.
         foreach (companies() as $index => $portalDb) {
-            if (!empty($company) && $company == $index) {
+            if (!empty($company) && $company == $portalDb) {
                 $filled_full_day_leaves = UserLeave::on($portalDb)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereMonth('start_at', $data['month'])
@@ -537,7 +537,7 @@ class SalaryController extends Controller
         $filled_full_day_leaves = $filled_full_day_leaves->sum('duration');
 
         foreach (companies() as $index => $portalDb) {
-            if (!empty($company) && $company == $index) {
+            if (!empty($company) && $company == $portalDb) {
                 $filled_half_day_leaves = UserLeave::on($portalDb)->where('user_id', $user->id)
                     ->where('status', 1)
                     ->whereMonth('start_at', $data['month'])

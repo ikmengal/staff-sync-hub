@@ -29,7 +29,7 @@ class PreEmployeeController extends Controller
     {
         $this->authorize("pre-employees-list");
         $title = 'All Pre-Employees';
-        $companies = companies();
+        $companies = getAllCompanies();
         $company = $request->company;
         if ($request->ajax() && $request->loaddata == "yes") {
             $model = getPreEmployees()['pre_employees'];
