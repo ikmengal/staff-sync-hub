@@ -563,6 +563,7 @@ class AdminController extends Controller
         $data['departments'] = getDepartments();
         $data['companies'] = getAllCompanies();
         $data['shifts'] = getShifts();
+
         $data['statuses'] = EmploymentStatus::get();
         return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
     }

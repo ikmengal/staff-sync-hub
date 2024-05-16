@@ -106,11 +106,12 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
     Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
     Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
-    Route::get("admin//company/get-compnany-employees",[AttendanceController::class,'getCompanyEmployees'])->name('admin.get.company.employees');
+    Route::get('admin/company/attendance/export',[AttendanceController::class,'exportCompanyAttendance'])->name('admin.companies.attendance.export');
+    Route::get("admin/company/get-compnany-employees",[AttendanceController::class,'getCompanyEmployees'])->name('admin.get.company.employees');
     // Route::get('admin/company/attendance/filter',[AttendanceController::class,'monthlyAttendanceReportfgdfg'])->name('admin.company.attendance.filter');
  
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
-    Route::get('admin/employee/attendance/monthly/report', [AttendanceController::class, 'monthlyAttendanceReportExport'])->name('admin.employee.attendance.monthly.report.export');
+
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file
@@ -137,6 +138,11 @@ Route::middleware('auth')->group(function () {
 
     //salary details
     Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
+    Route::get('salaries/generate-salary-slip',[SalaryController::class,'generateSalarySlip'])->name('salaries.generate.salary.slip');
+    
+
+    //Pre Employee
+    Route::get('pre-employees/export',[PreEmployeeController::class,'exportPreEmployee'])->name('pre-employees.export');
 
     // Grievences filter route
     Route::get('grievance-filter', [GrievanceController::class, 'getSearchDataOnLoad'])->name('grievance.getSearchDataOnLoad');

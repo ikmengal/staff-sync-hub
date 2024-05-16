@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\AttendanceController;
 
 function settings()
 {
+
     return Setting::first();
 }
 
@@ -38,7 +39,13 @@ function defaultShift()
 
 function appName()
 {
-    $setting = Setting::first();
+    return env("APP_NAME");
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
+            dd($company , $index);
+            $setting = Setting::on($portalDb)->first();
+        }
+    }
     if (isset($setting) && !empty($setting->name)) {
         $app_name = $setting->name;
     } else {
@@ -210,6 +217,19 @@ function getCompanyEmployees($companyName = null)
     return getEmployees($companyName);
 }
 
+
+function companyEmployee($company_title)
+{
+
+    $employees = [];
+    foreach (getAllCompanies() as $company) {
+        if ($company_title != null && $company_title == $company->portalDb) {
+            $employees = User::on($company->portalDb)->with('profile')->where('is_employee', 1)->get();
+        }
+    }
+    return $employees;
+}
+
 function getEmployees($companyName = null)
 {
 
@@ -217,7 +237,8 @@ function getEmployees($companyName = null)
     $allEmployees = [];
     $total_employees_count = 0;
     foreach (getAllCompanies() as $company) {
-        if ($companyName != null && $companyName == $company->company_key) {
+
+        if ($companyName != null && $companyName == $company->portalDb) {
             $total_employees_count += count($company->total_employees);
             foreach ($company->total_employees as $employee) {
                 $allEmployees[] = (object) employeeDetails($company, $employee);
@@ -245,7 +266,7 @@ function getPreEmployees($companyName = null)
     $allEmployees = [];
     $pre_employees_count = 0;
     foreach (getAllCompanies() as $company) {
-        if ($companyName != null && $companyName == $company->company_key) {
+        if ($companyName != null && $companyName ==  $company->portalDb) {
             $pre_employees_count += count($company->pre_employees);
             foreach ($company->pre_employees as $employee) {
                 $allEmployees[] = (object) preEmployeeDetails($company, $employee);
@@ -1660,8 +1681,7 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
 
 
     foreach (companies() as $portalName => $portalDb) {
-        if ($company != null && $company == $portalName) {
-
+        if ($company != null && $company == $portalDb) {
             $user = User::on($portalDb)->where('id', $userID)->first();
         }
     }
@@ -1696,12 +1716,12 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
 
 
         foreach (companies() as $portalName => $portalDb) {
-            if ($company != null && $company == $portalName) {
+            if ($company != null && $company == $portalDb) {
                 $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first();
             }
         }
         foreach (companies() as $portalName => $portalDb) {
-            if ($company != null && $company == $portalName) {
+            if ($company != null && $company == $portalDb) {
                 $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first();
             }
         }
@@ -1853,12 +1873,12 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
         $start = date("Y-m-d H:i:s", strtotime('-6 hours ' . $start_time));
         $end = date("Y-m-d H:i:s", strtotime('+6 hours ' . $end_time));
         foreach (companies() as $portalName => $portalDb) {
-            if ($company != null && $company == $portalName) {
+            if ($company != null && $company == $portalDb) {
                 $punchIn = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date',  [$start, $end])->where('behavior', 'I')->orderBy('in_date', 'asc')->first(); // 2023-12-27 00:28:42
             }
         }
         foreach (companies() as $portalName => $portalDb) {
-            if ($company != null && $company == $portalName) {
+            if ($company != null && $company == $portalDb) {
                 $punchOut = Attendance::on($portalDb)->where('user_id', $userID)->whereBetween('in_date', [$start, $end])->where('behavior', 'O')->orderBy('in_date', 'desc')->first(); // 2023-12-27 09:24:15
             }
         }
@@ -2036,28 +2056,28 @@ function getAttandanceSingleRecord($userID, $current_date, $next_date, $status, 
     }
 
     $data = array(
-        'punchIn' => $checkIn,
-        'punchOut' => $checkOut,
-        'label' => $label,
-        'type' => $type,
-        'shiftTiming' => $shiftTiming,
-        'shiftType' => $shift->type,
-        'workingHours' => $workingHours,
-        'workingMinutes' => $workingMinutes,
-        'discrepancy' => $discrepancy,
-        'discrepancyStatus' => $discrepancyStatus,
-        'applied_discrepancy' => $applied_discrepancy,
-        'leave' => $leave,
-        'leaveStatus' => $leaveStatus,
-        'applied_leaves' => $applied_leaves,
-        'attendance_date' => $attendance_date,
-        'attendance_id' => $attendance_id,
-        'user' => $user,
+        'punchIn' => $checkIn ?? null,
+        'punchOut' => $checkOut ?? null,
+        'label' => $label ?? null,
+        'type' => $type ?? null,
+        'shiftTiming' => $shiftTiming ?? null,
+        'shiftType' => $shift->type ?? null,
+        'workingHours' => $workingHours ?? null,
+        'workingMinutes' => $workingMinutes ?? null,
+        'discrepancy' => $discrepancy ?? null,
+        'discrepancyStatus' => $discrepancyStatus ?? null,
+        'applied_discrepancy' => $applied_discrepancy ?? null,
+        'leave' => $leave ?? null,
+        'leaveStatus' => $leaveStatus ?? null,
+        'applied_leaves' => $applied_leaves ?? null,
+        'attendance_date' => $attendance_date ?? null,
+        'attendance_id' => $attendance_id ?? null,
+        'user' => $user ?? null,
         'punch_in_id' => $punchIn->id ?? null,
         'punch_out_id' => $punchOut->id ?? null,
         'punch_in' => $punchIn ?? null,
         'punch_out' => $punchOut ?? null,
-        'shift' => $shift,
+        'shift' => $shift ?? null,
     );
 
     if ($status == 'all') {
@@ -2103,7 +2123,7 @@ function checkSalarySlipGenerationDate($data)
     }
 }
 
-function getUserSalary($user, $month, $year)
+function getUserSalary($user, $month, $year, $company)
 {
     // Get current date
     $currentDateTime = "$year-$month-" . date('d');
@@ -2117,16 +2137,18 @@ function getUserSalary($user, $month, $year)
             $date = date('d', strtotime($joiningDateTime));
         }
     }
-
-    $userSalary = SalaryHistory::where('user_id', $user->id)
-        ->where('effective_date', '<=', "$year-$month-" . $date)
-        ->where(function ($query) use ($month, $year) {
-            $query->where('end_date', '>=', "$year-$month-" . date('d'))
-                ->orWhereNull('end_date');
-        })
-        ->orderBy('effective_date', 'desc')
-        ->first();
-
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
+            $userSalary = SalaryHistory::on($portalDb)->where('user_id', $user->id)
+                ->where('effective_date', '<=', "$year-$month-" . $date)
+                ->where(function ($query) use ($month, $year) {
+                    $query->where('end_date', '>=', "$year-$month-" . date('d'))
+                        ->orWhereNull('end_date');
+                })
+                ->orderBy('effective_date', 'desc')
+                ->first();
+        }
+    }
     if (!empty($userSalary)) {
         return $userSalary->salary;
     } else {

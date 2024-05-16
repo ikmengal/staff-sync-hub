@@ -30,14 +30,23 @@
 
                     </div>
 
-                    <div class="col-md-2 mt-md-0 mt-3">
+                    <div class="col-md-2 mt-md-0 mt-3 ">
 
-                        <button class="btn btn-primary mt-4" id="searchBtn"><i class="fa-solid fa-filter"></i></button>
+                        <button class="btn btn-primary mt-4 " id="searchBtn"><i class="fa-solid fa-filter"></i></button>
                     </div>
 
                 </div>
             </div>
             <div class="card">
+                 <div class="card-header d-flex justify-content-between">
+                    <div></div>
+                    <div class="mt-md-0 mt-3">
+                        <button class="btn btn-success" id="exportBtn" data-route="{{route('pre-employees.export')}}">Export</button>
+                    </div>
+                </div> 
+
+
+
                 <div class="card-datatable">
                     <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                         <div class="container">
@@ -74,7 +83,7 @@
             setTimeout(() => {
                 getFilterDate();
             }, 1000);
-            loadData();
+            
         });
         //datatable
         var table = $('.data_table').DataTable();
@@ -160,9 +169,9 @@
                     {
                         data: 'is_exist',
                         name: 'is_exist'
-                    },{
-                        data:'action',
-                        name:'action'
+                    }, {
+                        data: 'action',
+                        name: 'action'
                     }
                 ]
             });
@@ -175,7 +184,7 @@
             table.ajax.reload(null, false)
         });
         $("#searchBtn").click(function() {
-          
+
             var table = $('.data_table').DataTable();
             table.ajax.reload(null, false)
         });
@@ -184,5 +193,45 @@
             var table = $('.data_table').DataTable();
             table.search($(this).val()).draw();
         });
+
+        $("#exportBtn").on('click', function() {
+
+            var route = $(this).data('route');
+            var urlParams = new URLSearchParams(window.location.search);
+            var month = urlParams.get('month');
+            var year = urlParams.get('year');
+            var company = $("#company").val();
+            var slug = urlParams.get('slug');
+            var currentDate = new Date();
+            var formattedDate = currentDate.getFullYear() +
+                ('0' + (currentDate.getMonth() + 1)).slice(-2) +
+                ('0' + currentDate.getDate()).slice(-2);
+            var formattedTime = ('0' + currentDate.getHours()).slice(-2) +
+                ('0' + currentDate.getMinutes()).slice(-2) +
+                ('0' + currentDate.getSeconds()).slice(-2);
+
+            // Construct the dynamic file name
+            var filename = 'pre_employees_report_' + formattedDate + '_' + formattedTime + '.csv';
+
+            // Create a hidden anchor element
+            var downloadLink = document.createElement('a');
+        
+            downloadLink.style.display = 'none';
+
+            document.body.appendChild(downloadLink);
+
+            // Set the href attribute to the download URL
+            downloadLink.href = route + "?company=" + company + "&month=" + month + "&year="+year +"&slug=" + slug; 
+   
+            // Set the download attribute to force download
+            downloadLink.setAttribute('download', filename);
+           
+            // Trigger a click event on the anchor element
+             downloadLink.click();
+      
+            // Clean up the anchor element
+            document.body.removeChild(downloadLink);
+
+        })
     </script>
 @endpush

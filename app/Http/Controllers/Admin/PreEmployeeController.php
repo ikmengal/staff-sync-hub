@@ -8,6 +8,7 @@ use App\Models\PreEmployee;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Http\Controllers\Controller;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PreEmployeeController extends Controller
 {
@@ -28,7 +29,7 @@ class PreEmployeeController extends Controller
     {
         $this->authorize("pre-employees-list");
         $title = 'All Pre-Employees';
-        $companies = companies();
+        $companies = getAllCompanies();
         $company = $request->company;
         if ($request->ajax() && $request->loaddata == "yes") {
             $model = getPreEmployees()['pre_employees'];
@@ -64,17 +65,14 @@ class PreEmployeeController extends Controller
                     return $label;
                 })
                 ->addColumn('status', function ($model) {
-                    $label = '';
-                    if (isset($model->status) && !empty($model->status)) {
-                        $label = '<span class="badge bg-label-danger" text-capitalized="">Rejected</span>';
-                    }
-                    return $label;
+
+                    return $model->status;
                 })
                 ->addColumn('created_at', function ($model) {
                     return Carbon::parse($model->created_at)->format('d, M Y');
                 })
                 ->addColumn('manager_id', function ($model) {
-                    return $model->manager_id;
+                    return view('admin.companies.pre-employees.partials.manager-profile', ['employee' => $model->employee])->render();
                 })
                 ->editColumn('name', function ($model) {
 
@@ -142,10 +140,8 @@ class PreEmployeeController extends Controller
         if (isset($model) && $model->form_type == 1) {
             $title = 'Show Employee Details';
             return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-        } else {
-            $title = 'Show Office Boy Details';
         }
-        return view('admin.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
+        // return view('admin.companies.pre-employees.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
     }
 
     /**
@@ -170,5 +166,85 @@ class PreEmployeeController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function exportPreEmployee(Request $request)
+    {
+
+      
+
+        $response = new StreamedResponse(function () use ($request) {
+            // Open output stream
+
+            $company = $request->company;
+            $month = $request->month;
+            $year = $request->year;
+            $slug = $request->slug;
+         
+            $handle = fopen('php://output', 'w');
+            // Add CSV headers
+            fputcsv($handle, [
+                "#",
+                'Applicant',
+                'Applied Position',
+                'Expected Salary',
+                'Manager',
+                'Applied At',
+                'Status',
+                'Is Exist',
+             
+
+            ]);
+
+            // Query to get Leaddata for all users within the specified date range
+          
+            $pre_employees =  getPreEmployees()['pre_employees'];
+    
+            // Loop through each user's monthly Leaddata
+            foreach ($pre_employees as $index => $pre_employee) {
+                // Access the data for each user
+              
+                $id = ++$index;
+               
+                $applicant =  $pre_employee->employee->name.' '.$pre_employee->employee->father_name;
+                $applied_position = $pre_employee->title;
+                $expected_salary = $pre_employee->expected_salary;
+                if(!empty($pre_employee->employee->hasManager)){
+                    $manager =  $pre_employee->employee->hasManager->first_name.' '.$pre_employee->employee->hasManager->last_name;
+                }else{
+                    $manager = '-';
+                }
+                $applied_at = $pre_employee->created_at;
+                $status = $pre_employee->status;
+                $is_exist = "-";
+                if($pre_employee->is_exist == 1) {
+                    $is_exist = 'Duplicate';
+                }else{
+                    $is_exist = 'Current';
+
+                }
+                // Add a new row with data
+                fputcsv($handle, [
+                    $id,
+                    $applicant,
+                    $applied_position,
+                    $expected_salary,
+                    $manager,
+                    $applied_at,
+                    $status,
+                    $is_exist
+
+              
+                ]);
+            }
+            // Close the output stream
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=' ,
+        ]);
+
+
+        return $response;
     }
 }
