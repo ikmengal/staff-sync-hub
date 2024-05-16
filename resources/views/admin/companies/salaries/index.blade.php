@@ -23,8 +23,8 @@
                             <option value="">Select</option>
                             @if (isset($companies) && !empty($companies))
                                 @foreach ($companies as $index => $item)
-                                    <option value="{{ $item->company_key }}"
-                                        @if ($item->company_key == $company) selected @endif>
+                                    <option value="{{ $item->portalDb }}"
+                                        @if ($item->portalDb == $company) selected @endif>
                                         {{ $item->name }}</option>
                                 @endforeach
 
@@ -566,7 +566,7 @@
 
                             employee_list.append('<option value="' + employee.slug +
                                 '" >' +
-                                employee.name + '(' + employee.employment_id +
+                                employee.first_name +' '+employee.last_name+ ' (' + employee.profile.employment_id +
                                 ') </option>');
                         });
 

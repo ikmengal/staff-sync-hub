@@ -229,14 +229,14 @@
         @endcanany
 
         @canany(['attendances-list'])
-        <li class="menu-item {{ Route::is('admin.companies.list.*')  ? 'open active' : '' }}">
+        <li class="menu-item {{ request()->is('admin/company/attendance')  ? 'open active' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-calendar"></i>
                 <div data-i18n="Attendance">Attendance</div>
             </a>
             <ul class="menu-sub">
                 @can('attendances-list')
-                <li class="menu-item {{ request()->is('admin/companies/attendance')?'active':'' }}">
+                <li class="menu-item {{ request()->is('admin/company/attendance') ? 'active' :'' }}">
                     <a href="{{ route('admin.companies.attendance') }}" class="menu-link">
 
                         <div>Attendance List</div>
