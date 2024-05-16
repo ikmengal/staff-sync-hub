@@ -28,7 +28,7 @@ use Carbon\Carbon;
                         <option value="">select </option>
                         @if (!empty($comapnies_list))
                         @foreach ($comapnies_list as $index => $companyName)
-                        <option value="{{ $companyName->portalDb ?? '' }}" {{ $index == $company ? 'selected' : '' }}>
+                        <option value="{{ $companyName->portalDb ?? '' }}" {{ $companyName->name == $company ? 'selected' : '' }}>
                             {{ $companyName->name }}
                         </option>
                         @endforeach

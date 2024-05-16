@@ -23,7 +23,7 @@ class AttendanceController extends Controller
         $this->authorize('attendances-show-companies');
         $title = 'Select Company';
         $companies = getAllCompanies();
-  
+
         return view('admin.companies.attendance.companies', compact('companies', 'title'));
     }
 
@@ -35,29 +35,23 @@ class AttendanceController extends Controller
 
         $this->authorize('attendances-list');
         $title = 'Attendance Summary';
-
         $employees = [];
 
-        if (!empty($request->company)) {
-
-            $company = $request->company;
-        } else {
-            $company = "";
-        }
         if (isset($request->slug) && !empty($request->slug)) {
-            foreach (companies() as $portalName => $portalDb) {
-                if ($company != null && $company == $portalDb) {
-                    $user  = User::on($portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
+            foreach (getAllCompanies() as $portalName => $item) {
+                if ($company != null && $company == $item->portalDb) {
+                    $user  = User::on($item->portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
                 }
             }
         } else {
             $user = [];
         }
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
-        $employees = getEmployees($company);
+        $employees = companyEmployee($company);
+
         $companies = companies();
         $comapnies_list = getAllCompanies();
-        
+
 
 
         $currentMonth = date('m/Y');
@@ -161,7 +155,7 @@ class AttendanceController extends Controller
 
         $end = new DateTime($year . '-' . (int) $month . '-25');
 
-        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'begin', 'end', 'companies', 'company','comapnies_list'));
+        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'begin', 'end', 'companies', 'company', 'comapnies_list'));
     }
 
     public function getCompanyEmployees(Request $request)
@@ -176,7 +170,7 @@ class AttendanceController extends Controller
 
     public static function getAttandanceCount($userID, $start_date, $end_date, $status, $shiftID, $company)
     {
-       
+
         $begin = new DateTime($start_date);
         $end   = new DateTime($end_date);
         $totalDays = 0;
@@ -196,18 +190,16 @@ class AttendanceController extends Controller
         $leave_single = 0;
         $check_in_out_time = '';
 
-     foreach(companies() as $index => $portalDb){
-        if(isset($company) && $company == $index){
+        foreach (companies() as $index => $portalDb) {
+            if (isset($company) && $company == $index) {
 
-            $user = User::on($portalDb)->where('id', $userID)->first();
-
+                $user = User::on($portalDb)->where('id', $userID)->first();
+            }
         }
 
-     }
 
-    
-      
-    
+
+
         $start_date = '';
         if (getUserJoiningDate($user)) {
             $start_date = getUserJoiningDate($user);
@@ -692,20 +684,20 @@ class AttendanceController extends Controller
 
     // public function monthlyAttendanceReportExport(Request $request){
 
-      
+
 
     //     $response = new StreamedResponse(function () use($request){
 
 
     //         $company = $request->company;
-    
+
     //         $slug = $request->slug;
-          
+
 
     //             // Open output stream
     //             $handle = fopen('php://output', 'w');
 
-                
+
     //             // Add CSV headers
     //             fputcsv($handle, [
     //                 'S.NO#',
@@ -731,7 +723,7 @@ class AttendanceController extends Controller
 
     //                     User::on($portalDb)->where('slug',$slug)->chunk(500, function ($users) use ($handle,$request) {
     //                         foreach ($users as $user) {
-                
+
     //                             $total_days = 0;
     //                             $regulars = 0;
     //                             $late_ins = 0;
@@ -760,9 +752,9 @@ class AttendanceController extends Controller
     //                                     $year = date('Y', strtotime('first day of +1 month'));
     //                                 }
     //                             }
-        
+
     //                             $daysData = getMonthDaysForSalary($year, $month);
-                            
+
 
     //                             // Add a new row with data
     //                             fputcsv($handle, [
@@ -782,7 +774,7 @@ class AttendanceController extends Controller
     //                     });
 
 
-                        
+
 
 
     //                 }
@@ -793,7 +785,7 @@ class AttendanceController extends Controller
     //                 'Content-Type' => 'text/csv',
     //                 'Content-Disposition' => 'attachment; filename=' . $reportName,
     //             ]);
-               
+
 
 
 
