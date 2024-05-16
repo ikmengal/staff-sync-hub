@@ -36,27 +36,24 @@ class AttendanceController extends Controller
 
         $employees = [];
 
-        if(!empty($request->company)){
+        if (!empty($request->company)) {
 
             $company = $request->company;
-
-        }else{
+        } else {
             $company = "";
         }
-
         if (isset($request->slug) && !empty($request->slug)) {
             foreach (companies() as $portalName => $portalDb) {
-                if ($company != null && $company == $portalName) {
-                    $user  = User::on($portalName)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
+                if ($company != null && $company == $portalDb) {
+                    $user  = User::on($portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
                 }
             }
-        }else{
+        } else {
             $user = [];
         }
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
         $employees = getEmployees($company);
         $companies = companies();
-
 
 
 
@@ -80,7 +77,7 @@ class AttendanceController extends Controller
             }
         }
         $shift = "";
-        if(!empty($user)){
+        if (!empty($user)) {
             foreach (companies() as $portalName => $portalDb) {
                 if ($company != null && $company == $portalName) {
                     $shift = WorkingShiftUser::on($portalDb)->where('user_id', $user->id)->where('end_date', NULL)->first();
@@ -91,18 +88,17 @@ class AttendanceController extends Controller
             } else {
                 $shift = $shift->workShift;
             }
-
         }
-          
-           
+
+
         $leave_report = "";
         $user_have_used_discrepancies = "";
-        $user_joining_date = ""; 
+        $user_joining_date = "";
         $leave_types = "";
         $user_leave_report  = "";
         $remaining_filable_leaves = "";
-            //User Leave & Discrepancies Reprt
-        if(!empty($user)){
+        //User Leave & Discrepancies Reprt
+        if (!empty($user)) {
             $leave_report = hasExceededLeaveLimit($user, $company);
 
             if ($leave_report) {
@@ -123,7 +119,7 @@ class AttendanceController extends Controller
                 $user_joining_date = date('m/Y', strtotime($user->profile->joining_date));
             }
 
-                  
+
             foreach (companies() as $portalName => $portalDb) {
                 if ($company != null && $company == $portalName) {
                     $leave_types = LeaveType::on($portalDb)->where('status', 1)->get(['id', 'name']);
@@ -132,50 +128,48 @@ class AttendanceController extends Controller
 
             $user_leave_report = hasExceededLeaveLimit($user, $company);
             $remaining_filable_leaves = $user_leave_report['total_remaining_leaves'];
-        } 
-           
-
-          
-
-    
-
-            // Get the current date
-            $currentDate = Carbon::now();
-
-            // Set the current date to the 26th of the previous month
-            $startDate = $currentDate->subMonth()->setDay(26)->toDateString();
-
-            // Set the current date to the 25th of the current month
-            $endDate = $currentDate->startOfMonth()->addDay(24)->toDateString();
-            // $monthDays = getMonthDaysForSalary($getYear ?? null , $getMonth ?? null);
-            $monthDays = getMonthDaysForSalary($year ?? null, $month ?? null);
-
-
-            $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
-            $beginDate = Carbon::parse($begin);
-            $start_date = '';
-            if (isset($user) && !empty($user)) {
-                if (getUserJoiningDate($user)) {
-                    $start_date = getUserJoiningDate($user);
-                }
-            }
-
-            $end = new DateTime($year . '-' . (int) $month . '-25');
-
-            return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company', 'begin', 'end','companies','company'));
-        
-    }
-
-    public function getCompanyEmployees(Request $request){
-
-        $employees = getEmployees($request->company);
-        if(!empty($employees)){
-            return ['success' => true, 'data' => $employees['total_employees'] ];
-
-        }else{
-            return ['success' => false, 'data' => "" ];
         }
 
+
+
+
+
+
+        // Get the current date
+        $currentDate = Carbon::now();
+
+        // Set the current date to the 26th of the previous month
+        $startDate = $currentDate->subMonth()->setDay(26)->toDateString();
+
+        // Set the current date to the 25th of the current month
+        $endDate = $currentDate->startOfMonth()->addDay(24)->toDateString();
+        // $monthDays = getMonthDaysForSalary($getYear ?? null , $getMonth ?? null);
+        $monthDays = getMonthDaysForSalary($year ?? null, $month ?? null);
+
+
+        $begin = new DateTime($year . '-' . ((int) $month - 1) . '-26');
+        $beginDate = Carbon::parse($begin);
+        $start_date = '';
+        if (isset($user) && !empty($user)) {
+            if (getUserJoiningDate($user)) {
+                $start_date = getUserJoiningDate($user);
+            }
+        }
+
+        $end = new DateTime($year . '-' . (int) $month . '-25');
+
+        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company', 'begin', 'end', 'companies', 'company'));
+    }
+
+    public function getCompanyEmployees(Request $request)
+    {
+
+        $employees = getEmployees($request->company);
+        if (!empty($employees)) {
+            return ['success' => true, 'data' => $employees['total_employees']];
+        } else {
+            return ['success' => false, 'data' => ""];
+        }
     }
 
     public static function getAttandanceCount($userID, $start_date, $end_date, $status, $shiftID, $company)
@@ -203,7 +197,7 @@ class AttendanceController extends Controller
         if (getUserJoiningDate($user)) {
             $start_date = getUserJoiningDate($user);
         }
- 
+
         for ($i = $begin; $i <= $end; $i->modify('+1 day')) {
             $shiftID = getUserShift($user, $i->format("Y-m-d"), $company);
             $attendance_adjustment = '';
