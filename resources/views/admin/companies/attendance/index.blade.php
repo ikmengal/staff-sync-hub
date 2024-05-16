@@ -260,7 +260,7 @@
                     startView: 'year',
                     minViewMode: 'months',
                 }).datepicker('setDate', new Date(year, month - 1,
-                1)); // Set the month (subtract 1 since months are zero-based)
+                    1)); // Set the month (subtract 1 since months are zero-based)
 
                 // Update the Datepicker with the new date
 
@@ -330,10 +330,18 @@
 
                 if (!selectedMonth || !selectedYear) {
                     // Set current month and year if not selected
-                    var currentDate = new Date();
+                   
+                    if (!month && !year) {
+                        var currentDate = new Date();
                     selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
                     selectedYear = currentDate.getFullYear();
+
+                    }else{
+                        selectedMonth = month;
+                        selectedYear = year;
+                    }
                 }
+
                 var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany +
                     "?month=" +
                     selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
