@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ReceiptController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\EstimateController;
+use App\Http\Controllers\Admin\GrievanceController;
 use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DepartmentController;
@@ -137,6 +138,9 @@ Route::middleware('auth')->group(function () {
     //salary details
     Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
 
+    // Grievences filter route
+    Route::get('grievance-filter', [GrievanceController::class, 'getSearchDataOnLoad'])->name('grievance.getSearchDataOnLoad');
+
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);
     Route::resource('/permissions', PermissionController::class);
@@ -156,6 +160,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/pre-employees',PreEmployeeController::class);
     Route::resource('salaries',SalaryController::class);
     Route::resource('/user_leaves', UserLeaveController::class);
+    Route::resource('/grievances', GrievanceController::class);
 
 
 

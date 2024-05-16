@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\UserLeave;
+use App\Models\Grievance;
 use App\Models\WorkShift;
 use App\Models\Attendance;
 use App\Models\Department;
@@ -174,6 +175,7 @@ function getAllCompanies()
                 $company_head = getUserData($head);
             }
 
+            $grievances = Grievance::on($portalDb)->get();
 
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
@@ -188,6 +190,7 @@ function getAllCompanies()
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
             $settings['pre_employees'] =  $pre_employees;
+            $settings['total_grievances'] = $grievances;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -2133,4 +2136,91 @@ function getUserSalary($user, $month, $year)
 function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company)
 {
     return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company);
+}
+
+function grievancesDetail($companyName, $grievance){
+    $id = '-';
+    if (isset($grievance->id) && !empty($grievance->id)) {
+        $id = $grievance->id;
+    }
+    $creator = '-';
+    if (isset($grievance->creator_id) && !empty($grievance->creator_id)) {
+        $creator = $grievance->hasCreator;
+    }
+    $user = '-';
+    if (isset($grievance->user_id) && !empty($grievance->user_id)) {
+        $user  = $grievance->hasUser;
+    }
+    $description = '-';
+    if (isset($grievance) && !empty($grievance)) {
+        $description = $grievance->description;
+    }
+    $anonymous = '-';
+    if (isset($grievance->anonymous) && !empty($grievance->anonymous)) {
+        if ($grievance->anonymous == '1') {
+            $anonymous = 'Yes';
+        } elseif ($grievance->anonymous == '2') {
+            $anonymous = 'No';
+        }
+    }
+    $status = '-';
+    if (isset($grievance->status) && !empty($grievance->status)) {
+        if ($grievance->status == '1') {
+            $status = 'Active';
+        } elseif ($grievance->status == '0') {
+            $status = 'De-Active';
+        }
+    }
+    $created_at = "";
+    if (isset($grievance->created_at) && !empty($grievance->created_at)) {
+        $created_at = date('F d, Y',strtotime($grievance->created_at));
+    }
+    $data = [
+
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'creator' => $creator,
+        'user' => $user,
+        'description' => $description,
+        'anonymous' => $anonymous,
+        'status' => $status,
+        'created_at' => $created_at,
+        'grievance' => $grievance,
+
+    ];
+    return $data;
+}
+
+function getGrievances($companyName = null)
+{
+    $data = [];
+    $grievances = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->total_grievances as $grievance) {
+                $grievances[] = (object) grievancesDetail($company, $grievance);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->total_grievances as $grievance) {
+                $grievances[] = (object) grievancesDetail($company, $grievance);
+            }
+        }
+    }
+    $data['grievances'] =  $grievances;
+    return $data;
+}
+
+function getGrievanceDetail($id)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        $grievance = '';
+        $grievance = Grievance::on($portalDb)->where('id', $id)->first();
+        if (isset($grievance) && !blank($grievance)) {
+            return $grievance;
+        } else {
+            return 'No Record Found...!';
+        }
+    }
 }

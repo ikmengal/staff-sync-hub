@@ -130,7 +130,15 @@
         </li>
         @endcanany
 
-
+        
+        <li class="menu-item {{ request()->is('admin/grievances')?'active':'' }}">
+            @can('grievances-list')
+            <a href="{{ route('grievances.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-file-dislike"></i>
+                <div>All Grievances</div>
+            </a>
+            @endcan
+        </li>
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             @can('vahicles-list')
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
