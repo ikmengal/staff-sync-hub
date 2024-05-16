@@ -105,11 +105,12 @@ Route::middleware('auth')->group(function () {
     Route::get('admin/employees/show{slug?}', [EmployeeController::class, 'show'])->name('admin.employees.show');
     Route::get('admin/companies/attendance',[AttendanceController::class,'allCompanies'])->name('admin.companies.list');
     Route::get('admin/company/attendance/{company?}/{getMonth?}/{getYear?}/{getUser?}/',[AttendanceController::class,'companyAttendance'])->name('admin.companies.attendance');
+    Route::get('admin/company/attendance/export',[AttendanceController::class,'exportCompanyAttendance'])->name('admin.companies.attendance.export');
     Route::get("admin//company/get-compnany-employees",[AttendanceController::class,'getCompanyEmployees'])->name('admin.get.company.employees');
     // Route::get('admin/company/attendance/filter',[AttendanceController::class,'monthlyAttendanceReportfgdfg'])->name('admin.company.attendance.filter');
  
     Route::get('admin/company/attendance/summary/{company}/{getMonth?}/{getYear?}/{getUser?}/',[AdminController::class,'attendanceSummary'])->name('admin.companies.attendance.summary');
-    Route::get('admin/employee/attendance/monthly/report', [AttendanceController::class, 'monthlyAttendanceReportExport'])->name('admin.employee.attendance.export');
+
     // Route::get('admin/employees/show/{slug}', [EmployeeController::class, 'show'])->name('admin.employees.show');
 
     //inject search urls data to json file

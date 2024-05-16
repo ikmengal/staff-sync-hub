@@ -104,10 +104,10 @@
                     </div>
                 @endif
                 <div class="card-header row">
-                    <div class="col-md-4">
+                    {{-- <div class="col-md-4">
                         <button class="btn btn-success" id="exportBtn"
-                            data-route="{{ route('admin.employee.attendance.export') }}">Export</button>
-                    </div>
+                            data-route="{{ route('admin.companies.attendance.export') }}">Export</button>
+                    </div> --}}
 
                 </div>
                 <div class="card-header border-top">
@@ -446,6 +446,7 @@
         $("#exportBtn").on('click', function() {
 
             var route = $(this).data('route');
+            
 
             var urlParams = new URLSearchParams(window.location.search);
             var month = urlParams.get('month');
@@ -470,7 +471,7 @@
             document.body.appendChild(downloadLink);
 
             // Set the href attribute to the download URL
-            downloadLink.href = route + "?company=" + company + "&month=" + $month + "&year=" + $year + "&slug=" +
+            downloadLink.href = route + "?company=" + company + "&month=" + month + "year=" + $year + "&slug=" +
                 slug;
        
             // Set the download attribute to force download
