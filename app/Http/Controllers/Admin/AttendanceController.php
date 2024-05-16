@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\WorkingShiftUser;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -165,7 +166,6 @@ class AttendanceController extends Controller
 
     public function getCompanyEmployees(Request $request)
     {
-
         $employees = companyEmployee($request->company);
         if (!empty($employees)) {
             return ['success' => true, 'data' => $employees];

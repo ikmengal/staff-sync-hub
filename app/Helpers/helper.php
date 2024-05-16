@@ -38,12 +38,11 @@ function defaultShift()
 
 function appName()
 {
-    
-    foreach(companies() as $index => $portalDb) {
-        if(!empty($company) && $company == $index){
+
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
             $setting = Setting::on($portalDb)->first();
         }
-
     }
     if (isset($setting) && !empty($setting->name)) {
         $app_name = $setting->name;
@@ -105,7 +104,7 @@ function getUserData($user)
 function companies()
 {
     $companies = [
-         'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
+        'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
         // 'vertical' => env('VERTICAL_DB_DATABASE'),
         // 'braincell' => env('BRAINCELL_DB_DATABASE'),
         // 'clevel' => env('CLEVEL_DB_DATABASE'),
@@ -215,20 +214,16 @@ function getCompanyEmployees($companyName = null)
 }
 
 
-function companyEmployee($company_title){
+function companyEmployee($company_title)
+{
 
     $employees = [];
-
     foreach (getAllCompanies() as $company) {
-        if ($company_title != null && $company_title == $company->company_key) {
-
-            $employees = User::on($company->portalDb)->with('profile')->where('is_employee',1)->get();
-
+        if ($company_title != null && $company_title == $company->portalDb) {
+            $employees = User::on($company->portalDb)->with('profile')->where('is_employee', 1)->get();
         }
     }
     return $employees;
-
-
 }
 
 function getEmployees($companyName = null)
@@ -2124,7 +2119,7 @@ function checkSalarySlipGenerationDate($data)
     }
 }
 
-function getUserSalary($user, $month, $year,$company)
+function getUserSalary($user, $month, $year, $company)
 {
     // Get current date
     $currentDateTime = "$year-$month-" . date('d');
@@ -2138,20 +2133,17 @@ function getUserSalary($user, $month, $year,$company)
             $date = date('d', strtotime($joiningDateTime));
         }
     }
-    foreach(companies() as $index => $portalDb){
-        if(!empty($company) && $company == $index){
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
             $userSalary = SalaryHistory::on($portalDb)->where('user_id', $user->id)
-            ->where('effective_date', '<=', "$year-$month-" . $date)
-            ->where(function ($query) use ($month, $year) {
-                $query->where('end_date', '>=', "$year-$month-" . date('d'))
-                    ->orWhereNull('end_date');
-            })
-            ->orderBy('effective_date', 'desc')
-            ->first();
-
+                ->where('effective_date', '<=', "$year-$month-" . $date)
+                ->where(function ($query) use ($month, $year) {
+                    $query->where('end_date', '>=', "$year-$month-" . date('d'))
+                        ->orWhereNull('end_date');
+                })
+                ->orderBy('effective_date', 'desc')
+                ->first();
         }
-
-
     }
     if (!empty($userSalary)) {
         return $userSalary->salary;
