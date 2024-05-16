@@ -44,16 +44,19 @@ class AttendanceController extends Controller
             $company = "";
         }
         if (isset($request->slug) && !empty($request->slug)) {
-            foreach (companies() as $portalName => $portalDb) {
-                if ($company != null && $company == $portalDb) {
-                    $user  = User::on($portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
+
+            foreach (getAllCompanies() as $portalName => $item) {
+             
+                if ($company!= null && $company == $item->name) {
+                    $user  = User::on($item->portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
                 }
             }
         } else {
             $user = [];
         }
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
-        $employees = getEmployees($company);
+        $employees =companyEmployee($company);
+      
         $companies = companies();
         $comapnies_list = getAllCompanies();
         
@@ -167,6 +170,7 @@ class AttendanceController extends Controller
     {
 
         $employees = companyEmployee($request->company);
+      
         if (!empty($employees)) {
             return ['success' => true, 'data' => $employees];
         } else {

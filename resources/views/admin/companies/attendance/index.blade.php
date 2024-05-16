@@ -28,7 +28,7 @@
                             <option value="">select </option>
                             @if (!empty($comapnies_list))
                                 @foreach ($comapnies_list as $index => $companyName)
-                                    <option value="{{ $index ?? '' }}" {{ $index == $company ? 'selected' : '' }}>
+                                    <option value="{{ $companyName->name ?? '' }}" {{ $companyName->name == $company ? 'selected' : '' }}>
                                         {{ $companyName->name }}
                                     </option>
                                 @endforeach
@@ -42,11 +42,11 @@
                         <select class="form-control form-select select2 " id="employeeList">
                             <option value="">select</option>
                             @if (request()->has('slug'))
-                                @if (isset($employees['total_employees']) && !empty($employees))
-                                    @foreach ($employees['total_employees'] as $item)
+                                @if (isset($employees) && !empty($employees))
+                                    @foreach ($employees as $item)
                                         <option value="{{ $item->slug }}"
                                             @if (!empty($user) && $user->slug == $item->slug) selected @endif>
-                                            {{ $item->name }} ({{ $item->employment_id }})
+                                            {{ $item->first_name }} {{$item->last_name}} ({{!empty($item->profile) ? $item->profile->employment_id : "" }})
                                         </option>
                                     @endforeach
                                 @endif
