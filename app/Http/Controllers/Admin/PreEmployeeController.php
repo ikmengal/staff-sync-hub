@@ -65,9 +65,8 @@ class PreEmployeeController extends Controller
                     return $label;
                 })
                 ->addColumn('status', function ($model) {
-                
+
                     return $model->status;
-              
                 })
                 ->addColumn('created_at', function ($model) {
                     return Carbon::parse($model->created_at)->format('d, M Y');
@@ -117,7 +116,7 @@ class PreEmployeeController extends Controller
      */
     public function show(Request $request, string $id)
     {
-          $this->authorize("pre-employees-list");
+        $this->authorize("pre-employees-list");
         foreach (companies() as $index => $portalDb) {
             if (isset($request->company) && $request->company == $index) {
                 $model = PreEmployee::on($portalDb)->with('haveReferences')->where('id', $id)->first();
@@ -141,7 +140,7 @@ class PreEmployeeController extends Controller
         if (isset($model) && $model->form_type == 1) {
             $title = 'Show Employee Details';
             return view('admin.companies.pre-employees.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
-        } 
+        }
         // return view('admin.companies.pre-employees.office_boys.show', compact('model', 'title', 'profile_img', 'cnic_front', 'cnic_back'));
     }
 
@@ -169,107 +168,83 @@ class PreEmployeeController extends Controller
         //
     }
 
-    public function exportPreEmployee(Request $request){
+    public function exportPreEmployee(Request $request)
+    {
 
-        $company = $request->company;
-        $month = $request->month;
-        $year = $request->year;
-        $slug = $request->slug;
+      
 
-        $response = new StreamedResponse(function () use($ids){
+        $response = new StreamedResponse(function () use ($request) {
             // Open output stream
+
+            $company = $request->company;
+            $month = $request->month;
+            $year = $request->year;
+            $slug = $request->slug;
+         
             $handle = fopen('php://output', 'w');
             // Add CSV headers
             fputcsv($handle, [
                 "#",
-                'Brand',
-                'Team',
-                'Creator',
-                'Follwup Agent',
-                'Assignee', 
-                'DBA',
-                'Number Of Equpments', 
-                'Customer Email',
-                'Customer Full Name',
-                'Customer Primary Number',
-                'Customer Secondary Number',
-                'Country', 
-                'State',
-                'City',
-                'Busines Address', 
-                'Postal Code',
-                'Latest Remarks', 
-                'Last Schedule Date',
-                'Last Updated',
-                'Overdue',
-                'Current Status'
+                'Applicant',
+                'Applied Position',
+                'Expected Salary',
+                'Manager',
+                'Applied At',
+                'Status',
+                'Is Exist',
+             
 
             ]);
-    
+
             // Query to get Leaddata for all users within the specified date range
-            $leads = $this->model::with('team','latestFollowUp','leadStatus')->whereIn('id', $ids)->orderBy('id','desc')->get();
-            // Loop through each user's monthly Leaddata
-            foreach ($leads as $index => $lead) {
-                // Access the data for each user
-                $id = ++$index;
-                $dba = $lead->dba;
-                $brand = getBrand($lead->brand_id);
-                $customer_name = $lead->customer->full_name ?? "-";
-                $customer_email = $lead->customer->email ?? "-";
-                $customer_primary_phone = $lead->customer->primary_phone_number ?? "-";
-                $customer_secondary_phone = $lead->customer->secondary_phone_number ?? "-";
-                $creator =  getUserName(getUser($lead->creator_id));
-                $team =  (!empty($lead->team)) ? $lead->team->name : "-";
-                $followupAgent = getUserName(getUser($lead->followup_agent_id));
-                $assignee = getUserName(getUser($lead->assignee_1));
-                $equipments = $lead->leadDetails()->count();
-                $country = getCountryOnBrand($lead->brand_id)->name;
-                $state =  getState($lead->state_id)->name;
-                $city = getCity($lead->city_id)->name;
-                $address = $lead->address;
-                $postal_code = $lead->postal_code;
-                $remarks = (!empty($lead->latestFollowUp)) ? $lead->latestFollowUp->remarks : '-';
-                $last_schedule_date_time = formatDateTime($lead->last_schedule_date_time);
-                $last_updated_date = formatDateTime($lead->updated_at);
-                $overdue = ($lead->last_schedule_date < Carbon::now()->toDateString()) ? "YES" : "NO";
-                $status = $lead->leadStatus->name;
+          
+            $pre_employees =  getPreEmployees()['pre_employees'];
     
+            // Loop through each user's monthly Leaddata
+            foreach ($pre_employees as $index => $pre_employee) {
+                // Access the data for each user
+              
+                $id = ++$index;
+               
+                $applicant =  $pre_employee->employee->name.' '.$pre_employee->employee->father_name;
+                $applied_position = $pre_employee->title;
+                $expected_salary = $pre_employee->expected_salary;
+                if(!empty($pre_employee->employee->hasManager)){
+                    $manager =  $pre_employee->employee->hasManager->first_name.' '.$pre_employee->employee->hasManager->last_name;
+                }else{
+                    $manager = '-';
+                }
+                $applied_at = $pre_employee->created_at;
+                $status = $pre_employee->status;
+                $is_exist = "-";
+                if($pre_employee->is_exist == 1) {
+                    $is_exist = 'Duplicate';
+                }else{
+                    $is_exist = 'Current';
+
+                }
                 // Add a new row with data
                 fputcsv($handle, [
                     $id,
-                    $brand, 
-                    $team, 
-                    $creator,
-                    $followupAgent,
-                    $assignee,
-                    $dba, 
-                    $equipments,
-                    $customer_email, 
-                    $customer_name, 
-                    $customer_primary_phone,  
-                    $customer_secondary_phone, 
-                    $country,
-                    $state,
-                    $city,
-                    $address,
-                    $postal_code,
-                    $remarks,
-                    $last_schedule_date_time,
-                    $last_updated_date,
-                    $overdue,
-                    $status
+                    $applicant,
+                    $applied_position,
+                    $expected_salary,
+                    $manager,
+                    $applied_at,
+                    $status,
+                    $is_exist
+
+              
                 ]);
-               
             }
             // Close the output stream
             fclose($handle);
         }, 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename='.$filename,
+            'Content-Disposition' => 'attachment; filename=' ,
         ]);
 
 
         return $response;
-
     }
 }
