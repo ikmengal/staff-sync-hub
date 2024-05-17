@@ -139,6 +139,16 @@
             </a>
             @endcan
         </li>
+
+        <li class="menu-item {{ request()->is('admin/user_leaves')?'active':'' }}">
+            @can('leave-types-list')
+            <a href="{{ route('user_leaves.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-clock"></i>
+                <div>All Leaves</div>
+            </a>
+            @endcan
+        </li>
+
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             @can('vahicles-list')
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
