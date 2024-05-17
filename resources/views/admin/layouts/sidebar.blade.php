@@ -32,8 +32,6 @@
         </li>
         @endcan
 
-
-
         <!-- Apps & Pages -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Apps &amp; Pages</span>
@@ -46,10 +44,18 @@
             </a>
             @endcan
         </li>
+        <li class="menu-item {{ request()->is('admin/salary-reports')?'active':'' }}">
+            @can('salary-reports-list')
+            <a href="{{ route('admin.salary-reports') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-wallet"></i>
+                <div>Salary Reports</div>
+            </a>
+            @endcan
+        </li>
         @canany([ 'users-list', 'roles-list', 'permissions-list', 'users-create', 'roles-create', 'permissions-create'])
         <li class="menu-item {{ Route::is('users.*') ||
-        Route::is('permissions.*') ||
-        Route::is('roles.*') 
+                Route::is('permissions.*') ||
+                Route::is('roles.*') 
                 ? 'open active'
             : '' }}"">
             <a href=" javascript:void(0);" class="menu-link menu-toggle">

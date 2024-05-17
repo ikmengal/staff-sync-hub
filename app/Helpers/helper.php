@@ -1,30 +1,37 @@
 <?php
 
 use Carbon\Carbon;
-use App\Models\User;
-use App\Models\Company;
-use App\Models\Holiday;
-use App\Models\Setting;
-use App\Models\UserLeave;
-use App\Models\Grievance;
-use App\Models\WorkShift;
-use App\Models\Attendance;
-use App\Models\Department;
-use App\Models\Discrepancy;
-use App\Models\PreEmployee;
-use App\Models\UserContact;
-use App\Models\VehicleUser;
 use Illuminate\Support\Str;
-use App\Models\SalaryHistory;
-use App\Models\DepartmentUser;
-use App\Models\WorkingShiftUser;
-use App\Models\AttendanceSummary;
-use Illuminate\Support\Facades\DB;
-use App\Models\AttendanceAdjustment;
-use Illuminate\Support\Facades\Auth;
-use App\Models\HolidayCustomizeEmployee;
 use Spatie\Permission\Models\Permission;
-use App\Http\Controllers\Admin\AttendanceController;
+use Illuminate\Support\Facades\{
+    DB,
+    Auth
+};
+use App\Http\Controllers\Admin\{
+    AttendanceController
+};
+use App\Models\{
+    User,
+    Company,
+    Holiday,
+    Setting,
+    UserLeave,
+    WorkShift,
+    Attendance,
+    Department,
+    Discrepancy,
+    PreEmployee,
+    UserContact,
+    VehicleUser,
+    SalaryHistory,
+    DepartmentUser,
+    WorkingShiftUser,
+    AttendanceSummary,
+    AttendanceAdjustment,
+    Grievance,
+    HolidayCustomizeEmployee,
+    MonthlySalaryReport
+};
 
 function settings()
 {
@@ -107,9 +114,9 @@ function companies()
 {
     $companies = [
         'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
-        // 'vertical' => env('VERTICAL_DB_DATABASE'),
-        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
-        // 'clevel' => env('CLEVEL_DB_DATABASE'),
+        'vertical' => env('VERTICAL_DB_DATABASE'),
+        'braincell' => env('BRAINCELL_DB_DATABASE'),
+        'clevel' => env('CLEVEL_DB_DATABASE'),
         // 'delve' => env('DELVE12_DB_DATABASE'),
         // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
         // 'mercury' => env('MERCURY_DB_DATABASE'),
@@ -117,7 +124,7 @@ function companies()
         // 'softnova' => env('SOFTNOVA_DB_DATABASE'),
         // 'softfellow' => env('SOFTFELLOW_DB_DATABASE'),
         // 'swyftcube' => env('SWYFTCUBE_DB_DATABASE'),
-        // // // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
+        // 'swyftzone' => env('SWYFTZONE_DB_DATABASE'), // currently not in used
         // 'techcomrade' => env('TECHCOMRADE_DB_DATABASE'),
         // 'rocketflare' => env('ROCKETFLARELABS_DB_DATABASE'),
     ];
@@ -686,8 +693,6 @@ function employeeDetails($company, $employee)
 
 function preEmployeeDetails($company, $employee)
 {
-
-
     $title = '-';
     if (isset($employee->hasAppliedPosition->hasPosition) && !empty($employee->hasAppliedPosition->hasPosition->title)) {
         $title = $employee->hasAppliedPosition->hasPosition->title;
@@ -856,9 +861,6 @@ function getCurrentWeekAttendance()
 //     return $totalActuallySalary.'------'.$totalNetSalary;
 // }
 
-
-
-
 function apiResponse($success = null, $data = null, $message = null, $code = null, $pagination = null)
 {
     $response = (object)[
@@ -997,7 +999,6 @@ function companyData()
     return $array;
 }
 
-
 function findBaseUrl($company_id)
 {
     $companies = companyData();
@@ -1010,7 +1011,6 @@ function findBaseUrl($company_id)
 
 function getUserName($id)
 {
-
     $user = User::where('id', $id)->first();
     if (!empty($user)) {
         $user_name = $user->first_name . " " . $user->last_name;
@@ -1018,7 +1018,8 @@ function getUserName($id)
     }
 }
 
-function getUserName2($user) {
+function getUserName2($user)
+{
     if (!empty($user)) {
         $user_name = $user->first_name . " " . $user->last_name;
         return $user_name;
@@ -1070,12 +1071,6 @@ function getShift($shift)
         return $working_shift->name;
     }
 }
-
-
-function getCountOfEstiamte($estimate)
-{
-}
-
 
 function formatPermissionLabel($permission)
 {
@@ -1636,9 +1631,6 @@ function getTeamMembers($user, $companyName)
     }
     return User::whereIn('id', $team_members)->where('id', '!=', $user->id)->where('is_employee', 1)->where('status', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email', 'status'])->get();
 }
-
-
-
 
 function getCompanyFromID($company_id)
 {
@@ -2253,6 +2245,20 @@ function getGrievanceDetail($id)
         }
     }
 }
+if (!function_exists('humanReadableNumber')) {
+    function humanReadableNumber($number, $precision = 1)
+    {
+        if ($number < 1000) {
+            return $number;
+        } elseif ($number < 1000000) {
+            return round($number / 1000, $precision) . 'K';
+        } elseif ($number < 1000000000) {
+            return round($number / 1000000, $precision) . 'M';
+        } else {
+            return round($number / 1000000000, $precision) . 'B';
+        }
+    }
+}
 
 function userWithHtml($user)
 {
@@ -2276,4 +2282,38 @@ function userWithHtml($user)
     $html .= '</small></div></div>';
 
     return $html;
+}
+// function getCompaniesDetails($companyName){
+//     foreach (companies() as $portalName => $portalDb) {
+//         if ($companyName != null && $companyName == $portalDb) {
+//             $settings = Setting::on($portalDb)->select(['id', 'base_url', 'name', 'phone_number', 'email', 'favicon'])->first();
+
+//             if (!empty($settings)) {
+//                 $settings['portalDb'] = $portalDb;
+//                 $settings['base_url'] = $settings->base_url;
+//                 $settings['company_key'] = $portalName;
+//                 $companies[$portalName] = $settings;
+
+//                 return $companies;
+//             } else {
+//                 dd("Failed to Load Settings");
+//             }
+//         }
+//     }
+// }
+
+function attendanceReport($portalDb)
+{
+    $salaryReports = MonthlySalaryReport::on($portalDb)
+        ->select(
+            'month_year',
+            DB::raw('SUM(actual_salary) as total_actual_salary'),
+            DB::raw('SUM(car_allowance) as total_car_allowance'),
+            DB::raw('SUM(deduction) as total_deduction'),
+            DB::raw('SUM(net_salary) as total_net_salary')
+        )
+        ->groupBy('month_year')
+        ->get();
+
+    return $salaryReports;
 }
