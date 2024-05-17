@@ -4,18 +4,38 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\{
-    DB, Auth
+    DB,
+    Auth
 };
 use App\Http\Controllers\Admin\{
     AttendanceController
 };
 use App\Models\{
-    User, Company, Holiday, Setting, UserLeave, WorkShift, Attendance, Department, Discrepancy, PreEmployee, UserContact, VehicleUser, SalaryHistory,
-    DepartmentUser, WorkingShiftUser, AttendanceSummary, AttendanceAdjustment, HolidayCustomizeEmployee, MonthlySalaryReport
+    User,
+    Company,
+    Holiday,
+    Setting,
+    UserLeave,
+    WorkShift,
+    Attendance,
+    Department,
+    Discrepancy,
+    PreEmployee,
+    UserContact,
+    VehicleUser,
+    SalaryHistory,
+    DepartmentUser,
+    WorkingShiftUser,
+    AttendanceSummary,
+    AttendanceAdjustment,
+    Grievance,
+    HolidayCustomizeEmployee,
+    MonthlySalaryReport
 };
 
 function settings()
 {
+
     return Setting::first();
 }
 
@@ -26,7 +46,13 @@ function defaultShift()
 
 function appName()
 {
-    $setting = Setting::first();
+    return env("APP_NAME");
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
+            dd($company, $index);
+            $setting = Setting::on($portalDb)->first();
+        }
+    }
     if (isset($setting) && !empty($setting->name)) {
         $app_name = $setting->name;
     } else {
@@ -89,8 +115,8 @@ function companies()
     $companies = [
         'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
         'vertical' => env('VERTICAL_DB_DATABASE'),
-        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
-        // 'clevel' => env('CLEVEL_DB_DATABASE'),
+        'braincell' => env('BRAINCELL_DB_DATABASE'),
+        'clevel' => env('CLEVEL_DB_DATABASE'),
         // 'delve' => env('DELVE12_DB_DATABASE'),
         // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
         // 'mercury' => env('MERCURY_DB_DATABASE'),
@@ -163,6 +189,7 @@ function getAllCompanies()
                 $company_head = getUserData($head);
             }
 
+            $grievances = Grievance::on($portalDb)->get();
 
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
@@ -177,6 +204,7 @@ function getAllCompanies()
             $settings['base_url'] = $settings->base_url;
             $settings['company_key'] = $portalName;
             $settings['pre_employees'] =  $pre_employees;
+            $settings['total_grievances'] = $grievances;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -194,6 +222,19 @@ function getAllCompaniesEmployees()
 function getCompanyEmployees($companyName = null)
 {
     return getEmployees($companyName);
+}
+
+
+function companyEmployee($company_title)
+{
+
+    $employees = [];
+    foreach (getAllCompanies() as $company) {
+        if ($company_title != null && $company_title == $company->portalDb) {
+            $employees = User::on($company->portalDb)->with('profile')->where('is_employee', 1)->get();
+        }
+    }
+    return $employees;
 }
 
 function getEmployees($companyName = null)
@@ -977,6 +1018,13 @@ function getUserName($id)
     }
 }
 
+function getUserName2($user)
+{
+    if (!empty($user)) {
+        $user_name = $user->first_name . " " . $user->last_name;
+        return $user_name;
+    }
+}
 function getDepartments()
 {
     $connections = companies(); // Update with your actual connection names
@@ -2072,7 +2120,7 @@ function checkSalarySlipGenerationDate($data)
     }
 }
 
-function getUserSalary($user, $month, $year)
+function getUserSalary($user, $month, $year, $company)
 {
     // Get current date
     $currentDateTime = "$year-$month-" . date('d');
@@ -2086,16 +2134,18 @@ function getUserSalary($user, $month, $year)
             $date = date('d', strtotime($joiningDateTime));
         }
     }
-
-    $userSalary = SalaryHistory::where('user_id', $user->id)
-        ->where('effective_date', '<=', "$year-$month-" . $date)
-        ->where(function ($query) use ($month, $year) {
-            $query->where('end_date', '>=', "$year-$month-" . date('d'))
-                ->orWhereNull('end_date');
-        })
-        ->orderBy('effective_date', 'desc')
-        ->first();
-
+    foreach (companies() as $index => $portalDb) {
+        if (!empty($company) && $company == $index) {
+            $userSalary = SalaryHistory::on($portalDb)->where('user_id', $user->id)
+                ->where('effective_date', '<=', "$year-$month-" . $date)
+                ->where(function ($query) use ($month, $year) {
+                    $query->where('end_date', '>=', "$year-$month-" . date('d'))
+                        ->orWhereNull('end_date');
+                })
+                ->orderBy('effective_date', 'desc')
+                ->first();
+        }
+    }
     if (!empty($userSalary)) {
         return $userSalary->salary;
     } else {
@@ -2107,8 +2157,97 @@ function getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavi
     return AttendanceController::getAttandanceCount($user_id, $year_month_pre, $year_month_post, $behavior, $shift, $company);
 }
 
+function grievancesDetail($companyName, $grievance)
+{
+    $id = '-';
+    if (isset($grievance->id) && !empty($grievance->id)) {
+        $id = $grievance->id;
+    }
+    $creator = '-';
+    if (isset($grievance->creator_id) && !empty($grievance->creator_id)) {
+        $creator = $grievance->hasCreator;
+    }
+    $user = '-';
+    if (isset($grievance->user_id) && !empty($grievance->user_id)) {
+        $user  = $grievance->hasUser ?? null;
+        $profile  = $grievance->hasUser->profile ?? null;
+    }
+    $description = '-';
+    if (isset($grievance) && !empty($grievance)) {
+        $description = $grievance->description;
+    }
+    $anonymous = '-';
+    if (isset($grievance->anonymous) && !empty($grievance->anonymous)) {
+        if ($grievance->anonymous == '1') {
+            $anonymous = 'Yes';
+        } elseif ($grievance->anonymous == '2') {
+            $anonymous = 'No';
+        }
+    }
+    $status = '-';
+    if (isset($grievance->status) && !empty($grievance->status)) {
+        if ($grievance->status == '1') {
+            $status = 'Active';
+        } elseif ($grievance->status == '0') {
+            $status = 'De-Active';
+        }
+    }
+    $created_at = "";
+    if (isset($grievance->created_at) && !empty($grievance->created_at)) {
+        $created_at = date('F d, Y', strtotime($grievance->created_at));
+    }
+    $data = [
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'creator' => $creator,
+        'user' => $user,
+        'user_profile' =>   $profile ?? null,
+        'description' => $description,
+        'anonymous' => $anonymous,
+        'status' => $status,
+        'created_at' => $created_at,
+        'grievance' => $grievance,
+
+    ];
+    return $data;
+}
+
+function getGrievances($companyName = null)
+{
+    $data = [];
+    $grievances = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->total_grievances as $grievance) {
+                $grievances[] = (object) grievancesDetail($company, $grievance);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->total_grievances as $grievance) {
+                $grievances[] = (object) grievancesDetail($company, $grievance);
+            }
+        }
+    }
+    $data['grievances'] =  $grievances;
+    return $data;
+}
+
+function getGrievanceDetail($id)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        $grievance = '';
+        $grievance = Grievance::on($portalDb)->where('id', $id)->first();
+        if (isset($grievance) && !blank($grievance)) {
+            return $grievance;
+        } else {
+            return 'No Record Found...!';
+        }
+    }
+}
 if (!function_exists('humanReadableNumber')) {
-    function humanReadableNumber($number, $precision = 1) {
+    function humanReadableNumber($number, $precision = 1)
+    {
         if ($number < 1000) {
             return $number;
         } elseif ($number < 1000000) {
@@ -2121,6 +2260,29 @@ if (!function_exists('humanReadableNumber')) {
     }
 }
 
+function userWithHtml($user)
+{
+    $resizeImage = resize(asset('public/admin/assets/img/avatars') . '/' .  $user->profile->profile, [
+        "w" => 256,
+        "h" => 256,
+    ]);
+    if (isset($user->profile->profile) && !empty($user->profile->profile)) {
+        $image = '<img src="' . $resizeImage . '" alt="Avatar" class="rounded-circle img-avatar">';
+    } else {
+        $image = '<img src="' . asset('public/admin/default.png') .  '" alt="Avatar" class="rounded-circle img-avatar">';
+    }
+    $html = "";
+    $html .= '<div class="d-flex justify-content-start align-items-center user-name"><div class="avatar-wrapper"><div class="avatar avatar-sm me-3">';
+    $html .= $image ?? null;
+    $html .= '</div></div><div class="d-flex flex-column">';
+    $html .= '<a href="' . route('employees.show', $user->slug) . '" class="text-body text-truncate">';
+    $html .= '<span class="fw-semibold"> ' . getUserName($user) . '  (' . $user->profile->employment_id  . ')</span>';
+    $html .= '</a><small class="emp_post text-truncate text-muted">';
+    $html .= !empty($user->jobHistory->designation->title) ? $user->jobHistory->designation->title : "-";
+    $html .= '</small></div></div>';
+
+    return $html;
+}
 // function getCompaniesDetails($companyName){
 //     foreach (companies() as $portalName => $portalDb) {
 //         if ($companyName != null && $companyName == $portalDb) {
@@ -2140,7 +2302,8 @@ if (!function_exists('humanReadableNumber')) {
 //     }
 // }
 
-function attendanceReport($portalDb){
+function attendanceReport($portalDb)
+{
     $salaryReports = MonthlySalaryReport::on($portalDb)
         ->select(
             'month_year',

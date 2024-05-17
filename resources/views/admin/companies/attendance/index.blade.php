@@ -12,24 +12,24 @@ use Carbon\Carbon;
             <div class="row">
                 <div class="col-md-12">
                     <div class="card-header">
-
                         <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Home /</span> {{ $title }} of
                             month: {{ date('F, Y', mktime(0, 0, 0, $month, 1, $year)) }}</h4>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center row">
 
                 <div class="col-md-4 mt-md-0 mt-3">
                     <label>Select Company</label>
-                    <select class="form-control select2 " data-control="select2" id="companyList">
+                    <select class="form-control form-select select2 " data-control="select2" id="companyList">
                         <option value="">select </option>
-                        @if (!empty($companies))
-                        @foreach ($companies as $index => $companyName)
-                        <option value="{{  $companyName ?? '' }}" {{ $index == $company ? 'selected' : '' }}>
-                            {{ $companyName }}
+                        @if (!empty($comapnies_list))
+                        @foreach ($comapnies_list as $index => $companyName)
+                        <option value="{{ $companyName->portalDb ?? '' }}" {{ $companyName->portalDb == $company ? 'selected' : '' }}>
+                            {{ $companyName->name }}
                         </option>
                         @endforeach
                         @endif
@@ -39,15 +39,18 @@ use Carbon\Carbon;
                 </div>
                 <div class="col-md-4 mt-md-0 mt-3">
                     <label>Select Employee</label>
-                    <select class="form-control select2 " id="employeeList">
+                    <select class="form-control form-select select2 " id="employeeList">
                         <option value="">select</option>
-                        @if (isset($employees['total_employees']) && !empty($employees))
-                        @foreach ($employees['total_employees'] as $item)
+                        @if (request()->has('slug'))
+                        @if (isset($employees) && !empty($employees))
+                        @foreach ($employees as $item)
                         <option value="{{ $item->slug }}" @if (!empty($user) && $user->slug == $item->slug) selected @endif>
-                            {{ $item->name }} ({{ $item->employment_id }})
+                            {{ $item->first_name }} {{$item->last_name}} ({{!empty($item->profile) ?  $item->profile->employment_id :"" }})
                         </option>
                         @endforeach
                         @endif
+                        @endif
+
                     </select>
                 </div>
 
@@ -231,7 +234,25 @@ use Carbon\Carbon;
 <script>
     const markAttendanceStoreRoute = "{{ route('mark_attendance.store') }}";
 
+    $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var month = urlParams.get('month');
+        var year = urlParams.get('year');
 
+        if (month && year) {
+            // Create a new Date object with the specified month and year
+            $('#month-list').datepicker({
+                format: 'mm/yyyy',
+                startView: 'year',
+                minViewMode: 'months',
+            }).datepicker('setDate', new Date(year, month - 1,
+                1)); // Set the month (subtract 1 since months are zero-based)
+
+            // Update the Datepicker with the new date
+
+        }
+
+    })
 
     $(function() {
         var currentMonth = $('#Slipbutton').data('current-month');
@@ -250,7 +271,14 @@ use Carbon\Carbon;
 
         var initialDate = '';
         if (month && year) {
+            // Provided month and year are valid
             initialDate = new Date(year, month - 1);
+        } else {
+            // Use current month and year
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            initialDate = new Date(currentYear, currentMonth);
         }
         $('#month-list').datepicker({
             format: 'mm/yyyy',
@@ -269,13 +297,13 @@ use Carbon\Carbon;
             selectedYear = e.date.getFullYear();
 
 
-
         });
 
 
         $("#filterAttendance").on('click', function(e) {
 
             var selecCompany = $("#companyList").val();
+
             var employeeSlug = $("#employeeList").val();
             // if (employeeSlug == undefined) {
             //     employeeSlug = $('#current_user_slug').val();
@@ -288,10 +316,18 @@ use Carbon\Carbon;
 
             if (!selectedMonth || !selectedYear) {
                 // Set current month and year if not selected
-                var currentDate = new Date();
-                selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-                selectedYear = currentDate.getFullYear();
+
+                if (!month && !year) {
+                    var currentDate = new Date();
+                    selectedMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    selectedYear = currentDate.getFullYear();
+
+                } else {
+                    selectedMonth = month;
+                    selectedYear = year;
+                }
             }
+
             var selectOptionUrl = "{{ URL::to('admin/company/attendance/') }}/" + selecCompany +
                 "?month=" +
                 selectedMonth + "&year=" + selectedYear + "&slug=" + employeeSlug;
@@ -302,6 +338,7 @@ use Carbon\Carbon;
         $("#companyList").on("change", function(e) {
 
             var company = $(this).val();
+
             $.ajax({
                 type: "get",
                 url: "{{ route('admin.get.company.employees') }}",
@@ -310,6 +347,7 @@ use Carbon\Carbon;
                 },
 
                 success: function(res) {
+                    console.log(res)
                     if (res.success == true) {
                         var employee_list = $("#employeeList");
                         var employees = res.data;
@@ -321,7 +359,8 @@ use Carbon\Carbon;
 
                             employee_list.append('<option value="' + employee.slug +
                                 '" >' +
-                                employee.name + '(' + employee.employment_id +
+                                employee.first_name + ' ' + employee.last_name +
+                                ' (' + employee.profile.employment_id +
                                 ') </option>');
                         });
 

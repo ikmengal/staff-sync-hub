@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\WorkingShiftUser;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -22,6 +23,7 @@ class AttendanceController extends Controller
         $this->authorize('attendances-show-companies');
         $title = 'Select Company';
         $companies = getAllCompanies();
+
         return view('admin.companies.attendance.companies', compact('companies', 'title'));
     }
 
@@ -33,27 +35,22 @@ class AttendanceController extends Controller
 
         $this->authorize('attendances-list');
         $title = 'Attendance Summary';
-
         $employees = [];
 
-        if (!empty($request->company)) {
-
-            $company = $request->company;
-        } else {
-            $company = "";
-        }
         if (isset($request->slug) && !empty($request->slug)) {
-            foreach (companies() as $portalName => $portalDb) {
-                if ($company != null && $company == $portalDb) {
-                    $user  = User::on($portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
+            foreach (getAllCompanies() as $portalName => $item) {
+                if ($company != null && $company == $item->portalDb) {
+                    $user  = User::on($item->portalDb)->with('profile', 'employeeStatus', 'userWorkingShift')->where('slug', $request->slug)->first();
                 }
             }
         } else {
             $user = [];
         }
         // $employees =  User::where('id', '!=', $user->id)->where('status', 1)->where('is_employee', 1)->select(['id', 'slug', 'first_name', 'last_name', 'email'])->get();
-        $employees = getEmployees($company);
+        $employees = companyEmployee($company);
+
         $companies = companies();
+        $comapnies_list = getAllCompanies();
 
 
 
@@ -158,15 +155,14 @@ class AttendanceController extends Controller
 
         $end = new DateTime($year . '-' . (int) $month . '-25');
 
-        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'company', 'begin', 'end', 'companies', 'company'));
+        return view('admin.companies.attendance.index', compact('title', 'user', 'user_joining_date', 'shift', 'month', 'year', 'currentMonth', 'employees', 'remaining_filable_leaves', 'startDate', 'endDate', 'currentDate', 'monthDays', 'begin', 'end', 'companies', 'company', 'comapnies_list'));
     }
 
     public function getCompanyEmployees(Request $request)
     {
-
-        $employees = getEmployees($request->company);
+        $employees = companyEmployee($request->company);
         if (!empty($employees)) {
-            return ['success' => true, 'data' => $employees['total_employees']];
+            return ['success' => true, 'data' => $employees];
         } else {
             return ['success' => false, 'data' => ""];
         }
@@ -174,6 +170,7 @@ class AttendanceController extends Controller
 
     public static function getAttandanceCount($userID, $start_date, $end_date, $status, $shiftID, $company)
     {
+
         $begin = new DateTime($start_date);
         $end   = new DateTime($end_date);
         $totalDays = 0;
@@ -192,7 +189,17 @@ class AttendanceController extends Controller
         $leave_last_half = 0;
         $leave_single = 0;
         $check_in_out_time = '';
-        $user = User::where('id', $userID)->first();
+
+        foreach (companies() as $index => $portalDb) {
+            if (isset($company) && $company == $index) {
+
+                $user = User::on($portalDb)->where('id', $userID)->first();
+            }
+        }
+
+
+
+
         $start_date = '';
         if (getUserJoiningDate($user)) {
             $start_date = getUserJoiningDate($user);
@@ -673,4 +680,120 @@ class AttendanceController extends Controller
 
         return $data;
     }
+
+
+    // public function monthlyAttendanceReportExport(Request $request){
+
+
+
+    //     $response = new StreamedResponse(function () use($request){
+
+
+    //         $company = $request->company;
+
+    //         $slug = $request->slug;
+
+
+    //             // Open output stream
+    //             $handle = fopen('php://output', 'w');
+
+
+    //             // Add CSV headers
+    //             fputcsv($handle, [
+    //                 'S.NO#',
+    //                 'MONTH',
+    //                 'FROM',
+    //                 'TO',
+    //                 'EMPLOYEE',
+    //                 'WORKING DAYS',
+    //                 'REGULAR DAYS',
+    //                 'LATE IN',
+    //                 'EARLY OUTS',
+    //                 'HALF DAYS',
+    //                 'ABSENTS',
+    //                 'SHIFT',
+    //             ]);
+
+    //             // Get all users
+
+
+    //             foreach(companies() as $index => $portalDb){
+
+    //                 if(isset($company) && $company == $index){
+
+    //                     User::on($portalDb)->where('slug',$slug)->chunk(500, function ($users) use ($handle,$request) {
+    //                         foreach ($users as $user) {
+
+    //                             $total_days = 0;
+    //                             $regulars = 0;
+    //                             $late_ins = 0;
+    //                             $early_outs = 0;
+    //                             $half_days = 0;
+    //                             $absents = 0;
+    //                             if (!empty($user->userWorkingShift)) {
+    //                                 $shift =  $user->userWorkingShift->workShift;
+    //                             } else {
+    //                                 if (isset($user->departmentBridge->department->departmentWorkShift->workShift) && !empty($user->departmentBridge->department->departmentWorkShift->workShift->id)) {
+    //                                     $shift =  $user->departmentBridge->department->departmentWorkShift->workShift;
+    //                                 }
+    //                             }
+    //                             if (!empty($request->month) || !empty($request->slug)) {
+
+    //                                 $year = $request->year;
+    //                                 $month = $request->month;
+    //                             } else {
+    //                                 $year = date('Y');
+    //                                 if (date('d') > 26 || (date('d') == 26 && date('H') > 11)) {
+    //                                     $month = date('m', strtotime('first day of +1 month'));
+    //                                 } else {
+    //                                     $month = date('m');
+    //                                 }
+    //                                 if ($month == 01) {
+    //                                     $year = date('Y', strtotime('first day of +1 month'));
+    //                                 }
+    //                             }
+
+    //                             $daysData = getMonthDaysForSalary($year, $month);
+
+
+    //                             // Add a new row with data
+    //                             fputcsv($handle, [
+    //                                 'sno' => $user->id,
+    //                                 'month' =>  $month,
+    //                                 'from' => $daysData->first_date ?? "-",
+    //                                 'to' => $daysData->last_date ?? "-",
+    //                                 'name' => getUserName($user),
+    //                                 'working_days' => $daysData->total_days ?? 0,
+    //                                 'regular' => rand(1, 30)  ?? 0,
+    //                                 'late_in' => rand(1, 30) ?? 0,
+    //                                 'early_out' => rand(1, 30)  ?? 0,
+    //                                 'half_day' => rand(1, 30)  ?? 0,
+    //                                 'absents' => rand(1, 30) ?? 0,
+    //                             ]);
+    //                         }
+    //                     });
+
+
+
+
+
+    //                 }
+    //                 fclose($handle);
+
+    //             }, 200, [
+
+    //                 'Content-Type' => 'text/csv',
+    //                 'Content-Disposition' => 'attachment; filename=' . $reportName,
+    //             ]);
+
+
+
+
+
+    //     });
+
+
+
+
+    // }
 }
