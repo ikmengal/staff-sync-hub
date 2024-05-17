@@ -2427,3 +2427,8 @@ function getUserLeaveDetail($id)
         }
     }
 }
+
+function getIpRestriction()
+{
+    return config("app.ip_restrict");
+}

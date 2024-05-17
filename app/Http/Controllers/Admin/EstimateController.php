@@ -237,6 +237,12 @@ class EstimateController extends Controller
                 }
 
                 if ($update == 1) {
+
+                    // send the onesignal message for all users
+
+
+
+
                     $this->updateRequestOnPortal([
                         "remarks" => $request->remarks ?? null,
                         "status" => 2 ?? null,

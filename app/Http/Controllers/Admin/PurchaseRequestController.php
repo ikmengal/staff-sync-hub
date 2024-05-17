@@ -135,6 +135,12 @@ class PurchaseRequestController extends Controller
                     if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
                         $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->data['portal_request_id'] ?? '']);
                         DB::commit();
+
+                        // one signal send message for all users 
+
+
+
+
                         return response()->json(['success' => true, 'message' => $response->message ?? 'Purchase Request has been created']);
                     }
                 } else {

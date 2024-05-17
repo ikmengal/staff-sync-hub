@@ -18,6 +18,7 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     'mode' => env('APP_MODE', 'live'),
+    'ip_restrict' => env('IP_RESTRICT', true),
     /*
     |--------------------------------------------------------------------------
     | Application Environment
