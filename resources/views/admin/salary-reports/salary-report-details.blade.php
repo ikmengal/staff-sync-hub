@@ -2,7 +2,7 @@
 @section('title', $title.' - '. appName())
 
 @section('content')
-    <input type="hidden" id="page_url" value="{{ route('admin.salary-reports.details') }}">
+    <input type="hidden" id="page_url" value="{{ route('admin.salary-reports.details', $company_key) }}">
     <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
             <div class="card mb-4">
@@ -14,7 +14,7 @@
                     </div>
                 </div>
                 <div class="row p-3">
-                    <div class="col-md-4 mb-3">
+                    <!-- <div class="col-md-4 mb-3">
                         <label for="">Companies</label>
                         <select name="company_key" id="company_key" class="select2 form-select company_key">
                             @if(!empty(getAllCompanies()))
@@ -23,6 +23,11 @@
                                 @endforeach
                             @endif
                         </select>
+                    </div> -->
+                    <div class="col-md-4 mb-3">
+                        <label for="">Months</label>
+                        <input type="month" class="form-control month_key">
+                        <button type="button" class="btn btn-info btn-sm mt-2 me-2" id="resetMonth">Reset Month</button>
                     </div>
                     <div class="col-md-2 mt-3 py-1">
                         <a href="{{ URL::previous() }}" class="btn btn-primary me-2" title="Go Back">
@@ -62,13 +67,13 @@
             loadPageData()
         });
 
-        $(document).on("change", ".company_key", function() {
-            var id = $(this).val();
-            // Update the URL parameter
-            var newUrl = updateQueryStringParameter(window.location.href, 'company_key', id);
-            history.pushState(null, '', newUrl);
-            loadPageData()
-        });
+        // $(document).on("change", ".company_key", function() {
+        //     var id = $(this).val();
+        //     // Update the URL parameter
+        //     var newUrl = updateQueryStringParameter(window.location.href, 'company_key', id);
+        //     history.pushState(null, '', newUrl);
+        //     loadPageData()
+        // });
 
         // Define the function to update the URL query string parameter
         function updateQueryStringParameter(uri, key, value) {
@@ -94,7 +99,7 @@
                     url: page_url + "?loaddata=yes",
                     type: "GET",
                     data: function(d) {
-                        d.company_key = $('.company_key').val();
+                        d.month_year = formatMonthYear($('.month_key').val());
                     },
                     error: function(xhr, error, code) {
                         console.log(xhr);
@@ -112,5 +117,34 @@
                 ]
             });
         }
+
+        // Helper function to format the month input to MM/YYYY
+        function formatMonthYear(value) {
+            if (!value) return '';
+            const [year, month] = value.split('-');
+            return `${month}/${year}`;
+        }
+
+        // Event listeners for dropdown and month change
+        $(document).on("change", ".month_key", function() {
+            // var month = $('.month_key').val();
+            var monthYear = formatMonthYear($('.month_key').val());
+            // Update the URL parameter
+            var newUrl = window.location.href;
+            newUrl = updateQueryStringParameter(newUrl, 'month_year', monthYear);
+            history.pushState(null, '', newUrl);
+            loadPageData();
+        });
+
+        // Event listener for reset button
+        $('#resetMonth').on('click', function() {
+            $('.month_key').val('');
+            var newUrl = updateQueryStringParameter(window.location.href, 'month_year', '');
+            history.pushState(null, '', newUrl);
+            loadPageData();
+        });
+
+        // Initial load
+        loadPageData();
     </script>
 @endpush
