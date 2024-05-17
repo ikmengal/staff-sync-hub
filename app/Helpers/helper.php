@@ -190,7 +190,8 @@ function getAllCompanies()
             }
 
             $grievances = Grievance::on($portalDb)->get();
-
+            $userLeaves = UserLeave::on($portalDb)->get();
+            
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
@@ -205,6 +206,7 @@ function getAllCompanies()
             $settings['company_key'] = $portalName;
             $settings['pre_employees'] =  $pre_employees;
             $settings['total_grievances'] = $grievances;
+            $settings['user_leaves'] = $userLeaves;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -2316,4 +2318,112 @@ function attendanceReport($portalDb)
         ->get();
 
     return $salaryReports;
+}
+
+function getLeavesDetail($companyName, $leave){
+    $id = '-';
+    if (isset($leave->id) && !empty($leave->id)) {
+        $id = $leave->id;
+    }
+    $user = '-';
+    if (isset($leave->user_id) && !empty($leave->user_id)) {
+        $user = $leave->hasEmployee;
+    }
+    $leave_type_id = '-';
+    if (isset($leave->leave_type_id) && !empty($leave->leave_type_id)) {
+        $leave_type_id  = $leave->leave_type_id;
+    }
+    $department_id = '-';
+    if (isset($leave) && !empty($leave)) {
+        $department_id = $leave->department_id;
+    }
+    $is_applied = '-';
+    if (isset($leave->is_applied) && !empty($leave->is_applied)) {
+        $is_applied = $leave->is_applied;
+    }
+    $start_at = "";
+    if (isset($leave->start_at) && !empty($leave->start_at)) {
+        $start_at = date('F d, Y',strtotime($leave->start_at));
+    }
+    $end_at = "";
+    if (isset($leave->end_at) && !empty($leave->end_at)) {
+        $end_at = date('F d, Y',strtotime($leave->end_at));
+    }
+    $duration = "";
+    if (isset($leave->duration) && !empty($leave->duration)) {
+        $duration = $leave->duration;
+    }
+    $behavior_type = "";
+    if (isset($leave->behavior_type) && !empty($leave->behavior_type)) {
+        $behavior_type = $leave->behavior_type;
+    }
+    $reason = "";
+    if (isset($leave->reason) && !empty($leave->reason)) {
+        $reason = $leave->reason;
+    }
+    $status = '-';
+    if (isset($leave->status) && !empty($leave->status)) {
+        if ($leave->status == '1') {
+            $status = 'Approved';
+        } elseif ($leave->status == '2') {
+            $status = 'Rejected';
+        }
+    }else{
+        $status = empty($leave->status) && $leave->status == 0 ? 'Pending' : '-'; 
+    }
+    $created_at = "";
+    if (isset($leave->created_at) && !empty($leave->created_at)) {
+        $created_at = date('F d, Y',strtotime($leave->created_at));
+    }
+    $data = [
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'user' => $user,
+        'leave_type_id' => $leave_type_id,
+        'department_id' => $department_id,
+        'is_applied' => $is_applied,
+        'start_at' => $start_at,
+        'end_at' => $end_at,
+        'duration' => $duration,
+        'behavior_type' => $behavior_type,
+        'reason' => $reason,
+        'status' => $status,
+        'created_at' => $created_at,
+        'leave' => $leave,
+    ];
+    return $data;
+}
+
+function getLeaves($companyName = null)
+{
+    $data = [];
+    $leaves = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->user_leaves as $leave) {
+                $leaves[] = (object) getLeavesDetail($company, $leave);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->user_leaves as $leave) {
+                $leaves[] = (object) getLeavesDetail($company, $leave);
+            }
+        }
+    }
+    $data['leaves'] =  $leaves;
+    return $data;
+}
+
+function getUserLeaveDetail($id)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        $userLeave = '';
+        $userLeave = UserLeave::on($portalDb)->where('id', $id)->first();
+        if (isset($userLeave) && !blank($userLeave)) {
+            return $userLeave;
+        } else {
+            return 'No Record Found...!';
+        }
+    }
 }
