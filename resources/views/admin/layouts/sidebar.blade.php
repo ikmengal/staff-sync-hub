@@ -145,6 +145,14 @@
             </a>
         </li>
         @endcan
+        @can('ip-addresses-list')
+        <li class="menu-item {{ request()->is('admin/ip-addresses')?'active':'' }}">
+            <a href="{{ route('ip-addresses.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-location "></i>
+                <div>IP Addresses</div>
+            </a>
+        </li>
+        @endcan
         <li class="menu-item {{ request()->is('admin/user_leaves')?'active':'' }}">
             @can('user-leaves-list')
             <a href="{{ route('user_leaves.index') }}" class="menu-link">

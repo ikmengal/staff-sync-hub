@@ -12,7 +12,7 @@ use App\Http\Controllers\{
 use App\Http\Controllers\Admin\{
     RoleController, UserController, AdminController, SalaryController, ProfileController, ReceiptController, SettingController, EmployeeController, EstimateController,
     WorkShiftController, AttendanceController, DepartmentController, PermissionController, DesignationController, MasterLoginController, PreEmployeeController,
-    PurchaseRequestController, EmployeeRequisitionController, AttendanceAdjustmentController, GrievanceController, UserLeaveController, SalaryReportController
+    PurchaseRequestController, EmployeeRequisitionController, AttendanceAdjustmentController, GrievanceController, UserLeaveController, SalaryReportController, ValideIPAddressController
 };
 
 /*
@@ -160,6 +160,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('salaries',SalaryController::class);
     Route::resource('/user_leaves', UserLeaveController::class);
     Route::resource('/grievances', GrievanceController::class);
+    Route::resource('/ip-addresses', ValideIPAddressController::class);
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
