@@ -136,7 +136,7 @@ class PurchaseRequestController extends Controller
                         $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->data['portal_request_id'] ?? '']);
                         DB::commit();
 
-                        // one signal send message for all users 
+                        // one signal send message for user 
 
 
 

@@ -237,12 +237,39 @@ class EstimateController extends Controller
                 }
 
                 if ($update == 1) {
-
                     // send the onesignal message for all users
-
-
-
-
+                        $users = User::get();
+                        if(isset($users) && !blank($users)){
+                            foreach($users as $user){
+                                $userPlayerId = UserPlayerId::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+                                try { 
+                                    $responseMessage = "";
+                                    if($updated){ 
+                                        if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
+                                            $fields['include_player_ids'] = [$userPlayerId->player_id];
+                                            $title = $estimate->title;
+                                            $message = "Your Estimite ".$estimate->title." has ".$request->remarks;
+                                            $fields['headings'] = ['en' => $title];
+                                            $oneSignal = \OneSignal::sendPush($fields, $message);
+                                            if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
+                                                $responseMessage .=  $oneSignal['errors'][0] ?? ''; 
+                                            } 
+                                        }
+                                        $responseMessage .= "Estimite status Updated successfully"; 
+                                        DB::commit();
+                                        return response()->json(['success' => true, "message" => $responseMessage ], 200);
+                                    }else{
+                                        DB::rollback();
+                                        return response()->json(['success' => true, "message" => 'Estimite status not updated successfully'], 401);
+                                    }
+                                }
+                                catch(\Exception $e) {
+                                    DB::rollback();
+                                    return response()->json(['success' => false, "message" =>  $e->getMessage()], 401);
+                                }
+                            }
+                        }
+                    // onsignal end
                     $this->updateRequestOnPortal([
                         "remarks" => $request->remarks ?? null,
                         "status" => 2 ?? null,
