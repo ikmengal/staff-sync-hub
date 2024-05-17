@@ -1,30 +1,19 @@
 <?php
 
-use App\Models\User;
-use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\DeveloperController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\SalaryController;
-use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\ReceiptController;
-use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\EmployeeController;
-use App\Http\Controllers\Admin\EstimateController;
-use App\Http\Controllers\Admin\WorkShiftController;
-use App\Http\Controllers\Admin\AttendanceController;
-use App\Http\Controllers\Admin\DepartmentController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\DesignationController;
-use App\Http\Controllers\Admin\MasterLoginController;
-use App\Http\Controllers\Admin\PreEmployeeController;
-use App\Http\Controllers\Admin\PurchaseRequestController;
-use App\Http\Controllers\Admin\EmployeeRequisitionController;
-use App\Http\Controllers\Admin\AttendanceAdjustmentController;
-use App\Http\Controllers\Admin\UserLeaveController;
+use App\Models\{
+    User, PurchaseRequest 
+};
+use Illuminate\Support\Facades\{
+    Route, Artisan 
+};
+use App\Http\Controllers\{
+    DeveloperController
+};
+use App\Http\Controllers\Admin\{
+    RoleController, UserController, AdminController, SalaryController, ProfileController, ReceiptController, SettingController, EmployeeController, EstimateController,
+    WorkShiftController, AttendanceController, DepartmentController, PermissionController, DesignationController, MasterLoginController, PreEmployeeController,
+    PurchaseRequestController, EmployeeRequisitionController, AttendanceAdjustmentController, UserLeaveController, SalaryReportController
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -75,8 +64,6 @@ Route::get('/', function () {
 Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
-
-
 
 //Authentication Routes
 Route::middleware('auth')->group(function () {
@@ -137,6 +124,13 @@ Route::middleware('auth')->group(function () {
     //salary details
     Route::get('salaries/details',[SalaryController::class,'salaryDetails'])->name('salaries.detail');
 
+    //Salary Repory
+    Route::controller(SalaryReportController::class)->group(function(){
+        Route::get('admin/salary-reports','salaryReports')->name('admin.salary-reports');
+        Route::get('admin/salary-reports/details','salaryReportDetails')->name('admin.salary-reports.details');
+    });
+    //Salary Repory
+
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RoleController::class);
     Route::resource('/permissions', PermissionController::class);
@@ -156,8 +150,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('/pre-employees',PreEmployeeController::class);
     Route::resource('salaries',SalaryController::class);
     Route::resource('/user_leaves', UserLeaveController::class);
-
-
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");
