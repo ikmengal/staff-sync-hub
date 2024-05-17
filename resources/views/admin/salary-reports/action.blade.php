@@ -3,7 +3,7 @@
         <i class="ti ti-dots-vertical ti-sm mx-1"></i>
     </a>
     <div class="dropdown-menu dropdown-menu-end m-0">
-        <a href="{{ route('admin.salary-reports.details', ['company_key' => $model->company_key]) }}"
+        <a href="{{ route('admin.salary-reports.details', $model->company_key) }}"
             class="dropdown-item"
             tabindex="0" aria-controls="DataTables_Table_0"
             type="button"

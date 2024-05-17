@@ -127,7 +127,7 @@ Route::middleware('auth')->group(function () {
     //Salary Repory
     Route::controller(SalaryReportController::class)->group(function(){
         Route::get('admin/salary-reports','salaryReports')->name('admin.salary-reports');
-        Route::get('admin/salary-reports/details','salaryReportDetails')->name('admin.salary-reports.details');
+        Route::get('admin/salary-reports/details/{company_key}','salaryReportDetails')->name('admin.salary-reports.details');
     });
     //Salary Repory
 

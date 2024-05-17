@@ -93,24 +93,35 @@ class SalaryReportController extends Controller
 
         return view('admin.salary-reports.salary-reports', get_defined_vars());
     }
-    public function salaryReportDetails(Request $request){
+    public function salaryReportDetails(Request $request, $company_key){
         $this->authorize('salary-reports-list');
         $title = 'Salary Reports Details';
-        $company_key = $request->company_key;
         
         $allSalaryReports = collect();
         foreach(getAllCompanies() as $company) {
-            if(isset($request->company_key) && !empty($request->company_key) && $request->company_key==$company->company_key){
+            if(isset($company_key) && !empty($company_key) && $company_key==$company->company_key){
                 $salaryReports = attendanceReport($company['portalDb']);
                 foreach ($salaryReports as $report) {
-                    $existingReport = $allSalaryReports->firstWhere('month_year', $report->month_year);
-                    if ($existingReport) {
-                        $existingReport->total_actual_salary += $report->total_actual_salary;
-                        $existingReport->total_car_allowance += $report->total_car_allowance;
-                        $existingReport->total_deduction += $report->total_deduction;
-                        $existingReport->total_net_salary += $report->total_net_salary;
-                    } else {
-                        $allSalaryReports->push($report);
+                    if(isset($request->month_year) && !empty($request->month_year) && $request->month_year==$report->month_year){
+                        $existingReport = $allSalaryReports->firstWhere('month_year', $request->month_year);
+                        if ($existingReport) {
+                            $existingReport->total_actual_salary += $report->total_actual_salary;
+                            $existingReport->total_car_allowance += $report->total_car_allowance;
+                            $existingReport->total_deduction += $report->total_deduction;
+                            $existingReport->total_net_salary += $report->total_net_salary;
+                        } else {
+                            $allSalaryReports->push($report);
+                        }
+                    }elseif(empty($request->month_year)){
+                        $existingReport = $allSalaryReports->firstWhere('month_year', $report->month_year);
+                        if ($existingReport) {
+                            $existingReport->total_actual_salary += $report->total_actual_salary;
+                            $existingReport->total_car_allowance += $report->total_car_allowance;
+                            $existingReport->total_deduction += $report->total_deduction;
+                            $existingReport->total_net_salary += $report->total_net_salary;
+                        } else {
+                            $allSalaryReports->push($report);
+                        }
                     }
                 }
             }
