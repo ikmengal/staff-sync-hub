@@ -58,9 +58,14 @@ Route::get('/cache-clear', function () {
 //Custom Routes
 Route::get('/developer/test', [DeveloperController::class, 'getCompanyEmployees'])->name('developer.test');
 
-Route::get('/', function () {
+// Route::get('/', function () {
+//     return redirect()->route('admin.login');
+// });
+
+Route::middleware('ip.address')->get('/', function () {
     return redirect()->route('admin.login');
 });
+
 Route::get('admin/login', [AdminController::class, 'loginForm'])->name('admin.login');
 Route::post('admin/login', [AdminController::class, 'login'])->name('admin.login');
 //Custom Routes
