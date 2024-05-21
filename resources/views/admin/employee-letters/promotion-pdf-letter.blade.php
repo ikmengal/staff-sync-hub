@@ -126,10 +126,10 @@
                 text-align: right;
             }
             .pdfcontent-section .date {
-                 color: #000;
-                    font-weight: 700;
-                    text-align: right;
-                    font-size: 18px;
+                color: #000;
+                font-weight: 700;
+                text-align: right;
+                font-size: 18px;
             }
             .pdfcontent-section .letter-heading {
                 border-bottom: 2px solid #000;
@@ -202,7 +202,7 @@
                 border-top-right-radius: 40px;
                 padding-left:3rem;
             }
-            .custom-page-startr{
+            .custom-page-start{
                 padding-top:130px;
                 padding-bottom:140px;
             }
@@ -221,11 +221,11 @@
     </head>
 
         <body>
-        <header class="pdf-header">
+        <header class="pdf-header" style="width:80%; margin:10% auto;">
             <div class="row mt-5">
                 <div class="col-12" style="text-align:center;">
-                    @if(!empty(settings()->black_logo))
-                        <img src="{{ public_path('admin/assets/img/logo') }}/{{ settings()->black_logo }}" class="logo" />
+                    @if(!empty(getCompanySettings($company)->black_logo))
+                        <img src="{{ public_path('admin/assets/img/logo') }}/{{ getCompanySettings($company)->black_logo }}" class="logo" />
                     @else
                         <img src="{{ asset('public/admin/default.png') }}" style="width:150px" class="logo" title="Company Black Logo Here..." alt="Default"/>
                     @endif
@@ -233,7 +233,7 @@
             </div>
         </header>
         <div class="custom-page-start px-5">
-            <section class="pdfcontent-section px-4">
+            <section class="pdfcontent-section px-4" style="width:80%; margin:0% auto; padding:0%">
                 <div class="row mt-5">
                     <div class="col-12 mt-5">
                         <h6 class="date">Date: {{ $model->effective_date }}</h6>
@@ -250,16 +250,16 @@
                     </div>
                 </div>
             </section>
-            <section class="pdfsign-section px-4 mt-2">
+            <section class="pdfsign-section px-4 mt-2" style="width:80%; margin:0% auto; padding:0%">
                 <div class="row">
                     <div class="col-12">
-                        @if(!empty(settings()->admin_signature))
-                            <img src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->admin_signature }}" alt="Signature" />
+                        @if(!empty(getCompanySettings($company)->admin_signature))
+                            <img src="{{ asset('public/admin/assets/img/logo') }}/{{ getCompanySettings($company)->admin_signature }}" alt="Signature" />
                         @endif
-                        <h6 class="mt-2"> Sincerely, </h6>
-                        <h6>{{ hrName() }}</h6>
-                        <h6>Executive – HR</h6>
-                        <h6>{{ appName() }}</h6>
+                        <h6 style="margin: 2% 0%"> Sincerely, </h6>
+                        <h6 style="margin: 2% 0%">{{ hrName() }}</h6>
+                        <h6 style="margin: 2% 0%">Executive – HR</h6>
+                        <h6 style="margin: 2% 0%">{{ getCompanySettings($company)->name }}</h6>
                     </div>
                 </div>
             </section>
@@ -267,31 +267,31 @@
         <footer class="pdf-footer ps-5">
             <div class="row">
                 <div class="col-12">
-                    <ul class="list-unstyled ps-5 pt-5 pb-3 pe-3">
-                        @if(!empty(settings()->phone_number))
+                    <ul class="list-unstyled ps-5 pt-5 pb-3 pe-3" style="list-style: none; padding:5%">
+                        @if(!empty(getCompanySettings($company)->phone_number))
                             <li>
                                 <img class="me-2" src="{{ asset('public/admin/letters/Call.png') }}" alt="Number Icon" />
-                                {{ settings()->phone_number }}
+                                {{ getCompanySettings($company)->phone_number }}
                                 <br/><br/>
                             </li>
                         @endif
-                        @if(!empty(settings()->website_url))
+                        @if(!empty(getCompanySettings($company)->website_url))
                             <li>
                                 <img class="me-2" src="{{ asset('public/admin/letters/Website.png') }}" alt="Website Icon" />
-                                {{ settings()->website_url }}
+                                {{ getCompanySettings($company)->website_url }}
                                 <br/><br/>
                             </li>
                         @endif
-                        @if(!empty(settings()->email))
+                        @if(!empty(getCompanySettings($company)->email))
                         <li>
                             <img class="me-2" src="{{ asset('public/admin/letters/Email.png') }}" alt="Email Icon" />
-                            {{ settings()->email }}<br/><br/>
+                            {{ getCompanySettings($company)->email }}<br/><br/>
                         </li>
                         @endif
-                        @if(!empty(settings()->address))
+                        @if(!empty(getCompanySettings($company)->address))
                             <li>
                                 <img class="me-2" src="{{ asset('public/admin/letters/Address.png') }}" alt="Address Icon" />
-                                {{ settings()->address }}
+                                {{ getCompanySettings($company)->address }}
                             </li>
                         @endif
                     </ul>

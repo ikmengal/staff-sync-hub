@@ -87,4 +87,21 @@ class User extends Authenticatable
     public function hasPreEmployee(){
         return $this->hasOne(PreEmployee::class, 'id', 'pre_emp_id');
     }
+
+    public function joiningDepartmentBridge()
+    {
+        return $this->hasOne(DepartmentUser::class, 'user_id', 'id');
+    }
+    public function joiningDesignation()
+    {
+        return $this->hasOne(JobHistory::class, 'user_id', 'id');
+    }
+    public function joiningSalary()
+    {
+        return $this->hasOne(SalaryHistory::class, 'user_id')->orderby('id', 'asc');
+    }
+    public function joiningDate()
+    {
+        return $this->hasOne(JobHistory::class, 'user_id');
+    }
 }

@@ -137,8 +137,8 @@ Route::middleware('auth')->group(function () {
 
     // Grievences filter route
     Route::get('grievance-filter', [GrievanceController::class, 'getSearchDataOnLoad'])->name('grievance.getSearchDataOnLoad');
-    Route::get('/employee_letters/download/{id}', [EmployeeLetterController::class, 'downloadLetter'])->name('employee_letters.download');
-
+    Route::get('/employee_letters/download/{id}/{company?}', [EmployeeLetterController::class, 'downloadLetter'])->name('employee_letters.download');
+    Route::get('employee_letters-filter', [EmployeeLetterController::class, 'getSearchDataOnLoad'])->name('employee_letters.getSearchDataOnLoad');
     //Salary Repory
     Route::controller(SalaryReportController::class)->group(function(){
         Route::get('admin/salary-reports','salaryReports')->name('admin.salary-reports');

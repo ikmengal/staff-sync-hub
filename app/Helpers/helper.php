@@ -193,7 +193,6 @@ function getAllCompanies()
             $grievances = Grievance::on($portalDb)->get();
             $userLeaves = UserLeave::on($portalDb)->get();
             $employeeLetters = EmployeeLetter::on($portalDb)->get();
-            
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
@@ -2445,6 +2444,14 @@ function getEmployeesLettersDetail($companyName, $employeeLetter){
     if (isset($employeeLetter->hasEmployee) && !empty($employeeLetter->hasEmployee)) {
         $hasEmployee  = $employeeLetter->hasEmployee;
     }
+    $salaryHistory = '-';
+    if (isset($employeeLetter->hasEmployee->salaryHistory) && !empty($employeeLetter->hasEmployee->salaryHistory)) {
+        $salaryHistory  = $employeeLetter->hasEmployee->salaryHistory;
+    }
+    $reporting_name = '-';
+    if (isset($employeeLetter->hasEmployee->joiningDepartmentBridge->department->manager) && !empty($employeeLetter->hasEmployee->joiningDepartmentBridge->department->manager)) {
+        $reporting_name  = $employeeLetter->hasEmployee->joiningDepartmentBridge->department->manager;
+    }
     $hasTemplate = '-';
     if (isset($employeeLetter) && !empty($employeeLetter)) {
         $hasTemplate = $employeeLetter->hasTemplate;
@@ -2476,6 +2483,8 @@ function getEmployeesLettersDetail($companyName, $employeeLetter){
         'created_by' => $created_by,
         'hasEmployee' => $hasEmployee,
         'hasTemplate' => $hasTemplate,
+        'salaryHistory' => $salaryHistory,
+        'reporting_name' => $reporting_name,
         'hasUserVehicle' => $hasUserVehicle,
         'title' => $title,
         'effective_date' => $effective_date,
@@ -2533,4 +2542,23 @@ function formatLetterTitle($text)
 function getIpRestriction()
 {
     return config("app.ip_restrict");
+}
+
+function getCompanySettings($companyName){
+    foreach (companies() as $portalName => $portalDb) {
+        $settings = Setting::on($portalDb)->select('*')->where('name', $companyName)->first();
+    }
+    return $settings;
+}
+
+function hrName(){
+    foreach (companies() as $portalName => $portalDb) {
+        $department = Department::on($portalDb)->select('*')->where('name', 'like', '%Admin%')->where('manager_id', '!=', NULL)->where('status', 1)->first();
+        if(!empty($department) && !empty($department->manager)){
+            $manager_full_name = $department->manager->first_name.' '.$department->manager->last_name;
+        }else{
+            $manager_full_name = 'N/A';
+        }
+    }
+    return $manager_full_name;
 }

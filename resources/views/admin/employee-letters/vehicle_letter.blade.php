@@ -179,8 +179,8 @@
         <header class="pdf-header">
             <div class="row mt-5">
                 <div class="col-12 text-center">
-                    @if(!empty(settings()->black_logo))
-                        <img src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->black_logo }}" alt="{{ settings()->name }}" class="logo img-fluid" />
+                    @if(!empty(getCompanySettings($company)->black_logo))
+                        <img src="{{ asset('public/admin/assets/img/logo') }}/{{ getCompanySettings($company)->black_logo }}" alt="{{ getCompanySettings($company)->name }}" class="logo img-fluid" />
                     @else
                         <img src="{{ asset('public/admin/default.png') }}" style="width:150px" class="logo img-fluid" title="Company Black Logo Here..." alt="Default"/>
                     @endif
@@ -208,8 +208,8 @@
                     <div class="col-12">
                         
                         <h6 class="mt-2"> Sincerely, </h6>
-                        @if(!empty(settings()->admin_signature))
-                            <img src="{{ asset('public/admin/assets/img/logo') }}/{{ settings()->admin_signature }}" alt="Signature" />
+                        @if(!empty(getCompanySettings($company)->admin_signature))
+                            <img src="{{ asset('public/admin/assets/img/logo') }}/{{ getCompanySettings($company)->admin_signature }}" alt="Signature" />
                         @endif
                         <h6>Administration Department</h6>
                     </div>
@@ -220,28 +220,28 @@
             <div class="row">
                 <div class="col-5">
                     <ul class="list-unstyled ps-5 pt-5 pb-3 pe-3">
-                        @if(!empty(settings()->phone_number))
+                        @if(!empty(getCompanySettings($company)->phone_number))
                         <li class="mb-1">
                             <img class="me-2" src="{{ asset('public/admin/letters/Call.png') }}" class="img-fluid" alt="Number Icon" />
-                            {{ settings()->phone_number }}
+                            {{ getCompanySettings($company)->phone_number }}
                         </li>
                         @endif
-                        @if(!empty(settings()->website_url))
+                        @if(!empty(getCompanySettings($company)->website_url))
                         <li class="mb-1">
                             <img class="me-2" src="{{ asset('public/admin/letters/Website.png') }}" class="img-fluid" alt="Website Icon" />
-                            {{ settings()->website_url }}
+                            {{ getCompanySettings($company)->website_url }}
                         </li>
                         @endif
-                        @if(!empty(settings()->email))
+                        @if(!empty(getCompanySettings($company)->email))
                         <li class="mb-1">
                             <img class="me-2" src="{{ asset('public/admin/letters/Email.png') }}" class="img-fluid" alt="Email Icon" />
-                            {{ settings()->email }}
+                            {{ getCompanySettings($company)->email }}
                         </li>
                         @endif
-                        @if(!empty(settings()->address))
+                        @if(!empty(getCompanySettings($company)->address))
                         <li class="mb-1">
                             <img class="me-2" src="{{ asset('public/admin/letters/Address.png') }}" class="img-fluid" alt="Address Icon" />
-                            {{ settings()->address }}
+                            {{ getCompanySettings($company)->address }}
                         </li>
                         @endif
                     </ul>

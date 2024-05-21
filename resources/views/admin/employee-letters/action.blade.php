@@ -13,7 +13,7 @@
        fdprocessedid="i1qq7b">
        <i class="ti ti-eye ti-xs"></i>
 </div>
-   <a href="{{ route('employee_letters.download', $model->id) }}"
+   <a href="{{ route('employee_letters.download', ['id' => $model->id, 'company' => $model->company])}}"
        class="btn btn-icon btn-label-info waves-effect me-2"
        data-toggle="tooltip"
        data-placement="top"

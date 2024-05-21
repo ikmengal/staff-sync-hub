@@ -4,7 +4,7 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
     <input type="hidden" id="page_url" value="{{ route('employee-letters.index') }}">
-    <input type="hidden" id="search_route" value="{{-- route('grievance.getSearchDataOnLoad') --}}">
+    <input type="hidden" id="search_route" value="{{ route('employee_letters.getSearchDataOnLoad') }}">
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -22,11 +22,7 @@
             <!-- Stocks List Table -->
             <div class="card mt-4">
                 <div class="row p-3">
-                    <div class="col-md-3">
-                        <label>Date Range</label>
-                        <input type="text" class="form-control w-100 unselectValue" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range" />
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label for="form-label" for="company">Company</label>
                         <select name="company" id="company" data-control="select2" class="select2 form-select company unselectValue">
                             <option value="">All</option>
@@ -37,15 +33,20 @@
                             @endif
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label for="form-label" for="filter_status">Status</label>
-                        <select name="filter_status" id="filter_status" class="select2 form-select filter_status unselectValue">
+                    {{-- <div class="col-md-4">
+                        <label>Date Range</label>
+                        <input type="text" class="form-control w-100 unselectValue" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range" />
+                    </div> --}}
+                    <div class="col-md-4">
+                        <label for="form-label" for="letter_type">Letter Type</label>
+                        <select name="letter_type" id="letter_type" class="select2 form-select letter_type unselectValue">
                             <option value="">All</option>
-                            <option value="Active">Active</option>
-                            <option value="De-Active">De Active</option>
+                            <option value="joining_letter">Joining Letter</option>
+                            <option value="promotion_letter">Promotion Letter</option>
+                            <option value="vehical_letter">Vehicle Letter</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mt-3 py-1">
+                    <div class="col-md-4 mt-3 py-1">
                         <button type="button" class="btn btn-primary searchBtn me-2"><i class="fa-solid fa-filter"></i></button>
                         <button type="button" class="btn btn-danger refreshBtn me-2">Reset&nbsp;<i class="fa-solid fa-filter"></i></button>
                     </div>
@@ -57,11 +58,11 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Company</th>
+                                        <th width="20%">Company</th>
                                         <th>Employee</th>
-                                        <th>Title</th>
-                                        <th>effective_date</th>
-                                        <th>validity_date</th>
+                                        <th width="10%">Title</th>
+                                        <th>Effective Date</th>
+                                        <th>Validity Date</th>
                                         <th>Created At</th>
                                         <th>Action</th>
                                     </tr>
@@ -72,25 +73,24 @@
                     </div>
                 </div>
             </div>
-            <!-- Stocks List Table -->
-            <!-- Show Detail Modal -->
-            <div class="modal fade modal-add-new-cc" id="view-template-modal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl ">
-                    <div class="modal-content p-0">
-                        <div class="modal-header p-0">
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <!-- Show Detail Modal -->
+        <div class="modal fade modal-add-new-cc" id="view-template-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl ">
+                <div class="modal-content p-0">
+                    <div class="modal-header p-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="mb-4">
+                            <h3 class="mb-2" id="modal-label"></h3>
                         </div>
-                        <div class="modal-body p-0">
-                            <div class="mb-4">
-                                <h3 class="mb-2" id="modal-label"></h3>
-                            </div>
-                            <span id="show-content"></span>
-                        </div>
+                        <span id="show-content"></span>
                     </div>
                 </div>
             </div>
-            <!-- Show Detail Modal -->
         </div>
+        <!-- Show Detail Modal -->
     </div>
 </div>
 
@@ -152,8 +152,7 @@
                 data: function(d) {
                     d.search = $('input[type="search"]').val()
                     d.company = $('#company').val()
-                    d.filter_status = $('#filter_status').val()
-                    d.date_range = $('#flatpickr-range').val()
+                    d.letter_type = $('#letter_type').val()
                 },
             },
             columns: [{

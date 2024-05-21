@@ -20,7 +20,7 @@ class EmployeeLetterController extends Controller
     {
         $this->authorize('employee-letters-list');
         $data = [];
-        $data['title'] = 'All Employee Letters';
+        $data['title'] = 'All Employees Letters';
         if ($request->ajax() && $request->loaddata == "yes") {
             $records = getEmployeesLetters();
             return DataTables::of($records['employee_letters'])
@@ -46,42 +46,14 @@ class EmployeeLetterController extends Controller
                 ->editColumn('action', function ($model) {
                     return view('admin.employee-letters.action', ['model' => $model])->render();
                 })
-                // ->filter(function ($query) use ($request) {
-                //     if ($request->has('company')) {
-                //         $company = $request->company;
-                //         $query->collection = $query->collection->filter(function ($record) use ($company) {
-                //             return str_contains(strtolower($record['company']), strtolower($company));
-                //         });
-                //     }
-                //     if ($request->has('filter_status')) {
-                //         $status = $request->filter_status;
-                //         $query->collection = $query->collection->filter(function ($record) use ($status) {
-                //             return str_contains(strtolower($record['status']), strtolower($status));
-                //         });
-                //     }
-                //     if ($request->has('date_range')) {
-                //         $date_range = $request->date_range;
-                //         if (!empty($date_range)) {
-                //             if (strpos($date_range, ' to ') !== false) {
-                //                 list($start_date, $end_date) = explode(' to ', $date_range);
-                //                 if (!empty($start_date) && !empty($end_date)) {
-                //                     $query->collection = $query->collection->filter(function ($record) use ($start_date, $end_date) {
-                //                         $created_at = strtotime($record['created_at']);
-                //                         $start_date_timestamp = strtotime($start_date);
-                //                         $end_date_timestamp = strtotime($end_date);
-                //                         return $created_at >= $start_date_timestamp && $created_at <= $end_date_timestamp;
-                //                     });
-                //                 }
-                //             } else {
-                //                 $query->collection = $query->collection->filter(function ($record) use ($date_range) {
-                //                     $created_at = strtotime($record['created_at']);
-                //                     $selected_date = strtotime($date_range);
-                //                     return $created_at === $selected_date;
-                //                 });
-                //             }
-                //         }
-                //     }
-                // })
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('company')) {
+                        $company = $request->company;
+                        $query->collection = $query->collection->filter(function ($record) use ($company) {
+                            return str_contains(strtolower($record['company']), strtolower($company));
+                        });
+                    }
+                })
                 ->rawColumns(['company', 'employee_id', 'title', 'effective_date', 'validity_date', 'created_at', 'action'])
                 ->make(true);
         }
@@ -158,6 +130,11 @@ class EmployeeLetterController extends Controller
         //
     }
 
+    public function getSearchDataOnLoad(){
+        $data['companies'] = Company::get();
+        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
+    }
+
     public function joiningLetterData($employee_letter){
         $employee_name = '';
         if(isset($employee_letter->hasEmployee) && !empty($employee_letter->hasEmployee->first_name)){
@@ -222,7 +199,7 @@ class EmployeeLetterController extends Controller
             'reporting_department' => $reporting_department,
             'validity_date' => date('d, M Y', strtotime($employee_letter->validity_date)),
         ];
-
+        
         return (object)$model;
     }
 
@@ -317,23 +294,93 @@ class EmployeeLetterController extends Controller
         return (object)$model;
     }
 
-    public function downloadLetter($employee_letter_id){
-
+    public function downloadLetter($employee_letter_id, $company = null){
         $employee_letter = getEmployeeLetterDetail($employee_letter_id);
-
+        $company = $company ?? null;
         if($employee_letter->title=="joining_letter"){
             $model = $this->joiningLetterData($employee_letter);
-            $pdf = PDF::loadView('admin.employee-letters.joining-pdf-letter', compact('model'));
+            $pdf = PDF::loadView('admin.employee-letters.joining-pdf-letter', compact('model', 'company'));
         }elseif($employee_letter->title=="vehical_letter"){
             $model = $this->vehicleLetterData($employee_letter);
-            $pdf = PDF::loadView('admin.employee-letters.vehicle-pdf-letter', compact('model'));
+            $pdf = PDF::loadView('admin.employee-letters.vehicle-pdf-letter', compact('model', 'company'));
         }elseif($employee_letter->title=="promotion_letter"){
             $model = $this->promotionLetterData($employee_letter);
-            $pdf = PDF::loadView('admin.employee-letters.promotion-pdf-letter', compact('model'));
+            $pdf = PDF::loadView('admin.employee-letters.promotion-pdf-letter', compact('model', 'company'));
         }
 
         $download_file_name = $employee_letter->title;
         return $pdf->download($download_file_name.'.pdf');
+    }
+
+    function convertNumberToText($num = '')
+    {
+        $num    = (string) ((int) $num);
+
+        if ((int) ($num) && ctype_digit($num)) {
+            $words  = array();
+
+            $num    = str_replace(array(',', ' '), '', trim($num));
+
+            $list1  = array(
+                '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+                'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
+                'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'
+            );
+
+            $list2  = array(
+                '', 'ten', 'twenty', 'thirty', 'forty', 'fifty', 'sixty',
+                'seventy', 'eighty', 'ninety', 'hundred'
+            );
+
+            $list3  = array(
+                '', 'thousand', 'million', 'billion', 'trillion',
+                'quadrillion', 'quintillion', 'sextillion', 'septillion',
+                'octillion', 'nonillion', 'decillion', 'undecillion',
+                'duodecillion', 'tredecillion', 'quattuordecillion',
+                'quindecillion', 'sexdecillion', 'septendecillion',
+                'octodecillion', 'novemdecillion', 'vigintillion'
+            );
+
+            $num_length = strlen($num);
+            $levels = (int) (($num_length + 2) / 3);
+            $max_length = $levels * 3;
+            $num    = substr('00' . $num, -$max_length);
+            $num_levels = str_split($num, 3);
+
+            foreach ($num_levels as $num_part) {
+                $levels--;
+                $hundreds   = (int) ($num_part / 100);
+                $hundreds   = ($hundreds ? ' ' . $list1[$hundreds] . ' Hundred' . ($hundreds == 1 ? '' : 's') . ' ' : '');
+                $tens       = (int) ($num_part % 100);
+                $singles    = '';
+
+                if ($tens < 20) {
+                    $tens = ($tens ? ' ' . $list1[$tens] . ' ' : '');
+                } else {
+                    $tens = (int) ($tens / 10);
+                    $tens = ' ' . $list2[$tens] . ' ';
+                    $singles = (int) ($num_part % 10);
+                    $singles = ' ' . $list1[$singles] . ' ';
+                }
+                $words[] = $hundreds . $tens . $singles . (($levels && (int) ($num_part)) ? ' ' . $list3[$levels] . ' ' : '');
+            }
+            $commas = count($words);
+            if ($commas > 1) {
+                $commas = $commas - 1;
+            }
+
+            $words  = implode(', ', $words);
+
+            $words  = trim(str_replace(' ,', ',', ucwords($words)), ', ');
+            if ($commas) {
+                $words  = str_replace(',', ' and', $words);
+            }
+
+            return $words;
+        } else if (!((int) $num)) {
+            return 'Zero';
+        }
+        return '';
     }
 }
 
