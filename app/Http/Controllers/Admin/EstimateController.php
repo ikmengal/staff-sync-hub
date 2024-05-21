@@ -3,18 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attachment;
-use App\Models\Company;
-use App\Models\User;
-use App\Models\Estimate;
-use App\Models\PurchaseRequest;
 use Exception;
+use App\Models\User;
+use App\Models\Company;
+use App\Models\Estimate;
+use App\Models\Attachment;
+use App\Models\UserPlayerId;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 class EstimateController extends Controller
 {
@@ -244,7 +245,7 @@ class EstimateController extends Controller
                                 $userPlayerId = UserPlayerId::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
                                 try { 
                                     $responseMessage = "";
-                                    if($updated){ 
+                                    if($update){ 
                                         if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
                                             $fields['include_player_ids'] = [$userPlayerId->player_id];
                                             $title = $estimate->title;

@@ -138,7 +138,7 @@
 
 
         @can('grievances-list')
-        <li class="menu-item {{ request()->is('admin/grievances')?'active':'' }}">
+        <li class="menu-item {{ request()->is('grievances')?'active':'' }}">
             <a href="{{ route('grievances.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-file-dislike"></i>
                 <div>Grievances</div>
@@ -146,14 +146,14 @@
         </li>
         @endcan
         @can('ip-addresses-list')
-        <li class="menu-item {{ request()->is('admin/ip-addresses')?'active':'' }}">
+        <li class="menu-item {{ request()->is('ip-addresses')?'active':'' }}">
             <a href="{{ route('ip-addresses.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-location "></i>
                 <div>IP Addresses</div>
             </a>
         </li>
         @endcan
-        <li class="menu-item {{ request()->is('admin/user_leaves')?'active':'' }}">
+        <li class="menu-item {{ request()->is('user_leaves')?'active':'' }}">
             @can('user-leaves-list')
             <a href="{{ route('user_leaves.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-clock"></i>
