@@ -30,7 +30,8 @@ use App\Models\{
     AttendanceAdjustment,
     Grievance,
     HolidayCustomizeEmployee,
-    MonthlySalaryReport
+    MonthlySalaryReport,
+    EmployeeLetter
 };
 
 function settings()
@@ -114,9 +115,9 @@ function companies()
 {
     $companies = [
         'cyberonix_hr' => env('CYBERONIX_DB_DATABASE'),
-        'vertical' => env('VERTICAL_DB_DATABASE'),
-        'braincell' => env('BRAINCELL_DB_DATABASE'),
-        'clevel' => env('CLEVEL_DB_DATABASE'),
+        // 'vertical' => env('VERTICAL_DB_DATABASE'),
+        // 'braincell' => env('BRAINCELL_DB_DATABASE'),
+        // 'clevel' => env('CLEVEL_DB_DATABASE'),
         // 'delve' => env('DELVE12_DB_DATABASE'),
         // 'horizontal' => env('HORIZONTAL_DB_DATABASE'),
         // 'mercury' => env('MERCURY_DB_DATABASE'),
@@ -191,6 +192,7 @@ function getAllCompanies()
 
             $grievances = Grievance::on($portalDb)->get();
             $userLeaves = UserLeave::on($portalDb)->get();
+            $employeeLetters = EmployeeLetter::on($portalDb)->get();
             
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
             $settings['company_id'] = $settings->company_id ?? 0;
@@ -207,6 +209,7 @@ function getAllCompanies()
             $settings['pre_employees'] =  $pre_employees;
             $settings['total_grievances'] = $grievances;
             $settings['user_leaves'] = $userLeaves;
+            $settings['employee_letters'] = $employeeLetters;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -2426,6 +2429,105 @@ function getUserLeaveDetail($id)
             return 'No Record Found...!';
         }
     }
+}
+
+function getEmployeesLettersDetail($companyName, $employeeLetter){
+    
+    $id = '-';
+    if (isset($employeeLetter->id) && !empty($employeeLetter->id)) {
+        $id = $employeeLetter->id;
+    }
+    $created_by = '-';
+    if (isset($employeeLetter->created_by) && !empty($employeeLetter->created_by)) {
+        $created_by = $employeeLetter->hasCreatedBy;
+    }
+    $hasEmployee = '-';
+    if (isset($employeeLetter->hasEmployee) && !empty($employeeLetter->hasEmployee)) {
+        $hasEmployee  = $employeeLetter->hasEmployee;
+    }
+    $hasTemplate = '-';
+    if (isset($employeeLetter) && !empty($employeeLetter)) {
+        $hasTemplate = $employeeLetter->hasTemplate;
+    }
+    $hasUserVehicle = '-';
+    if (isset($employeeLetter->hasUserVehicle) && !empty($employeeLetter->hasUserVehicle)) {
+        $hasUserVehicle = $employeeLetter->hasUserVehicle;
+    }
+    $title = "";
+    if (isset($employeeLetter->title) && !empty($employeeLetter->title)) {
+        $title = $employeeLetter->title;
+    }
+    $effective_date = "";
+    if (isset($employeeLetter->effective_date) && !empty($employeeLetter->effective_date)) {
+        $effective_date = date('d, M Y',strtotime($employeeLetter->effective_date));
+    }
+    $validity_date = "";
+    if (isset($employeeLetter->validity_date) && !empty($employeeLetter->validity_date)) {
+        $validity_date = date('d, M Y',strtotime($employeeLetter->validity_date));
+    }
+    $created_at = "";
+    if (isset($employeeLetter->created_at) && !empty($employeeLetter->created_at)) {
+        $created_at = date('d, M Y',strtotime($employeeLetter->created_at));
+    }
+    $data = [
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'created_by' => $created_by,
+        'hasEmployee' => $hasEmployee,
+        'hasTemplate' => $hasTemplate,
+        'hasUserVehicle' => $hasUserVehicle,
+        'title' => $title,
+        'effective_date' => $effective_date,
+        'validity_date' => $validity_date,
+        'created_at' => $created_at,
+        'employeeLetter' => $employeeLetter,
+    ];
+    return $data;
+}
+
+function getEmployeesLetters($companyName = null)
+{
+    $data = [];
+    $employeeLetters = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->employee_letters as $employeeLetter) {
+                $employeeLetters[] = (object) getEmployeesLettersDetail($company, $employeeLetter);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->employee_letters as $employeeLetter) {
+                $employeeLetters[] = (object) getEmployeesLettersDetail($company, $employeeLetter);
+            }
+        }
+    }
+    $data['employee_letters'] =  $employeeLetters;
+    return $data;
+}
+
+function getEmployeeLetterDetail($id)
+{
+    foreach (companies() as $portalName => $portalDb) {
+        $employeeLetter = '';
+        $employeeLetter = EmployeeLetter::on($portalDb)->where('id', $id)->first();
+        if (isset($employeeLetter) && !blank($employeeLetter)) {
+            return $employeeLetter;
+        } else {
+            return 'No Record Found...!';
+        }
+    }
+}
+
+function formatLetterTitle($text)
+{
+    // Remove underscores and replace with spaces
+    $textWithoutUnderscores = str_replace('_', ' ', $text);
+
+    // Capitalize the first character of each word
+    $formattedText = ucwords($textWithoutUnderscores);
+
+    return $formattedText;
 }
 
 function getIpRestriction()

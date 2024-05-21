@@ -161,6 +161,14 @@
             </a>
             @endcan
         </li>
+        @can('employee-letters-list')
+        <li class="menu-item {{ request()->is('employee-letters')?'active':'' }}">
+            <a href="{{ route('employee-letters.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-file-certificate"></i>
+                <div>Employee Letters</div>
+            </a>
+        </li>
+        @endcan
         @can('vahicles-list')
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">
