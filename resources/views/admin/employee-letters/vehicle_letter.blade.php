@@ -195,7 +195,7 @@
                         <h4 class="name">COMPANY’S RENTAL VEHICLE AUTHORIZATION LETTER</h4>
                         <div class="pdfcontent mt-3 position-relative">
                             <p>
-                                We are delighted to inform you that, based on your eligibility and in accordance with our company policies, <span>{{ appName() }} (SMC - Private Limited)</span> has allocated you a company vehicle for personal use. This provision aims to improve your productivity, convenience, and cater to your personal transportation needs.</p>
+                                We are delighted to inform you that, based on your eligibility and in accordance with our company policies, <span>{{ $company }} (SMC - Private Limited)</span> has allocated you a company vehicle for personal use. This provision aims to improve your productivity, convenience, and cater to your personal transportation needs.</p>
                             <p>We hereby authorize <span>{{ $model->name }}</span>, bearing <span>CNIC # {{ $model->cnic }}</span>, to utilize the company car, <span>{{ $model->vehicle_name }}</span> with the registration number <span>{{ $model->vehicle_reg_number }}</span>, for personal purposes. It is crucial to understand that any accidents or damages resulting from negligence or improper use may hold you financially liable. Therefore, please exercise utmost care and responsibility while using the vehicle. Please be aware that any misconduct or inappropriate use will be the responsibility of the authorized user and not the company.
 
                                 Feel free to reach on the mentioned below contact details in case of any queries. We appreciate your cooperation in adhering to the guidelines provided.</p>

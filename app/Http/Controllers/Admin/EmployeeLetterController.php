@@ -90,14 +90,11 @@ class EmployeeLetterController extends Controller
                     return view('admin.employee-letters.joining_letter', compact('model', 'employee_letter', 'company'))->render();
                 }elseif($employee_letter->title=="vehical_letter"){
                     $model = $this->vehicleLetterData($employee_letter);
-                    return (string) view('admin.employee-letters.vehicle_letter', compact('model', 'employee_letter', 'company'));
+                    return view('admin.employee-letters.vehicle_letter', compact('model', 'employee_letter', 'company'))->render();
                 }elseif($employee_letter->title=="promotion_letter"){
                     $model = $this->promotionLetterData($employee_letter);
-                    return (string) view('admin.employee-letters.promotion_letter', compact('model', 'employee_letter', 'company'));
+                    return view('admin.employee-letters.promotion_letter', compact('model', 'employee_letter', 'company'))->render();
                 }
-            
-            
-                //return view('admin.employee-letters.show', compact('model', 'company'))->render();
             } else {
                 abort(404);
             }
@@ -132,7 +129,11 @@ class EmployeeLetterController extends Controller
 
     public function getSearchDataOnLoad(){
         $data['companies'] = Company::get();
-        return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
+        if(isset($data) && !blank($data)){
+            return ['success' => true, 'message' => null, 'data' => $data, 'status' => 200];
+        }else{
+            return ['success' => false, 'message' => 'No record found', 'data' => null, 'status' => 401];
+        }
     }
 
     public function joiningLetterData($employee_letter){

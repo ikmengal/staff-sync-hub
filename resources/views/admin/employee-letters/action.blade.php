@@ -1,5 +1,5 @@
 <div class="d-flex align-items-center">
-    <div href="javascript:;"
+    <a href="javascript:;"
        class="btn btn-icon btn-view btn-label-secondary waves-effect me-2 show"
        data-toggle="tooltip"
        data-placement="top"
@@ -12,8 +12,8 @@
        company-name="{{$model->company ?? ''}}"
        fdprocessedid="i1qq7b">
        <i class="ti ti-eye ti-xs"></i>
-</div>
-   <a href="{{ route('employee_letters.download', ['id' => $model->id, 'company' => $model->company])}}"
+    </a>
+    <a href="{{ route('employee_letters.download', ['id' => $model->id, 'company' => $model->company])}}"
        class="btn btn-icon btn-label-info waves-effect me-2"
        data-toggle="tooltip"
        data-placement="top"
@@ -22,8 +22,8 @@
        tabindex="0" aria-controls="DataTables_Table_0"
        type="button" >
        <i class="ti ti-download ti-xs"></i> 
-   </a>
-    @if($model->title=="joining_letter")
+    </a>
+    {{-- @if($model->title=="joining_letter")
         @can('employee_letters-edit')
             <a href="javascript:;"
                 class="btn btn-icon btn-label-warning waves-effect me-2 edit-btn"
@@ -45,5 +45,5 @@
         <a href="javascript:;" class="delete btn btn-icon btn-label-primary waves-effect" data-slug="{{ $model->id }}" data-del-url="{{ route('employee_letters.destroy', $model->id) }}">
             <i class="ti ti-trash ti-xs"></i>
         </a>
-    @endcan
+    @endcan --}}
 </div>
