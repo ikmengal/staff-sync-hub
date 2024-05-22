@@ -257,9 +257,38 @@ class PermissionSeeder extends Seeder
         'name' => 'pre-employees-view',
         'display_name' => 'View',
         'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Employee letters',
+        'name' => 'employee-letters-list',
+        'display_name' => 'List',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Employee letters',
+        'name' => 'employee-letters-create',
+        'display_name' => 'Create',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Employee letters',
+        'name' => 'employee-letters-edit',
+        'display_name' => 'Edit',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Employee letters',
+        'name' => 'employee-letters-delete',
+        'display_name' => 'Delete',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Employee letters',
+        'name' => 'employee-letters-status',
+        'display_name' => 'Status',
+        'guard_name' => 'web'
       ]
-
-
+      
     ];
 
     foreach ($permissions as $value) {
