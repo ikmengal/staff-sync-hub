@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Company;
-use App\Models\PurchaseRequest;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
+use App\Models\UserPlayerId;
+use App\Models\PurchaseRequest;
+use Ladumor\OneSignal\OneSignal;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
 class PurchaseRequestController extends Controller
@@ -118,6 +120,37 @@ class PurchaseRequestController extends Controller
                 'remarks' => 'New Purchase Requsest Created',
             ]);
             if ($purchase) {
+                // send the onesignal message for all users
+                    $users = User::all();
+                    $playerIds = [];
+                    if (isset($users) && !$users->isEmpty()) {
+                        foreach ($users as $user) {
+                            $userPlayerId = UserPlayerId::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+                            if ($userPlayerId && !empty($userPlayerId->player_id)) {
+                                $playerIds[] = $userPlayerId->player_id;
+                            }
+                        }
+                        $responseMessage = "";
+                        if (!empty($playerIds)) {
+                            $fields['include_player_ids'] = $playerIds;
+                            $title = $request->subject;
+                            $message = "New Purchase Request " . $request->subject . " has been created.";
+                            $fields['headings'] = ['en' => $title];
+
+                            $oneSignal = \OneSignal::sendPush($fields, $message);
+                            if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
+                                $responseMessage .= $oneSignal['errors'][0] ?? '';
+                            } else {
+                                $responseMessage .= "Purchase Request has been created.";
+                            }
+                        } else {
+                            $responseMessage = "No valid player IDs found.";
+                        }
+                    } else {
+                        $responseMessage = 'No users found';
+                    }
+                // onsignal end
+
                 $data = [
                     'hub_request_id' => $purchase->id,
                     'company_code' => $request->company_id,
@@ -135,13 +168,7 @@ class PurchaseRequestController extends Controller
                     if (isset($response->success) && !empty($response->success)  && isset($response->data) && !empty($response->data)) {
                         $purchase->update(['raw_data' => $response->data->raw_data ?? null, "portal_request_id" => $response->data['portal_request_id'] ?? '']);
                         DB::commit();
-
-                        // one signal send message for user 
-
-
-
-
-                        return response()->json(['success' => true, 'message' => $response->message ?? 'Purchase Request has been created']);
+                        return response()->json(['success' => true, 'message' => $response->message ?? $responseMessage]);
                     }
                 } else {
                     return response()->json(['error' => "API error occurred: " . $response->status()]);

@@ -46,6 +46,8 @@ class PurchaseRequestController extends Controller
 
     public function store(Request $request)
     {
+        dd("Request Send From the Admin Dashboard");
+
         $validator = Validator::make($request->all(), [
             "creator" => "required|email",
             "company_id" => "required|integer",

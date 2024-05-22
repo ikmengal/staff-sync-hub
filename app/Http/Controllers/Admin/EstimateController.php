@@ -11,6 +11,7 @@ use App\Models\Attachment;
 use App\Models\UserPlayerId;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
+use Ladumor\OneSignal\OneSignal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -239,36 +240,48 @@ class EstimateController extends Controller
 
                 if ($update == 1) {
                     // send the onesignal message for all users
-                        $users = User::get();
-                        if(isset($users) && !blank($users)){
-                            foreach($users as $user){
+                        try {
+                            $users = User::all();
+                            $playerIds = [];
+
+                            foreach ($users as $user) {
                                 $userPlayerId = UserPlayerId::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
-                                try { 
-                                    $responseMessage = "";
-                                    if($update){ 
-                                        if(isset($userPlayerId->player_id) && !empty($userPlayerId->player_id)){
-                                            $fields['include_player_ids'] = [$userPlayerId->player_id];
-                                            $title = $estimate->title;
-                                            $message = "Your Estimite ".$estimate->title." has ".$request->remarks;
-                                            $fields['headings'] = ['en' => $title];
-                                            $oneSignal = \OneSignal::sendPush($fields, $message);
-                                            if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
-                                                $responseMessage .=  $oneSignal['errors'][0] ?? ''; 
-                                            } 
-                                        }
-                                        $responseMessage .= "Estimite status Updated successfully"; 
-                                        DB::commit();
-                                        return response()->json(['success' => true, "message" => $responseMessage ], 200);
-                                    }else{
-                                        DB::rollback();
-                                        return response()->json(['success' => true, "message" => 'Estimite status not updated successfully'], 401);
-                                    }
-                                }
-                                catch(\Exception $e) {
-                                    DB::rollback();
-                                    return response()->json(['success' => false, "message" =>  $e->getMessage()], 401);
+                                if ($userPlayerId && !empty($userPlayerId->player_id)) {
+                                    $playerIds[] = $userPlayerId->player_id;
                                 }
                             }
+                            if (!empty($playerIds)) {
+                                $responseMessage = "";
+                                if ($update) {
+                                    $fields = [];
+                                    $fields['include_player_ids'] = $playerIds;
+                                    $title = $estimate->title;
+                                    $message = "Your Estimate " . $estimate->title . " has " . $request->remarks;
+                                    $fields['headings'] = ['en' => $title];
+                    
+                                    // Send notification using OneSignal
+                                    $oneSignal = \OneSignal::sendPush($fields, $message);
+                                    
+                                    if (isset($oneSignal['errors']) && !empty($oneSignal['errors'])) {
+                                        $responseMessage .= $oneSignal['errors'][0] ?? '';
+                                        dd($responseMessage);
+                                    } else {
+                                        $responseMessage .= "Estimate status updated successfully";
+                                    }
+                
+                                    DB::commit();
+                                    return response()->json(['success' => true, "message" => $responseMessage], 200);
+                                } else {
+                                    DB::rollback();
+                                    return response()->json(['success' => false, "message" => 'Estimate status not updated successfully'], 401);
+                                }
+                            } else {
+                                DB::rollback();
+                                return response()->json(['success' => false, "message" => 'No player IDs found for users'], 404);
+                            }
+                        } catch (\Exception $e) {
+                            DB::rollback();
+                            return response()->json(['success' => false, "message" => $e->getMessage()], 500);
                         }
                     // onsignal end
                     $this->updateRequestOnPortal([
