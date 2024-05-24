@@ -12,7 +12,8 @@ use App\Http\Controllers\{
 use App\Http\Controllers\Admin\{
     RoleController, UserController, AdminController, SalaryController, ProfileController, ReceiptController, SettingController, EmployeeController, EstimateController,
     WorkShiftController, AttendanceController, DepartmentController, PermissionController, DesignationController, MasterLoginController, PreEmployeeController,
-    PurchaseRequestController, EmployeeRequisitionController, AttendanceAdjustmentController, GrievanceController, UserLeaveController, SalaryReportController, ValideIPAddressController, EmployeeLetterController
+    PurchaseRequestController, EmployeeRequisitionController, AttendanceAdjustmentController, GrievanceController, UserLeaveController, SalaryReportController, ValideIPAddressController, EmployeeLetterController,
+    DiscrepenciesController
 };
 
 /*
@@ -139,6 +140,8 @@ Route::middleware('auth')->group(function () {
     Route::get('grievance-filter', [GrievanceController::class, 'getSearchDataOnLoad'])->name('grievance.getSearchDataOnLoad');
     Route::get('/employee_letters/download/{id}/{company?}', [EmployeeLetterController::class, 'downloadLetter'])->name('employee_letters.download');
     Route::get('employee_letters-filter', [EmployeeLetterController::class, 'getSearchDataOnLoad'])->name('employee_letters.getSearchDataOnLoad');
+    Route::get('mark_attendance-filter', [AttendanceAdjustmentController::class, 'getSearchDataOnLoad'])->name('mark_attendance.getSearchDataOnLoad');
+    Route::get('discrepencies-filter', [DiscrepenciesController::class, 'getSearchDataOnLoad'])->name('discrepencies.getSearchDataOnLoad');
     //Salary Repory
     Route::controller(SalaryReportController::class)->group(function(){
         Route::get('admin/salary-reports','salaryReports')->name('admin.salary-reports');
@@ -169,6 +172,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/grievances', GrievanceController::class);
     Route::resource('/ip-addresses', ValideIPAddressController::class);
     Route::resource('/employee-letters', EmployeeLetterController::class);
+    Route::resource('/discrepencies', DiscrepenciesController::class);
 
     // Master Login
     Route::get("master-login/{company_id}", [MasterLoginController::class, "login"])->name("master.login");

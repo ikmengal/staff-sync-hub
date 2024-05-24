@@ -287,6 +287,66 @@ class PermissionSeeder extends Seeder
         'name' => 'employee-letters-status',
         'display_name' => 'Status',
         'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Discrepencies',
+        'name' => 'discrepencies-List',
+        'display_name' => 'List',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Discrepencies',
+        'name' => 'discrepencies-Create',
+        'display_name' => 'Create',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Discrepencies',
+        'name' => 'discrepencies-Edit',
+        'display_name' => 'Edit',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Discrepencies',
+        'name' => 'discrepencies-Delete',
+        'display_name' => 'Delete',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Discrepencies',
+        'name' => 'discrepencies-Status',
+        'display_name' => 'Status',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Attendance-adjustments',
+        'name' => 'Attendance-adjustments-List',
+        'display_name' => 'List',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Attendance-adjustments',
+        'name' => 'Attendance-adjustments-Create',
+        'display_name' => 'Create',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Attendance-adjustments',
+        'name' => 'Attendance-adjustments-Edit',
+        'display_name' => 'Edit',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Attendance-adjustments',
+        'name' => 'Attendance-adjustments-Delete',
+        'display_name' => 'Delete',
+        'guard_name' => 'web'
+      ],
+      [
+        'label' => 'Attendance-adjustments',
+        'name' => 'Attendance-adjustments-Status',
+        'display_name' => 'Status',
+        'guard_name' => 'web'
       ]
       
     ];

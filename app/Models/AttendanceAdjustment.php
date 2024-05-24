@@ -10,4 +10,11 @@ class AttendanceAdjustment extends Model
     use HasFactory , SoftDeletes;
     protected $guarded = '';
 
+    public function hasEmployee(){
+        return $this->hasOne(User::class, 'id', 'employee_id');
+    }
+    
+    public function hasAttendance(){
+        return $this->hasOne(Attendance::class, 'id', 'attendance_id');
+    }
 }

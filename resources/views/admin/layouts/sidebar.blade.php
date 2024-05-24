@@ -169,6 +169,22 @@
             </a>
         </li>
         @endcan
+        @can('attendance-adjustments-list')
+        <li class="menu-item {{ request()->is('mark_attendance')?'active':'' }}">
+            <a href="{{ route('mark_attendance.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-checklist"></i>
+                <div>Adjustment List</div>
+            </a>
+        </li>
+        @endcan
+        @can('discrepencies-list')
+        <li class="menu-item {{ request()->is('discrepencies')?'active':'' }}">
+            <a href="{{ route('discrepencies.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-calendar"></i>
+                <div>Discrepencies</div>
+            </a>
+        </li>
+        @endcan
         @can('vahicles-list')
         <li class="menu-item {{ request()->is('admin/companies/vehicles')?'active':'' }}">
             <a href="{{ route('admin.companies.vehicles') }}" class="menu-link">

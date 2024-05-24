@@ -194,6 +194,8 @@ function getAllCompanies()
             $userLeaves = UserLeave::on($portalDb)->get();
             $employeeLetters = EmployeeLetter::on($portalDb)->get();
             $pre_employees = PreEmployee::on($portalDb)->where('form_type', 1)->select(['id', 'manager_id', 'name', 'father_name', 'email', 'contact_no', 'status', 'created_at', 'is_exist'])->get();
+            $attendanceAdjustment = AttendanceAdjustment::on($portalDb)->select('id', 'created_by', 'employee_id', 'attendance_id', 'mark_type', 'created_at')->get();
+            $discrepancies = Discrepancy::on($portalDb)->select('id', 'approved_by', 'user_id', 'attendance_id', 'date', 'type', 'description', 'status', 'is_additional', 'created_at')->get();
             $settings['company_id'] = $settings->company_id ?? 0;
             $settings['vehicles'] = $vehicleUsers;
             $settings['vehicle_percent'] =  (count($vehicleUsers) != 0 && count($total_employees) != 0) ? number_format(count($vehicleUsers) / count($total_employees) * 100) : 0;
@@ -209,6 +211,8 @@ function getAllCompanies()
             $settings['total_grievances'] = $grievances;
             $settings['user_leaves'] = $userLeaves;
             $settings['employee_letters'] = $employeeLetters;
+            $settings['attendance_adjustment'] = $attendanceAdjustment;
+            $settings['discrepancies'] = $discrepancies;
             $companies[$portalName] = $settings;
         } else {
             dd("Failed to Load Settings");
@@ -2561,4 +2565,147 @@ function hrName(){
         }
     }
     return $manager_full_name;
+}
+
+function getAttendanceAdjustments($companyName = null){
+    $data = [];
+    $attendanceAdjustments = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->attendance_adjustment as $attendance_adjustment) {
+                $attendanceAdjustments[] = (object) getAttendanceAdjustmentDetail($company, $attendance_adjustment);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->attendance_adjustment as $attendance_adjustment) {
+                $attendanceAdjustments[] = (object) getAttendanceAdjustmentDetail($company, $attendance_adjustment);
+            }
+        }
+    }
+    $data['attendance_adjustment'] =  $attendanceAdjustments;
+    return $data;
+}
+
+function getAttendanceAdjustmentDetail($companyName, $attendance_adjustment){
+    $id = '-';
+    if (isset($attendance_adjustment->id) && !empty($attendance_adjustment->id)) {
+        $id = $attendance_adjustment->id;
+    }
+    $hasEmployee = '-';
+    if (isset($attendance_adjustment->hasEmployee) && !empty($attendance_adjustment->hasEmployee)) {
+        $hasEmployee  = $attendance_adjustment->hasEmployee;
+    }
+    $hasAttendance = '-';
+    if (isset($attendance_adjustment->hasAttendance) && !empty($attendance_adjustment->hasAttendance)) {
+        $hasAttendance  = date('d, M Y',strtotime($attendance_adjustment->hasAttendance->in_date));
+    }
+    $mark_type = '-';
+    if (isset($attendance_adjustment->mark_type) && !empty($attendance_adjustment->mark_type)) {
+        $mark_type = $attendance_adjustment->mark_type;
+    }
+    $created_at = "";
+    if (isset($attendance_adjustment->created_at) && !empty($attendance_adjustment->created_at)) {
+        $created_at = date('d, M Y',strtotime($attendance_adjustment->created_at));
+    }
+    $data = [
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'hasEmployee' => $hasEmployee,
+        'mark_type' => $mark_type,
+        'hasAttendance' => $hasAttendance,
+        'created_at' => $created_at,
+        'attendance_adjustment' => $attendance_adjustment,
+    ];
+    return $data;
+}
+
+function getDiscrepancies($companyName = null){
+    $data = [];
+    $discrepancies = [];
+    foreach (getAllCompanies() as $company) {
+        if ($companyName != null && $companyName == $company->company_key) {
+            foreach ($company->discrepancies as $discrepancie) {
+                $discrepancies[] = (object) getdiscrepanciesDetail($company, $discrepancie);
+            }
+            break;
+        } elseif ($companyName == NULL) {
+            foreach ($company->discrepancies as $discrepancie) {
+                $discrepancies[] = (object) getdiscrepanciesDetail($company, $discrepancie);
+            }
+        }
+    }
+    $data['discrepancies'] =  $discrepancies;
+    return $data;
+}
+
+function getDiscrepanciesDetail($companyName, $discrepancie){
+    $id = '-';
+    if (isset($discrepancie->id) && !empty($discrepancie->id)) {
+        $id = $discrepancie->id;
+    }
+    $hasEmployee = '-';
+    if (isset($discrepancie->hasEmployee) && !empty($discrepancie->hasEmployee)) {
+        $hasEmployee  = $discrepancie->hasEmployee;
+    }
+    $hasAttendance = '-';
+    if (isset($discrepancie->hasAttendance) && !empty($discrepancie->hasAttendance)) {
+        $hasAttendance  = date('d, M Y',strtotime($discrepancie->hasAttendance->in_date));
+    }
+    $approved_by = '-';
+    if (isset($discrepancie->approved_by) && !empty($discrepancie->approved_by)) {
+        $approved_by = $discrepancie->approved_by;
+    }
+    $date = "";
+    if (isset($discrepancie->date) && !empty($discrepancie->date)) {
+        $date = date('d, M Y',strtotime($discrepancie->date));
+    }
+    $type = "";
+    if (isset($discrepancie->type) && !empty($discrepancie->type)) {
+        $type = $discrepancie->type;
+    }
+    $description = "";
+    if (isset($discrepancie->description) && !empty($discrepancie->description)) {
+        $description = $discrepancie->description;
+    }
+    $status = "";
+    if (isset($discrepancie->status) && !empty($discrepancie->status)) {
+        $status = $discrepancie->status;
+    }
+    $is_additional = "";
+    if (isset($discrepancie->is_additional) && !empty($discrepancie->is_additional)) {
+        $is_additional = $discrepancie->is_additional;
+    }
+    $created_at = "";
+    if (isset($discrepancie->created_at) && !empty($discrepancie->created_at)) {
+        $created_at = date('d, M Y',strtotime($discrepancie->created_at));
+    }
+    $data = [
+        'id' => $id,
+        'company' => $companyName->name,
+        'company_key' => $companyName->company_key,
+        'hasEmployee' => $hasEmployee,
+        'hasAttendance' => $hasAttendance,
+        'approved_by' => $approved_by,
+        'date' => $date,
+        'type' => $type,
+        'description' => $description,
+        'status' => $status,
+        'is_additional' => $is_additional,
+        'created_at' => $created_at,
+        'discrepancie' => $discrepancie,
+    ];
+    return $data;
+}
+
+function getDiscrepancieDetail($id){
+    foreach (companies() as $portalName => $portalDb) {
+        $discrepancie = '';
+        $discrepancie = Discrepancy::on($portalDb)->where('id', $id)->first();
+        if (isset($discrepancie) && !blank($discrepancie)) {
+            return $discrepancie;
+        } else {
+            return 'No Record Found...!';
+        }
+    }
 }
