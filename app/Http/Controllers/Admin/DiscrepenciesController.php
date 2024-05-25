@@ -43,6 +43,9 @@ class DiscrepenciesController extends Controller
                         case 'early':
                             $label = '<span class="badge bg-label-success" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-info" data-bs-original-title="Early">Early</span>';
                             break;
+                        case 'lateIn':
+                            $label = '<span class="badge bg-label-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="tooltip-danger" data-bs-original-title="Late">LateIn</span>';
+                            break;
                     }
                     return $label;
                 })
