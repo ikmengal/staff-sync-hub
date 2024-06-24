@@ -23,8 +23,8 @@
             <div class="card mt-4">
                 <div class="row p-3">
                     <div class="col-md-3">
-                        <label>Date Range</label>
-                        <input type="text" class="form-control w-100 unselectValue" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range" />
+                        <label class="form-label" for="flatpickr-range">Date Range</label>
+                        <input type="text" class="form-control w-100 unselectValue flatepikr" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range" />
                     </div>
                     <div class="col-md-3">
                         <label for="form-label" for="company">Company</label>
